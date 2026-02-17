@@ -1,4 +1,5 @@
 require("dotenv").config();
+fetch(https://itravelz.onrender.com)
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
