@@ -1,0 +1,127 @@
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node modules
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Dependencies
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE and Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+*.code-workspace
+
+# OS files
+Thumbs.db
+.AppleDouble
+.LSOverride
+._*
+
+# Logs
+logs/
+*.log
+npm-log.txt
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build directories
+dist/
+build/
+out/
+.next/
+.nuxt/
+coverage/
+
+# Testing
+.nyc_output/
+.mocha*
+.tap/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Database
+*.db
+*.mongodb
+data/
+database/
+
+# Uploads and Media
+uploads/
+public/uploads/
+tmp/uploads/
+
+# Compiled files
+*.js.map
+*.css.map
+
+# Sensitive data
+credentials.json
+secrets.json
+.aws/
+.gcloud/
+
+# Mail service test files
+test-emails/
+
+# API keys and tokens
+.apikeys
+.tokens
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache
+.stylelintcache
+
+# Misc
+*.bundle
+.env*.json
+config/production.json
+
+# Frontend specific
+node_modules/
+.cache
+dist/
+
+# Backend specific
+backend/node_modules/
+backend/.env
+backend/logs/
+
+# Development
+.dev
+*.dev
+
+# User-specific files
+*.user
+*.suo
+*.sln.docstates

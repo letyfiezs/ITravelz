@@ -1,0 +1,1401 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TravelHub Login - Sign In</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* RTL Support for Arabic */
+      html[dir="rtl"] {
+        direction: rtl;
+        text-align: right;
+      }
+
+      html[dir="rtl"] body {
+        text-align: right;
+      }
+
+      html[dir="rtl"] .auth-header {
+        text-align: right;
+      }
+
+      html[dir="rtl"] .form-group label {
+        text-align: right;
+      }
+
+      html[dir="rtl"] .remember-forgot {
+        flex-direction: row-reverse;
+      }
+
+      html[dir="rtl"] .form-group input {
+        text-align: right;
+      }
+
+      html[dir="rtl"] .language-selector {
+        position: absolute;
+        top: 1rem;
+        left: 2rem;
+        right: auto;
+      }
+
+      html[dir="ltr"] .language-selector {
+        position: absolute;
+        top: 1rem;
+        right: 2rem;
+        left: auto;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(99,102,241,0.04)), var(--color-bg-primary, #3b82f6);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        color: var(--color-text-primary, #111827);
+        transition: background-color 0.25s ease, color 0.25s ease;
+      }
+
+      .auth-container {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      .auth-box {
+        background: var(--color-bg-secondary, #ffffff);
+        border-radius: 15px;
+        box-shadow: 0 12px 40px var(--color-shadow, rgba(0,0,0,0.2));
+        overflow: hidden;
+        animation: slideUp 0.5s ease forwards;
+        border: 1px solid var(--color-border, #e5e7eb);
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .auth-header {
+        background: var(--color-accent, linear-gradient(135deg, #3b82f6 0%, #6366f1 100%));
+        color: var(--color-text-on-accent, #fff);
+        padding: 1.8rem;
+        text-align: center;
+      }
+
+      .auth-header i {
+        font-size: 2.2rem;
+        margin-bottom: 0.6rem;
+        display: block;
+        opacity: 0.95;
+      }
+
+      .auth-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+      }
+
+      .auth-header p {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        color: rgba(255,255,255,0.92);
+      }
+
+      .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--color-border, #e5e7eb);
+        background: transparent;
+      }
+
+      .auth-tab {
+        flex: 1;
+        padding: 0.95rem 1rem;
+        text-align: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: var(--color-text-secondary, #6b7280);
+        transition: all 0.22s ease;
+        position: relative;
+      }
+
+      .auth-tab:hover {
+        color: var(--color-primary, #3b82f6);
+      }
+
+      .auth-tab.active {
+        color: var(--color-primary, #3b82f6);
+      }
+
+      .auth-tab.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 20%;
+        right: 20%;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--color-primary, #3b82f6);
+        box-shadow: 0 6px 18px rgba(59,130,246,0.12);
+      }
+
+      .auth-content {
+        padding: 1.8rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.45rem;
+        font-weight: 600;
+        color: var(--color-text-secondary, #1f2937);
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 0.78rem;
+        border: 1px solid var(--color-border, #e5e7eb);
+        border-radius: 10px;
+        font-size: 1rem;
+        font-family: "Poppins", sans-serif;
+        transition: all 0.18s ease;
+        background: var(--color-bg-tertiary, #f3f4f6);
+        color: var(--color-text-primary, #111827);
+      }
+
+      .form-group input::placeholder {
+        color: var(--color-text-secondary, #9ca3af);
+        opacity: 0.9;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--color-primary, #3b82f6);
+        box-shadow: 0 6px 20px rgba(59,130,246,0.08);
+        background: rgba(255,255,255,0.02);
+      }
+
+      .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        font-size: 0.9rem;
+        color: var(--color-text-secondary, #6b7280);
+      }
+
+      .remember-forgot input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        margin-right: 0.5rem;
+      }
+
+      .forgot-password {
+        color: var(--color-primary, #3b82f6);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 0.8rem;
+        background: var(--color-accent, linear-gradient(135deg, #3b82f6 0%, #6366f1 100%));
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-family: "Poppins", sans-serif;
+        box-shadow: 0 8px 24px rgba(99,102,241,0.12);
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 36px rgba(99,102,241,0.16);
+      }
+
+      .auth-footer {
+        text-align: center;
+        padding-top: 0.9rem;
+        color: var(--color-text-secondary, #6b7280);
+        font-size: 0.9rem;
+      }
+
+      .auth-footer a {
+        color: var(--color-primary, #3b82f6);
+        text-decoration: none;
+        cursor: pointer;
+        font-weight: 700;
+        transition: all 0.2s ease;
+      }
+
+      .auth-footer a:hover {
+        text-decoration: underline;
+      }
+
+      .demo-hint {
+        background: rgba(99,102,241,0.06);
+        border-left: 4px solid var(--color-primary, #3b82f6);
+        padding: 0.9rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        color: var(--color-primary, #1e40af);
+      }
+
+      .form-tabs-content {
+        display: none;
+      }
+
+      .form-tabs-content.active {
+        display: block;
+        animation: fadeIn 0.22s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .password-strength { margin-top: 0.5rem; }
+
+      .strength-bar {
+        height: 4px;
+        background: var(--color-border, #e5e7eb);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.4rem;
+      }
+
+      .strength-fill {
+        height: 100%;
+        width: 0%;
+        transition: all 0.25s ease;
+        background: #ef4444;
+      }
+
+      @keyframes popIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+
+      .success-message {
+        color: #10b981;
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+      }
+
+      @media (max-width: 480px) {
+        .auth-box { margin: 1rem; }
+        .auth-header { padding: 1.2rem; }
+        .auth-header h1 { font-size: 1.4rem; }
+        .auth-content { padding: 1.2rem; }
+      }
+
+      /* Language Selector */
+      .language-selector { position: absolute; top: 15px; right: 15px; z-index: 100; }
+
+      .language-dropdown {
+        padding: 0.5rem 1rem;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--color-border, #3b82f6);
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: var(--color-primary, #3b82f6);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+      }
+
+      .language-dropdown:hover { box-shadow: 0 6px 18px rgba(59,130,246,0.08); }
+
+      .language-dropdown:focus { outline: none; box-shadow: 0 0 0 6px rgba(59,130,246,0.06); }
+    </style>
+  </head>
+  <body>
+    <div class="language-selector">
+      <select class="language-dropdown" id="language-select">
+        <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="zh">🇨🇳 中文</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="ar">🇸🇦 العربية</option>
+        <option value="mn">🇲🇳 Монгол</option>
+      </select>
+    </div>
+    <div class="auth-container">
+      <div class="auth-box">
+        <div class="auth-header">
+          <i class="fas fa-globe"></i>
+          <h1>TravelHub</h1>
+          <p>Sign In to Your Account</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="client">
+            <i class="fas fa-user"></i> Client Login
+          </button>
+          <button class="auth-tab" data-tab="signup">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </div>
+
+        <div class="auth-content">
+          <!-- Client Login Tab -->
+          <div class="form-tabs-content active" id="client-tab">
+            <!-- <div class="demo-hint">
+              <strong>Demo Account:</strong> Email: client@example.com |
+              Password: client123
+            </div> -->
+            <form id="client-login-form">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  id="client-email"
+                  placeholder="Enter your email"
+                  required
+                />
+                <span class="error-message" id="client-email-error"></span>
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  id="client-password"
+                  placeholder="Enter your password"
+                  required
+                />
+                <span class="error-message" id="client-password-error"></span>
+              </div>
+              <div class="remember-forgot">
+                <label>
+                  <input type="checkbox" id="client-remember" /> Remember me
+                </label>
+                <a class="forgot-password" href="forgot-password.html"
+                  >Forgot Password?</a
+                >
+              </div>
+              <button type="submit" class="submit-btn">
+                Sign In as Client
+              </button>
+            </form>
+
+            <div class="auth-footer">
+              If you are an admin, login here ->
+              <a href="http://localhost:3000/admin">ADMIN</a>
+            </div>
+          </div>
+
+          <!-- Sign Up Tab -->
+          <div class="form-tabs-content" id="signup-tab">
+            <form id="signup-form">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  id="signup-name"
+                  placeholder="Enter your full name"
+                  required
+                />
+                <span class="error-message" id="signup-name-error"></span>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  id="signup-email"
+                  placeholder="Enter your email"
+                  required
+                />
+                <span class="error-message" id="signup-email-error"></span>
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  id="signup-password"
+                  placeholder="Enter password (min 8 chars)"
+                  required
+                />
+                <div class="password-strength">
+                  <div class="strength-bar">
+                    <div class="strength-fill" id="strength-fill"></div>
+                  </div>
+                  <small id="strength-text" style="color: #6b7280">
+                    Weak
+                  </small>
+                </div>
+                <span class="error-message" id="signup-password-error"></span>
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  id="signup-confirm-password"
+                  placeholder="Confirm your password"
+                  required
+                />
+                <span
+                  class="error-message"
+                  id="signup-confirm-password-error"
+                ></span>
+              </div>
+              <div class="form-group" style="display: flex; align-items: start">
+                <input
+                  type="checkbox"
+                  id="signup-terms"
+                  required
+                  style="
+                    width: 18px;
+                    height: 18px;
+                    margin-right: 0.5rem;
+                    margin-top: 0.25rem;
+                  "
+                />
+                <label style="margin: 0">
+                  I agree to the Terms of Service and Privacy Policy
+                </label>
+              </div>
+              <span class="error-message" id="signup-terms-error"></span>
+
+              <button type="submit" class="submit-btn" id="signup-submit-btn">
+                <span id="signup-button-text">Create Account</span>
+                <span id="signup-spinner" style="display: none">
+                  <i class="fas fa-spinner fa-spin"></i> Creating...
+                </span>
+              </button>
+            </form>
+
+            <div id="signup-success" style="display: none; text-align: center">
+              <div
+                style="
+                  font-size: 3rem;
+                  color: #10b981;
+                  margin-bottom: 1rem;
+                  animation: popIn 0.5s ease forwards;
+                "
+              >
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <h3 style="color: #1f2937; margin-bottom: 0.5rem">
+                Account Created Successfully!
+              </h3>
+              <p style="color: #6b7280; margin-bottom: 1rem">
+                A verification email has been sent to your inbox. Please click
+                the link to verify your email address.
+              </p>
+              <p style="color: #9ca3af; font-size: 0.85rem">
+                Redirecting to login in <span id="countdown">3</span> seconds...
+              </p>
+            </div>
+
+            <div class="auth-footer">
+              Already have an account?
+              <a onclick="toggleTab('client')">Sign in here</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ========================================
+      // MULTI-LANGUAGE SUPPORT
+      // ========================================
+      const translations = {
+        en: {
+          header_title: "TravelHub",
+          header_subtitle: "Sign In to Your Account",
+          tab_client: "Client Login",
+          tab_signup: "Sign Up",
+          client_email: "Email Address",
+          client_email_placeholder: "Enter your email",
+          client_password: "Password",
+          client_password_placeholder: "Enter your password",
+          remember_me: "Remember me",
+          forgot_password: "Forgot Password?",
+          client_submit: "Sign In as Client",
+          signup_full_name: "Full Name",
+          signup_name_placeholder: "Enter your full name",
+          signup_email: "Email Address",
+          signup_email_placeholder: "Enter your email",
+          signup_password: "Password",
+          signup_password_placeholder: "Enter password (min 8 chars)",
+          signup_confirm: "Confirm Password",
+          signup_confirm_placeholder: "Confirm your password",
+          signup_terms: "I agree to the Terms of Service and Privacy Policy",
+          signup_submit: "Create Account",
+          signup_creating: "Creating...",
+          signup_success_title: "Account Created Successfully!",
+          signup_success_msg: "A verification email has been sent to your inbox. Please click the link to verify your email address.",
+          signup_redirecting: "Redirecting to login in",
+          signup_signin: "Sign in here",
+          signup_have_account: "Already have an account?",
+          auth_footer_admin: "If you are an admin, login here ->",
+          fill_all_fields: "Please fill in all fields",
+          signing_in: "Signing in...",
+          invalid_email: "Invalid email format",
+          password_required: "Password is required",
+          password_min: "Password must be at least 8 characters",
+          passwords_match: "Passwords do not match",
+          terms_required: "You must agree to the Terms of Service",
+          full_name_required: "Full name is required",
+          email_required: "Email is required",
+          verify_email_first: "Please verify your email first",
+          invalid_credentials: "Invalid email or password",
+          connection_error: "Connection error. Make sure backend is running on http://localhost:5000",
+          signup_failed: "Signup failed. Please try again.",
+          weak: "Weak",
+          fair: "Fair",
+          good: "Good",
+          strong: "Strong"
+        },
+        es: {
+          header_title: "TravelHub",
+          header_subtitle: "Inicia sesión en tu cuenta",
+          tab_client: "Inicio de sesión de cliente",
+          tab_signup: "Registrarse",
+          client_email: "Correo electrónico",
+          client_email_placeholder: "Ingresa tu correo",
+          client_password: "Contraseña",
+          client_password_placeholder: "Ingresa tu contraseña",
+          remember_me: "Recuérdame",
+          forgot_password: "¿Olvidaste tu contraseña?",
+          client_submit: "Iniciar sesión como cliente",
+          signup_full_name: "Nombre completo",
+          signup_name_placeholder: "Ingresa tu nombre completo",
+          signup_email: "Correo electrónico",
+          signup_email_placeholder: "Ingresa tu correo",
+          signup_password: "Contraseña",
+          signup_password_placeholder: "Ingresa contraseña (mín 8 caracteres)",
+          signup_confirm: "Confirmar contraseña",
+          signup_confirm_placeholder: "Confirma tu contraseña",
+          signup_terms: "Acepto los Términos de servicio y la Política de privacidad",
+          signup_submit: "Crear cuenta",
+          signup_creating: "Creando...",
+          signup_success_title: "¡Cuenta creada exitosamente!",
+          signup_success_msg: "Se ha enviado un correo de verificación a tu bandeja. Por favor haz clic en el enlace para verificar tu correo.",
+          signup_redirecting: "Redirigiendo al inicio de sesión en",
+          signup_signin: "Inicia sesión aquí",
+          signup_have_account: "¿Ya tienes una cuenta?",
+          auth_footer_admin: "Si eres administrador, inicia sesión aquí ->",
+          fill_all_fields: "Por favor completa todos los campos",
+          signing_in: "Iniciando sesión...",
+          invalid_email: "Formato de correo inválido",
+          password_required: "Se requiere contraseña",
+          password_min: "La contraseña debe tener al menos 8 caracteres",
+          passwords_match: "Las contraseñas no coinciden",
+          terms_required: "Debes aceptar los Términos de servicio",
+          full_name_required: "Se requiere nombre completo",
+          email_required: "Se requiere correo electrónico",
+          verify_email_first: "Verifica tu correo primero",
+          invalid_credentials: "Correo o contraseña inválido",
+          connection_error: "Error de conexión. Asegúrate de que el servidor esté ejecutándose en http://localhost:5000",
+          signup_failed: "El registro falló. Por favor intenta de nuevo.",
+          weak: "Débil",
+          fair: "Regular",
+          good: "Bueno",
+          strong: "Fuerte"
+        },
+        fr: {
+          header_title: "TravelHub",
+          header_subtitle: "Connectez-vous à votre compte",
+          tab_client: "Connexion client",
+          tab_signup: "S'inscrire",
+          client_email: "Adresse e-mail",
+          client_email_placeholder: "Entrez votre e-mail",
+          client_password: "Mot de passe",
+          client_password_placeholder: "Entrez votre mot de passe",
+          remember_me: "Se souvenir de moi",
+          forgot_password: "Mot de passe oublié ?",
+          client_submit: "Se connecter en tant que client",
+          signup_full_name: "Nom complet",
+          signup_name_placeholder: "Entrez votre nom complet",
+          signup_email: "Adresse e-mail",
+          signup_email_placeholder: "Entrez votre e-mail",
+          signup_password: "Mot de passe",
+          signup_password_placeholder: "Entrez le mot de passe (min 8 caractères)",
+          signup_confirm: "Confirmer le mot de passe",
+          signup_confirm_placeholder: "Confirmez votre mot de passe",
+          signup_terms: "J'accepte les conditions de service et la politique de confidentialité",
+          signup_submit: "Créer un compte",
+          signup_creating: "Création en cours...",
+          signup_success_title: "Compte créé avec succès !",
+          signup_success_msg: "Un e-mail de vérification a été envoyé à votre boîte de réception. Veuillez cliquer sur le lien pour vérifier votre adresse e-mail.",
+          signup_redirecting: "Redirection vers la connexion dans",
+          signup_signin: "Connectez-vous ici",
+          signup_have_account: "Vous avez déjà un compte ?",
+          auth_footer_admin: "Si vous êtes un administrateur, connectez-vous ici ->",
+          fill_all_fields: "Veuillez remplir tous les champs",
+          signing_in: "Connexion en cours...",
+          invalid_email: "Format de courrier invalide",
+          password_required: "Le mot de passe est obligatoire",
+          password_min: "Le mot de passe doit contenir au moins 8 caractères",
+          passwords_match: "Les mots de passe ne correspondent pas",
+          terms_required: "Vous devez accepter les conditions de service",
+          full_name_required: "Le nom complet est obligatoire",
+          email_required: "L'adresse e-mail est obligatoire",
+          verify_email_first: "Veuillez d'abord vérifier votre e-mail",
+          invalid_credentials: "E-mail ou mot de passe invalide",
+          connection_error: "Erreur de connexion. Assurez-vous que le serveur s'exécute sur http://localhost:5000",
+          signup_failed: "L'inscription a échoué. Veuillez réessayer.",
+          weak: "Faible",
+          fair: "Acceptable",
+          good: "Bon",
+          strong: "Fort"
+        },
+        de: {
+          header_title: "TravelHub",
+          header_subtitle: "Melden Sie sich in Ihrem Konto an",
+          tab_client: "Kundenanmeldung",
+          tab_signup: "Registrieren",
+          client_email: "E-Mail-Adresse",
+          client_email_placeholder: "Geben Sie Ihre E-Mail ein",
+          client_password: "Passwort",
+          client_password_placeholder: "Geben Sie Ihr Passwort ein",
+          remember_me: "Merci dich",
+          forgot_password: "Passwort vergessen?",
+          client_submit: "Als Kunde anmelden",
+          signup_full_name: "Vollständiger Name",
+          signup_name_placeholder: "Geben Sie Ihren vollständigen Namen ein",
+          signup_email: "E-Mail-Adresse",
+          signup_email_placeholder: "Geben Sie Ihre E-Mail ein",
+          signup_password: "Passwort",
+          signup_password_placeholder: "Passwort eingeben (min. 8 Zeichen)",
+          signup_confirm: "Passwort bestätigen",
+          signup_confirm_placeholder: "Bestätigen Sie Ihr Passwort",
+          signup_terms: "Ich akzeptiere die Nutzungsbedingungen und die Datenschutzrichtlinie",
+          signup_submit: "Konto erstellen",
+          signup_creating: "Wird erstellt...",
+          signup_success_title: "Konto erfolgreich erstellt!",
+          signup_success_msg: "Eine Bestätigungs-E-Mail wurde an Ihren Posteingang gesendet. Bitte klicken Sie auf den Link, um Ihre E-Mail-Adresse zu bestätigen.",
+          signup_redirecting: "Umleitung zur Anmeldung in",
+          signup_signin: "Melden Sie sich hier an",
+          signup_have_account: "Haben Sie bereits ein Konto?",
+          auth_footer_admin: "Wenn Sie ein Administrator sind, melden Sie sich hier an ->",
+          fill_all_fields: "Bitte füllen Sie alle Felder aus",
+          signing_in: "Wird angemeldet...",
+          invalid_email: "Ungültiges E-Mail-Format",
+          password_required: "Passwort erforderlich",
+          password_min: "Das Passwort muss mindestens 8 Zeichen lang sein",
+          passwords_match: "Passwörter stimmen nicht überein",
+          terms_required: "Sie müssen den Nutzungsbedingungen zustimmen",
+          full_name_required: "Vollständiger Name erforderlich",
+          email_required: "E-Mail-Adresse erforderlich",
+          verify_email_first: "Bitte überprüfen Sie zunächst Ihre E-Mail",
+          invalid_credentials: "Ungültige E-Mail oder Passwort",
+          connection_error: "Verbindungsfehler. Stellen Sie sicher, dass der Server auf http://localhost:5000 ausgeführt wird",
+          signup_failed: "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+          weak: "Schwach",
+          fair: "Befriedigend",
+          good: "Gut",
+          strong: "Stark"
+        },
+        zh: {
+          header_title: "TravelHub",
+          header_subtitle: "登录到您的账户",
+          tab_client: "客户登录",
+          tab_signup: "注册",
+          client_email: "电子邮件地址",
+          client_email_placeholder: "输入您的邮箱",
+          client_password: "密码",
+          client_password_placeholder: "输入您的密码",
+          remember_me: "记住我",
+          forgot_password: "忘记密码？",
+          client_submit: "以客户身份登录",
+          signup_full_name: "全名",
+          signup_name_placeholder: "输入您的全名",
+          signup_email: "电子邮件地址",
+          signup_email_placeholder: "输入您的邮箱",
+          signup_password: "密码",
+          signup_password_placeholder: "输入密码（最少8个字符）",
+          signup_confirm: "确认密码",
+          signup_confirm_placeholder: "确认您的密码",
+          signup_terms: "我同意服务条款和隐私政策",
+          signup_submit: "创建账户",
+          signup_creating: "正在创建...",
+          signup_success_title: "账户创建成功！",
+          signup_success_msg: "验证电子邮件已发送到您的收件箱。请点击链接以验证您的电子邮件地址。",
+          signup_redirecting: "在",
+          signup_signin: "在此登录",
+          signup_have_account: "已经有账户了？",
+          auth_footer_admin: "如果您是管理员，请在此登录 ->",
+          fill_all_fields: "请填写所有字段",
+          signing_in: "正在登录...",
+          invalid_email: "邮箱格式无效",
+          password_required: "密码为必填项",
+          password_min: "密码至少需要8个字符",
+          passwords_match: "密码不匹配",
+          terms_required: "您必须同意服务条款",
+          full_name_required: "全名为必填项",
+          email_required: "电子邮件为必填项",
+          verify_email_first: "请先验证您的邮箱",
+          invalid_credentials: "邮箱或密码无效",
+          connection_error: "连接错误。请确保后端在 http://localhost:5000 上运行",
+          signup_failed: "注册失败。请重试。",
+          weak: "弱",
+          fair: "中等",
+          good: "好",
+          strong: "强"
+        },
+        ja: {
+          header_title: "TravelHub",
+          header_subtitle: "アカウントにサインイン",
+          tab_client: "クライアントログイン",
+          tab_signup: "サインアップ",
+          client_email: "メールアドレス",
+          client_email_placeholder: "メールアドレスを入力",
+          client_password: "パスワード",
+          client_password_placeholder: "パスワードを入力",
+          remember_me: "ログイン状態を保持",
+          forgot_password: "パスワードをお忘れですか？",
+          client_submit: "クライアントとしてサインイン",
+          signup_full_name: "フルネーム",
+          signup_name_placeholder: "フルネームを入力",
+          signup_email: "メールアドレス",
+          signup_email_placeholder: "メールアドレスを入力",
+          signup_password: "パスワード",
+          signup_password_placeholder: "パスワードを入力（最小8文字）",
+          signup_confirm: "パスワード確認",
+          signup_confirm_placeholder: "パスワードを確認",
+          signup_terms: "利用規約とプライバシーポリシーに同意します",
+          signup_submit: "アカウントを作成",
+          signup_creating: "作成中...",
+          signup_success_title: "アカウントが正常に作成されました！",
+          signup_success_msg: "確認メールが受信トレイに送信されました。リンクをクリックしてメールアドレスを確認してください。",
+          signup_redirecting: "ログイン画面にリダイレクト中",
+          signup_signin: "ここからサインイン",
+          signup_have_account: "すでにアカウントをお持ちですか？",
+          auth_footer_admin: "管理者の場合はここからログイン ->",
+          fill_all_fields: "すべてのフィールドを入力してください",
+          signing_in: "サインイン中...",
+          invalid_email: "メールアドレス形式が無効です",
+          password_required: "パスワードが必要です",
+          password_min: "パスワードは最低8文字である必要があります",
+          passwords_match: "パスワードが一致しません",
+          terms_required: "利用規約に同意する必要があります",
+          full_name_required: "フルネームが必要です",
+          email_required: "メールアドレスが必要です",
+          verify_email_first: "最初にメールを確認してください",
+          invalid_credentials: "メールアドレスまたはパスワードが無効です",
+          connection_error: "接続エラー。バックエンドが http://localhost:5000 で実行されていることを確認してください",
+          signup_failed: "サインアップに失敗しました。もう一度試してください。",
+          weak: "弱い",
+          fair: "中程度",
+          good: "良い",
+          strong: "強い"
+        },
+        ar: {
+          header_title: "TravelHub",
+          header_subtitle: "تسجيل الدخول إلى حسابك",
+          tab_client: "تسجيل دخول العميل",
+          tab_signup: "إنشاء حساب",
+          client_email: "عنوان البريد الإلكتروني",
+          client_email_placeholder: "أدخل بريدك الإلكتروني",
+          client_password: "كلمة المرور",
+          client_password_placeholder: "أدخل كلمة المرور",
+          remember_me: "تذكرني",
+          forgot_password: "هل نسيت كلمة المرور؟",
+          client_submit: "تسجيل الدخول كعميل",
+          signup_full_name: "الاسم الكامل",
+          signup_name_placeholder: "أدخل اسمك الكامل",
+          signup_email: "عنوان البريد الإلكتروني",
+          signup_email_placeholder: "أدخل بريدك الإلكتروني",
+          signup_password: "كلمة المرور",
+          signup_password_placeholder: "أدخل كلمة المرور (8 أحرف على الأقل)",
+          signup_confirm: "تأكيد كلمة المرور",
+          signup_confirm_placeholder: "أكد كلمة المرور",
+          signup_terms: "أوافق على شروط الخدمة وسياسة الخصوصية",
+          signup_submit: "إنشاء حساب",
+          signup_creating: "جاري الإنشاء...",
+          signup_success_title: "تم إنشاء الحساب بنجاح!",
+          signup_success_msg: "تم إرسال بريد تحقق إلى صندوق الوارد الخاص بك. يرجى النقر على الرابط للتحقق من عنوان بريدك الإلكتروني.",
+          signup_redirecting: "إعادة التوجيه إلى تسجيل الدخول في",
+          signup_signin: "سجل الدخول هنا",
+          signup_have_account: "هل لديك حساب بالفعل؟",
+          auth_footer_admin: "إذا كنت مسؤولاً، قم بتسجيل الدخول هنا ->",
+          fill_all_fields: "يرجى ملء جميع الحقول",
+          signing_in: "جاري تسجيل الدخول...",
+          invalid_email: "صيغة البريد الإلكتروني غير صحيحة",
+          password_required: "كلمة المرور مطلوبة",
+          password_min: "يجب ألا تقل كلمة المرور عن 8 أحرف",
+          passwords_match: "كلمات المرور غير متطابقة",
+          terms_required: "يجب أن توافق على شروط الخدمة",
+          full_name_required: "الاسم الكامل مطلوب",
+          email_required: "عنوان البريد الإلكتروني مطلوب",
+          verify_email_first: "يرجى التحقق من بريدك الإلكتروني أولاً",
+          invalid_credentials: "بريد إلكتروني أو كلمة مرور غير صحيحة",
+          connection_error: "خطأ في الاتصال. تأكد من أن الخادم يعمل على http://localhost:5000",
+          signup_failed: "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+          weak: "ضعيف",
+          fair: "متوسط",
+          good: "جيد",
+          strong: "قوي"
+        },
+        mn: {
+          header_title: "TravelHub",
+          header_subtitle: "Өөрийн эсрэг нэвтэрнэ үү",
+          tab_client: "Клиентийн нэвтрэлт",
+          tab_signup: "Бүртгүүлэх",
+          client_email: "И-мэйл хаяг",
+          client_email_placeholder: "Э-мэйл хаягаа оруулна уу",
+          client_password: "Нууц үг",
+          client_password_placeholder: "Нууц үгээ оруулна уу",
+          remember_me: "Намайг санаарай",
+          forgot_password: "Нууц үгээ мартсан уу?",
+          client_submit: "Клиент болгон нэвтэрнэ үү",
+          signup_full_name: "Бүтэн нэр",
+          signup_name_placeholder: "Өөрийн бүтэн нэрийг оруулна уу",
+          signup_email: "И-мэйл хаяг",
+          signup_email_placeholder: "Э-мэйл хаягаа оруулна уу",
+          signup_password: "Нууц үг",
+          signup_password_placeholder: "Нууц үг оруулна уу (хамгийн багадаа 8 тэмдэгт)",
+          signup_confirm: "Нууц үгийг баталгаажуулна уу",
+          signup_confirm_placeholder: "Нууц үгээ баталгаажуулна уу",
+          signup_terms: "Үйлчилгээний нөхцөл ба нууцлалын бодлогыг зөвшөөрч байна",
+          signup_submit: "Эсрэг үүсгэх",
+          signup_creating: "Үүсгэж байна...",
+          signup_success_title: "Эсрэг амжилттай үүсгэгдсэн!",
+          signup_success_msg: "Баталгажуулалтын и-мэйл таны хоосон саванд явуулсан болно. И-мэйл хаягаа баталгаажуулахын тулд холбоосыг дарна уу.",
+          signup_redirecting: "Нэвтрэлт рүү чиглүүлж байна",
+          signup_signin: "Энд нэвтэрнэ үү",
+          signup_have_account: "Аль хэдийн эсрэг байна уу?",
+          auth_footer_admin: "Хэрвээ та админ бол энд нэвтэрнэ үү ->",
+          fill_all_fields: "Бүх талбарыг бөглөнө үү",
+          signing_in: "Нэвтэрж байна...",
+          invalid_email: "Э-мэйл хаягийн формат буруу",
+          password_required: "Нууц үг шаардлагатай",
+          password_min: "Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой",
+          passwords_match: "Нууц үг таарахгүй",
+          terms_required: "Та үйлчилгээний нөхцөлийг зөвшөөрөх ёстой",
+          full_name_required: "Бүтэн нэр шаардлагатай",
+          email_required: "И-мэйл хаяг шаардлагатай",
+          verify_email_first: "Эхлээд і-мэйлээ баталгаажаарай",
+          invalid_credentials: "Буруу и-мэйл эсвэл нууц үг",
+          connection_error: "Холболтын алдаа. Сервер http://localhost:5000 дээр ажиллаж байгаа эсэхийг шалгаарай",
+          signup_failed: "Бүртгүүлэх үйл ажиллагаа амжилтгүй болсон. Дахин оролдоно уу.",
+          weak: "Сул",
+          fair: "Дунд зэрэг",
+          good: "Сайн",
+          strong: "Хүчтэй"
+        }
+      };
+
+      // Current language (default: English)
+      let currentLanguage = localStorage.getItem("selectedLanguage") || "en";
+
+      // Function to get translated text
+      function t(key) {
+        return translations[currentLanguage]?.[key] || translations["en"]?.[key] || key;
+      }
+
+      // Language change handler
+      document.getElementById("language-select").addEventListener("change", (e) => {
+        currentLanguage = e.target.value;
+        localStorage.setItem("selectedLanguage", currentLanguage);
+        updatePageLanguage();
+      });
+
+      // Set initial language
+      document.getElementById("language-select").value = currentLanguage;
+
+      // Function to update all text on the page
+      function updatePageLanguage() {
+        // Set text direction for RTL languages
+        if (currentLanguage === "ar") {
+          document.documentElement.dir = "rtl";
+          document.documentElement.lang = "ar";
+        } else {
+          document.documentElement.dir = "ltr";
+          document.documentElement.lang = currentLanguage;
+        }
+
+        // Header
+        document.querySelector(".auth-header h1").textContent = t("header_title");
+        document.querySelector(".auth-header p").textContent = t("header_subtitle");
+
+        // Tabs
+        document.querySelector('[data-tab="client"]').innerHTML =
+          '<i class="fas fa-user"></i> ' + t("tab_client");
+        document.querySelector('[data-tab="signup"]').innerHTML =
+          '<i class="fas fa-user-plus"></i> ' + t("tab_signup");
+
+        // Client Login Form
+        document.querySelectorAll(".form-tabs-content")[0].innerHTML = `
+          <form id="client-login-form">
+            <div class="form-group">
+              <label>${t("client_email")}</label>
+              <input
+                type="email"
+                id="client-email"
+                placeholder="${t("client_email_placeholder")}"
+                required
+              />
+              <span class="error-message" id="client-email-error"></span>
+            </div>
+            <div class="form-group">
+              <label>${t("client_password")}</label>
+              <input
+                type="password"
+                id="client-password"
+                placeholder="${t("client_password_placeholder")}"
+                required
+              />
+              <span class="error-message" id="client-password-error"></span>
+            </div>
+            <div class="remember-forgot">
+              <label>
+                <input type="checkbox" id="client-remember" /> ${t("remember_me")}
+              </label>
+              <a class="forgot-password" href="forgot-password.html"
+                >${t("forgot_password")}</a
+              >
+            </div>
+            <button type="submit" class="submit-btn">
+              ${t("client_submit")}
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            ${t("auth_footer_admin")}
+            <a href="http://localhost:3000/admin">ADMIN</a>
+          </div>
+        `;
+
+        // Sign Up Form
+        document.querySelectorAll(".form-tabs-content")[1].innerHTML = `
+          <form id="signup-form">
+            <div class="form-group">
+              <label>${t("signup_full_name")}</label>
+              <input
+                type="text"
+                id="signup-name"
+                placeholder="${t("signup_name_placeholder")}"
+                required
+              />
+              <span class="error-message" id="signup-name-error"></span>
+            </div>
+            <div class="form-group">
+              <label>${t("signup_email")}</label>
+              <input
+                type="email"
+                id="signup-email"
+                placeholder="${t("signup_email_placeholder")}"
+                required
+              />
+              <span class="error-message" id="signup-email-error"></span>
+            </div>
+            <div class="form-group">
+              <label>${t("signup_password")}</label>
+              <input
+                type="password"
+                id="signup-password"
+                placeholder="${t("signup_password_placeholder")}"
+                required
+              />
+              <div class="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <small id="strength-text" style="color: #6b7280">
+                  ${t("weak")}
+                </small>
+              </div>
+              <span class="error-message" id="signup-password-error"></span>
+            </div>
+            <div class="form-group">
+              <label>${t("signup_confirm")}</label>
+              <input
+                type="password"
+                id="signup-confirm-password"
+                placeholder="${t("signup_confirm_placeholder")}"
+                required
+              />
+              <span
+                class="error-message"
+                id="signup-confirm-password-error"
+              ></span>
+            </div>
+            <div class="form-group" style="display: flex; align-items: start">
+              <input
+                type="checkbox"
+                id="signup-terms"
+                required
+                style="
+                  width: 18px;
+                  height: 18px;
+                  margin-right: 0.5rem;
+                  margin-top: 0.25rem;
+                "
+              />
+              <label style="margin: 0">
+                ${t("signup_terms")}
+              </label>
+            </div>
+            <span class="error-message" id="signup-terms-error"></span>
+
+            <button type="submit" class="submit-btn" id="signup-submit-btn">
+              <span id="signup-button-text">${t("signup_submit")}</span>
+              <span id="signup-spinner" style="display: none">
+                <i class="fas fa-spinner fa-spin"></i> ${t("signup_creating")}
+              </span>
+            </button>
+          </form>
+
+          <div id="signup-success" style="display: none; text-align: center">
+            <div
+              style="
+                font-size: 3rem;
+                color: #10b981;
+                margin-bottom: 1rem;
+                animation: popIn 0.5s ease forwards;
+              "
+            >
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 style="color: #1f2937; margin-bottom: 0.5rem">
+              ${t("signup_success_title")}
+            </h3>
+            <p style="color: #6b7280; margin-bottom: 1rem">
+              ${t("signup_success_msg")}
+            </p>
+            <p style="color: #9ca3af; font-size: 0.85rem">
+              ${t("signup_redirecting")} <span id="countdown">3</span> ${t("signup_redirecting").split("in")[1]}...
+            </p>
+          </div>
+
+          <div class="auth-footer">
+            ${t("signup_have_account")}
+            <a onclick="toggleTab('client')">${t("signup_signin")}</a>
+          </div>
+        `;
+
+        // Re-attach event listeners after updating DOM
+        attachLoginFormListener();
+        attachSignupFormListener();
+        attachPasswordStrengthListener();
+      }
+
+      // Call initial update
+      updatePageLanguage();
+
+      // Tab switching
+      const tabs = document.querySelectorAll(".auth-tab");
+      const forms = document.querySelectorAll(".form-tabs-content");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const tabName = tab.getAttribute("data-tab");
+          switchTab(tabName);
+        });
+      });
+
+      function switchTab(tabName) {
+        tabs.forEach((t) => t.classList.remove("active"));
+        forms.forEach((f) => f.classList.remove("active"));
+
+        document
+          .querySelector(`[data-tab="${tabName}"]`)
+          .classList.add("active");
+        document.getElementById(`${tabName}-tab`).classList.add("active");
+      }
+
+      function toggleTab(tab) {
+        switchTab(tab);
+      }
+
+      // Attach event listeners as separate function
+      function attachLoginFormListener() {
+        const loginForm = document.getElementById("client-login-form");
+        if (!loginForm) return;
+        
+        loginForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("client-email").value.trim();
+          const password = document.getElementById("client-password").value;
+          const remember = document.getElementById("client-remember").checked;
+
+          // Clear previous errors
+          document.getElementById("client-email-error").textContent = "";
+          document.getElementById("client-password-error").textContent = "";
+
+          // Validate
+          if (!email || !password) {
+            alert(t("fill_all_fields"));
+            return;
+          }
+
+          // Show loading state
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.disabled = true;
+          submitBtn.textContent = t("signing_in");
+
+          try {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              const userData = {
+                id: data.data.id,
+                name: data.data.name,
+                email: data.data.email,
+                userType: "client",
+                role: data.data.role || "user",
+                token: data.token,
+                loginTime: new Date(),
+              };
+
+              localStorage.setItem("userLoggedIn", JSON.stringify(userData));
+              localStorage.setItem("authToken", data.token);
+              if (remember) {
+                localStorage.setItem("rememberEmail", email);
+              }
+
+              window.location.href = "index.html";
+            } else {
+              if (data.message.includes("verify")) {
+                document.getElementById("client-email-error").textContent =
+                  t("verify_email_first");
+              } else if (data.message.includes("email")) {
+                document.getElementById("client-email-error").textContent =
+                  data.message;
+              } else {
+                document.getElementById("client-password-error").textContent =
+                  data.message || t("invalid_credentials");
+              }
+            }
+          } catch (error) {
+            alert(t("connection_error"));
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }, { once: false });
+      }
+
+      function attachSignupFormListener() {
+        const signupForm = document.getElementById("signup-form");
+        if (!signupForm) return;
+
+        signupForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Clear errors
+          document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
+
+          const name = document.getElementById("signup-name").value.trim();
+          const email = document.getElementById("signup-email").value.trim();
+          const password = document.getElementById("signup-password").value;
+          const confirmPassword = document.getElementById("signup-confirm-password").value;
+          const terms = document.getElementById("signup-terms").checked;
+
+          // Validation
+          let hasError = false;
+
+          if (!name) {
+            document.getElementById("signup-name-error").textContent = t("full_name_required");
+            hasError = true;
+          }
+
+          if (!email) {
+            document.getElementById("signup-email-error").textContent = t("email_required");
+            hasError = true;
+          } else if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            document.getElementById("signup-email-error").textContent = t("invalid_email");
+            hasError = true;
+          }
+
+          if (!password) {
+            document.getElementById("signup-password-error").textContent = t("password_required");
+            hasError = true;
+          } else if (password.length < 8) {
+            document.getElementById("signup-password-error").textContent = t("password_min");
+            hasError = true;
+          }
+
+          if (password !== confirmPassword) {
+            document.getElementById("signup-confirm-password-error").textContent = t("passwords_match");
+            hasError = true;
+          }
+
+          if (!terms) {
+            document.getElementById("signup-terms-error").textContent = t("terms_required");
+            hasError = true;
+          }
+
+          if (hasError) {
+            return;
+          }
+
+          // Show loading
+          const submitBtn = document.getElementById("signup-submit-btn");
+          const buttonText = document.getElementById("signup-button-text");
+          const spinner = document.getElementById("signup-spinner");
+
+          submitBtn.disabled = true;
+          buttonText.style.display = "none";
+          spinner.style.display = "inline";
+
+          try {
+            const response = await fetch(`${API_URL}/api/auth/signup`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name,
+                email,
+                password,
+                confirmPassword,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              document.getElementById("signup-form").style.display = "none";
+              document.getElementById("signup-success").style.display = "block";
+
+              let countdown = 3;
+              const countdownEl = document.getElementById("countdown");
+              const timer = setInterval(() => {
+                countdown--;
+                if (countdownEl) countdownEl.textContent = countdown;
+                if (countdown === 0) {
+                  clearInterval(timer);
+                  switchTab("client");
+                }
+              }, 1000);
+            } else {
+              if (data.message) {
+                if (data.message.includes("email")) {
+                  document.getElementById("signup-email-error").textContent = data.message;
+                } else {
+                  alert(data.message);
+                }
+              } else {
+                alert(t("signup_failed"));
+              }
+
+              submitBtn.disabled = false;
+              buttonText.style.display = "inline";
+              spinner.style.display = "none";
+            }
+          } catch (error) {
+            alert(t("connection_error"));
+            submitBtn.disabled = false;
+            buttonText.style.display = "inline";
+            spinner.style.display = "none";
+          }
+        }, { once: false });
+      }
+
+      function attachPasswordStrengthListener() {
+        const passwordInput = document.getElementById("signup-password");
+        if (!passwordInput) return;
+
+        passwordInput.addEventListener("input", function () {
+          const password = this.value;
+          let strength = 0;
+          let strengthText = "weak";
+          let strengthColor = "#ef4444";
+
+          if (password.length >= 8) strength++;
+          if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+          if (password.match(/[0-9]/)) strength++;
+          if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+          if (strength <= 1) {
+            strengthText = "weak";
+            strengthColor = "#ef4444";
+          } else if (strength === 2) {
+            strengthText = "fair";
+            strengthColor = "#f59e0b";
+          } else if (strength === 3) {
+            strengthText = "good";
+            strengthColor = "#3b82f6";
+          } else {
+            strengthText = "strong";
+            strengthColor = "#10b981";
+          }
+
+          const percentage = (strength / 4) * 100;
+          const fill = document.getElementById("strength-fill");
+          const textEl = document.getElementById("strength-text");
+
+          if (fill) {
+            fill.style.width = percentage + "%";
+            fill.style.background = strengthColor;
+          }
+
+          if (textEl) {
+            textEl.textContent = t(strengthText);
+            textEl.style.color = strengthColor;
+          }
+        });
+      }
+
+      // Load remembered email
+      window.addEventListener("load", () => {
+        const rememberedEmail = localStorage.getItem("rememberEmail");
+        if (rememberedEmail) {
+          const clientEmailInput = document.getElementById("client-email");
+          if (clientEmailInput) {
+            clientEmailInput.value = rememberedEmail;
+          }
+        }
+      });
+
+      // API Configuration
+      const API_URL = "http://localhost:5000";
+    </script>
+  </body>
+</html>

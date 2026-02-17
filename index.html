@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, maximum-scale=5" />
+    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>TravelHub - Your Gateway to Amazing Adventures</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Prevent font scaling on orientation change */
+      html {
+        -webkit-text-size-adjust: 100%;
+        -moz-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+
+      /* Fix for iOS Safari */
+      input,
+      textarea {
+        font-size: 16px;
+      }
+
+      /* Prevent zooming on form input focus */
+      @supports (padding: max(0px)) {
+        body {
+          padding-left: max(0px, env(safe-area-inset-left));
+          padding-right: max(0px, env(safe-area-inset-right));
+        }
+      }
+
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Fix for iOS Safari bottom bar */
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h1><i class="fas fa-globe"></i> TravelHub</h1>
+        </div>
+
+        <ul class="nav-menu" id="nav-menu" role="tablist" aria-label="Main Tabs">
+          <li>
+            <a href="#home" class="nav-link" role="tab" id="tab-home" data-section="home" data-i18n="nav_home">Home</a>
+          </li>
+          <li>
+            <a href="#tours" class="nav-link" role="tab" id="tab-tours" data-section="tours" data-i18n="nav_tours">Tours</a>
+          </li>
+          <li>
+            <a href="#destinations" class="nav-link" role="tab" id="tab-destinations" data-section="destinations" data-i18n="nav_destinations">Destinations</a>
+          </li>
+          <li>
+            <a href="#itineraries" class="nav-link" role="tab" id="tab-itineraries" data-section="itineraries" data-i18n="nav_itineraries">Itineraries</a>
+          </li>
+          <li>
+            <a href="#contact" class="nav-link" role="tab" id="tab-contact" data-section="contact" data-i18n="nav_contact">Contact</a>
+          </li>
+        </ul>
+
+        <div class="nav-controls">
+          <button class="theme-toggle" id="theme-toggle" title="Toggle Dark/Light Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <div class="language-selector">
+            <select id="language-select" class="lang-select">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="ja">日本語</option>
+              <option value="zh">中文</option>
+              <option value="mn">Монгол</option>
+            </select>
+          </div>
+
+          <!-- User Profile Dropdown -->
+          <div class="user-profile" id="user-profile" style="display: none">
+            <button class="user-btn" id="user-btn">
+              <i class="fas fa-user-circle"></i>
+              <span id="user-name"></span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="user-dropdown" id="user-dropdown">
+              <a href="#" onclick="viewProfile(event)"
+                ><i class="fas fa-user"></i> <span data-i18n="user_profile">My Profile</span></a
+              >
+              <a href="#" onclick="viewBookings(event)"
+                ><i class="fas fa-calendar"></i> <span data-i18n="user_bookings">My Bookings</span></a
+              >
+              <a href="#" onclick="userSettings(event)"
+                ><i class="fas fa-cog"></i> <span data-i18n="user_settings">Settings</span></a
+              >
+              <hr />
+              <a href="#" onclick="logout(event)" style="color: #ef4444"
+                ><i class="fas fa-sign-out-alt"></i> <span data-i18n="user_logout">Logout</span></a
+              >
+            </div>
+          </div>
+
+          <!-- Login Button (shown when not logged in) -->
+          <a
+            href="login.html"
+            class="btn-login"
+            id="btn-login"
+            style="
+              padding: 0.7rem 1.2rem;
+              background: linear-gradient(135deg, #3b82f6, #6366f1);
+              color: white;
+              border-radius: 8px;
+              text-decoration: none;
+              font-weight: 600;
+              transition: all 0.3s ease;
+              display: inline-block;
+            "
+          >
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+
+          <button class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home" role="tabpanel" aria-labelledby="tab-home" tabindex="0">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1 class="hero-title" data-i18n="hero_title">
+            Discover Your Next Adventure
+          </h1>
+          <p class="hero-subtitle" data-i18n="hero_subtitle">
+            Explore the world's most beautiful destinations with exclusive
+            travel packages
+          </p>
+          <button class="cta-button" data-i18n="cta_explore">
+            Explore Now
+          </button>
+        </div>
+        <div class="hero-image">
+          <div class="hero-image-placeholder">
+            <i class="fas fa-mountain"></i>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <span></span>
+      </div>
+    </section>
+
+    <!-- Tours/Packages Section -->
+    <section class="tours" id="tours" role="tabpanel" aria-labelledby="tab-tours" tabindex="0" hidden>
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="tours_title">
+          Featured Travel Packages
+        </h2>
+        <p class="section-subtitle" data-i18n="tours_subtitle">
+          Choose from our carefully curated travel experiences
+        </p>
+      </div>
+
+      <div class="packages-grid" id="packages-container">
+        <!-- Packages will be loaded dynamically from API -->
+      </div>
+    </section>
+
+    <!-- Destinations Section -->
+    <section class="destinations" id="destinations" role="tabpanel" aria-labelledby="tab-destinations" tabindex="0" hidden>
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="destinations_title">
+          Popular Destinations
+        </h2>
+        <p class="section-subtitle" data-i18n="destinations_subtitle">
+          Explore handpicked locations around the globe
+        </p>
+      </div>
+
+      <div class="destinations-grid">
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-pagelines"></i></div>
+          <h3 data-i18n="dest_bali">Bali, Indonesia</h3>
+          <p data-i18n="dest_bali_desc">
+            Tropical paradise with stunning temples and beaches
+          </p>
+        </div>
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-city"></i></div>
+          <h3 data-i18n="dest_paris">Paris, France</h3>
+          <p data-i18n="dest_paris_desc">
+            The city of love, art, and world-class cuisine
+          </p>
+        </div>
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-cube"></i></div>
+          <h3 data-i18n="dest_tokyo">Tokyo, Japan</h3>
+          <p data-i18n="dest_tokyo_desc">
+            Modern marvels blend seamlessly with ancient traditions
+          </p>
+        </div>
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-mountain"></i></div>
+          <h3 data-i18n="dest_swiss">Swiss Alps</h3>
+          <p data-i18n="dest_swiss_desc">
+            Snow-capped peaks and picturesque mountain villages
+          </p>
+        </div>
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-landmark"></i></div>
+          <h3 data-i18n="dest_egypt">Cairo, Egypt</h3>
+          <p data-i18n="dest_egypt_desc">
+            Ancient wonders and timeless historical treasures
+          </p>
+        </div>
+        <div class="destination-card">
+          <div class="destination-icon"><i class="fas fa-water"></i></div>
+          <h3 data-i18n="dest_maldives">Maldives</h3>
+          <p data-i18n="dest_maldives_desc">
+            Crystal clear waters and luxury island resorts
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Travel Guides & Itineraries Section -->
+    <section class="itineraries" id="itineraries" role="tabpanel" aria-labelledby="tab-itineraries" tabindex="0" hidden>
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="itineraries_title">
+          Travel Guides & Itineraries
+        </h2>
+        <p class="section-subtitle" data-i18n="itineraries_subtitle">
+          Detailed guides for unforgettable journeys
+        </p>
+      </div>
+
+      <div class="itineraries-container" id="itineraries-container">
+        <!-- Itineraries will be loaded dynamically from API -->
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="features_title">
+          Why Choose TravelHub?
+        </h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+          <h3 data-i18n="feature1_title">Expert Guides</h3>
+          <p data-i18n="feature1_desc">
+            Our experienced guides ensure unforgettable experiences
+          </p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3 data-i18n="feature2_title">Safety First</h3>
+          <p data-i18n="feature2_desc">
+            Your safety and security are our top priorities
+          </p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+          <h3 data-i18n="feature3_title">Best Value</h3>
+          <p data-i18n="feature3_desc">
+            Competitive prices with premium quality service
+          </p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-headset"></i></div>
+          <h3 data-i18n="feature4_title">24/7 Support</h3>
+          <p data-i18n="feature4_desc">
+            Round-the-clock customer support in multiple languages
+          </p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-users"></i></div>
+          <h3 data-i18n="feature5_title">Community</h3>
+          <p data-i18n="feature5_desc">
+            Join thousands of satisfied travelers worldwide
+          </p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon"><i class="fas fa-star"></i></div>
+          <h3 data-i18n="feature6_title">Verified Reviews</h3>
+          <p data-i18n="feature6_desc">
+            Transparent ratings from real travelers
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact" role="tabpanel" aria-labelledby="tab-contact" tabindex="0" hidden>
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="contact_title">Get in Touch</h2>
+        <p class="section-subtitle" data-i18n="contact_subtitle">
+          Have questions? We're here to help!
+        </p>
+      </div>
+
+      <div class="contact-container">
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <input
+              type="text"
+              id="contact-name"
+              placeholder="Your Name"
+              data-i18n="form_name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <input
+              type="email"
+              id="contact-email"
+              placeholder="Your Email"
+              data-i18n="form_email"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <select id="contact-type" required>
+              <option value="question" data-i18n="contact_type_question">Question</option>
+              <option value="feedback" data-i18n="contact_type_feedback">Feedback</option>
+              <option value="help" data-i18n="contact_type_help">Help Request</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <input
+              type="text"
+              id="contact-subject"
+              placeholder="Subject"
+              data-i18n="contact_subject"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <textarea
+              id="contact-message"
+              placeholder="Your Message"
+              rows="5"
+              data-i18n="form_message"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="submit-button" data-i18n="form_submit" id="contact-submit-btn">
+            Send Message
+          </button>
+          <div id="contact-message-box" style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center;">
+          </div>
+        </form>
+
+        <div class="contact-info">
+          <h3 data-i18n="contact_info">Contact Information</h3>
+          <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <div>
+              <strong data-i18n="contact_address">Address</strong>
+              <p data-i18n="contact_address_value">
+                123 Travel Street, Adventure City, AC 12345
+              </p>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <div>
+              <strong data-i18n="contact_phone">Phone</strong>
+              <p>+1 (555) 123-4567</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <strong data-i18n="contact_email">Email</strong>
+              <p>hello@travelhub.com</p>
+            </div>
+          </div>
+          <div class="social-links">
+            <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4><i class="fas fa-globe"></i> TravelHub</h4>
+          <p data-i18n="footer_tagline">
+            Discover the world with confidence and passion
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer_links">Quick Links</h4>
+          <ul>
+            <li><a href="#" data-i18n="footer_about">About Us</a></li>
+            <li><a href="#" data-i18n="footer_privacy">Privacy Policy</a></li>
+            <li><a href="#" data-i18n="footer_terms">Terms of Service</a></li>
+            <li><a href="#" data-i18n="footer_faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer_newsletter">Newsletter</h4>
+          <p data-i18n="footer_newsletter_desc">
+            Subscribe to get exclusive deals and updates
+          </p>
+          <div class="newsletter-form">
+            <input
+              type="email"
+              placeholder="Your email"
+              data-i18n="form_email"
+            />
+            <button type="submit" data-i18n="btn_subscribe">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer_copyright">
+          &copy; 2026 TravelHub. All rights reserved. | Premium Travel
+          Experiences Worldwide
+        </p>
+      </div>
+    </footer>
+
+    <!-- Login Modal for Booking -->
+    <div id="booking-login-modal" class="modal" style="display: none;">
+      <div class="modal-overlay" onclick="closeBookingLoginModal()"></div>
+      <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+          <h2><i class="fas fa-sign-in-alt"></i> Login to Book</h2>
+          <button class="modal-close" onclick="closeBookingLoginModal()">&times;</button>
+        </div>
+        <form id="booking-login-form" style="padding: 20px;">
+          <div class="form-group">
+            <label for="booking-login-email">Email *</label>
+            <input type="email" id="booking-login-email" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label for="booking-login-password">Password *</label>
+            <input type="password" id="booking-login-password" placeholder="Enter your password" required>
+          </div>
+          <div id="booking-login-error" style="color: #dc2626; margin-bottom: 15px; display: none;"></div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Login to Book</button>
+          <p style="text-align: center; margin-top: 15px; color: #666;">
+            Don't have an account? <a href="signup.html" style="color: #667eea; text-decoration: none;">Sign up</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+  </body>
+</html>

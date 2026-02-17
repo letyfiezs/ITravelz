@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Service - TravelHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .language-selector select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .language-selector select:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .language-selector select option {
+            background: #333;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-button {
+        
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(-5px);
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        
+        .booking-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 0;
+        }
+
+        .booking-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 600px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .booking-form h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .booking-form > p:first-of-type {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 247, 255, 0.9));
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .form-group input::placeholder,
+        .form-group select::placeholder,
+        .form-group textarea::placeholder {
+            color: #999;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(245, 247, 255, 1));
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-group input:disabled {
+            background: linear-gradient(135deg, rgba(240, 240, 240, 0.9), rgba(235, 235, 235, 0.9));
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-full {
+            grid-column: 1 / -1;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #ccc 0%, #bbb 100%);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #2e7d32;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05));
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #c62828;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading { visibility: hidden; }
+        
+        #no-availability-msg {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05)) !important;
+            border: 2px solid rgba(244, 67, 54, 0.3) !important;
+            border-radius: 10px !important;
+            padding: 16px !important;
+        }
+
+        .selected-package-info {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .selected-package-info input {
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Enhanced Date & Time Selectors */
+        #availability-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            margin-bottom: 20px;
+        }
+
+        #availability-section .form-row {
+            gap: 20px;
+        }
+
+        #bookingDate,
+        #bookingTime {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 255, 0.98)) !important;
+            border: 2px solid rgba(102, 126, 234, 0.25) !important;
+            border-radius: 12px !important;
+            padding: 14px 40px 14px 16px !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            color: #333 !important;
+            font-weight: 500 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 35px !important;
+        }
+
+        #bookingDate:hover,
+        #bookingTime:hover {
+            border-color: rgba(102, 126, 234, 0.5) !important;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        #bookingDate:focus,
+        #bookingTime:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2), 0 6px 20px rgba(102, 126, 234, 0.2) !important;
+            background-color: rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Option styling for select dropdown */
+        #bookingDate option,
+        #bookingTime option {
+            background: white;
+            color: #333;
+            padding: 12px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #bookingDate option:checked,
+        #bookingTime option:checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        /* Selected value styling */
+        #bookingDate:valid,
+        #bookingTime:valid {
+            color: #667eea !important;
+            font-weight: 600;
+        }
+
+        /* Selection indicator badge */
+        .date-time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            animation: slideInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes slideInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        #date-badge-container,
+        #time-badge-container {
+            min-height: 0;
+            transition: all 0.3s ease;
+        }
+        
+        /* Disabled input styling */
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background: linear-gradient(135deg, rgba(240, 240, 240, 0.9), rgba(230, 230, 240, 0.9));
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+            border-color: rgba(200, 200, 200, 0.3);
+        }
+
+        /* Error state styling */
+        .form-group input[style*="border-color: #f99"],
+        .form-group input[style*="border-color: rgb(255, 153, 153)"] {
+            animation: errorShake 0.3s ease;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .booking-form {
+                padding: 30px 20px;
+            }
+
+            #bookingDate,
+            #bookingTime {
+                padding: 12px 12px 12px 40px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="language-selector">
+    <select id="language-select" onchange="changeLanguage(event)">
+        <option value="en">English</option>
+        <option value="ja">日本語 (Japanese)</option>
+        <option value="zh">中文 (Chinese)</option>
+        <option value="ar">العربية (Arabic)</option>
+        <option value="nl">Nederlands (Dutch)</option>
+        <option value="es">Español (Spanish)</option>
+        <option value="fr">Français (French)</option>
+        <option value="mn">Монгол (Mongolia)</option>
+    </select>
+</div>
+
+<div class="container">
+    <a href="index.html" class="back-button" data-i18n="booking_back">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+    
+    <div class="header">
+        <h1><i class="fas fa-globe"></i> <span data-i18n="booking_title">Book Your Experience</span></h1>
+        <p data-i18n="booking_subtitle">Secure your adventure with just a few clicks</p>
+    </div>
+    
+    <div class="booking-wrapper">
+        <div class="booking-form">
+            <h2><i class="fas fa-check-circle"></i> <span data-i18n="booking_details_heading">Booking Details</span></h2>
+            <p data-i18n="booking_details_desc">Complete the form below to confirm your reservation</p>
+            
+            <div id="success-msg" class="success-message"></div>
+            <div id="error-msg" class="error-message"></div>
+            
+            <form id="booking-form">
+                <!-- Selected Package Card -->
+                <div class="selected-package-info">
+                    <div class="form-group">
+                        <label id="selected-label" data-i18n="booking_selected_package"><i class="fas fa-box"></i> Selected Package</label>
+                        <input type="text" id="selected-item" data-i18n-placeholder="booking_choose_package" placeholder="Choose a package" disabled value="">
+                    </div>
+                </div>
+                
+                <!-- Personal Information Section -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="font-size: 14px; color: #667eea; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fas fa-user"></i> <span data-i18n="booking_your_info">Your Information</span>
+                    </h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="booking_full_name"><i class="fas fa-user-circle"></i> Full Name *</label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="booking_email"><i class="fas fa-envelope"></i> Email *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="booking_phone"><i class="fas fa-phone"></i> Phone *</label>
+                            <input type="tel" id="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-people-group"></i> <span data-i18n="booking_num_people">Number of People</span> *
+                                <span id="available-spots-label" style="color: #667eea; font-weight: 700; margin-left: 8px; font-size: 12px;"></span>
+                            </label>
+                            <input type="number" id="numberOfPeople" value="1" min="1" max="100" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & Time Section -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="font-size: 14px; color: #667eea; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fas fa-calendar-days"></i> <span data-i18n="booking_schedule">Schedule</span>
+                    </h3>
+                    
+                    <div id="availability-section" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="booking_date"><i class="fas fa-calendar-alt"></i> Booking Date *</label>
+                                <select id="bookingDate" required>
+                                    <option value="" data-i18n="booking_select_date">📅 Select a date</option>
+                                </select>
+                                <div id="date-badge-container" style="margin-top: 10px;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="booking_time"><i class="fas fa-clock"></i> Preferred Time *</label>
+                                <select id="bookingTime" required>
+                                    <option value="" data-i18n="booking_select_time">🕐 Select a time</option>
+                                </select>
+                                <div id="time-badge-container" style="margin-top: 10px;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Capacity Information Display -->
+                        <div id="capacity-info-container" style="display: none; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.08)); border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);">
+                            <!-- Capacity Header -->
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px 14px; border-radius: 10px; color: white;">
+                                    <i class="fas fa-users" style="font-size: 18px;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 12px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="booking_capacity">Capacity Information</div>
+                                    <div id="capacity-text" style="font-size: 18px; color: #667eea; font-weight: 700; margin-top: 2px;">15 / 15 spots available</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Capacity Progress Bar -->
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 12px; color: #666; font-weight: 600;" data-i18n="booking_slot_usage">Slot Usage</span>
+                                    <span id="capacity-percentage" style="font-size: 12px; color: #667eea; font-weight: 700;">0% Booked</span>
+                                </div>
+                                <div style="height: 8px; background: linear-gradient(to right, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-radius: 10px; overflow: hidden;">
+                                    <div id="capacity-bar" style="height: 100%; width: 0%; background: linear-gradient(to right, #667eea, #764ba2); border-radius: 10px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed Capacity Stats -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                                <div style="background: rgba(255, 255, 255, 0.5); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                    <div style="font-size: 11px; color: #999; font-weight: 600; margin-bottom: 4px;" data-i18n="booking_total">TOTAL</div>
+                                    <div id="capacity-total" style="font-size: 18px; color: #333; font-weight: 700;">15</div>
+                                </div>
+                                <div style="background: rgba(102, 126, 234, 0.08); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                    <div style="font-size: 11px; color: #667eea; font-weight: 600; margin-bottom: 4px;" data-i18n="booking_booked">BOOKED</div>
+                                    <div id="capacity-booked" style="font-size: 18px; color: #667eea; font-weight: 700;">0</div>
+                                </div>
+                                <div style="background: rgba(102, 200, 100, 0.08); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid rgba(102, 200, 100, 0.2);">
+                                    <div style="font-size: 11px; color: #66c864; font-weight: 600; margin-bottom: 4px;" data-i18n="booking_available">AVAILABLE</div>
+                                    <div id="capacity-available" style="font-size: 18px; color: #66c864; font-weight: 700;">15</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Availability Status -->
+                            <div id="fully-booked-message" style="display: none; padding: 14px; background: linear-gradient(135deg, #fee 0%, #fdd 100%); border: 2px solid #f99; border-radius: 10px; color: #c00; font-weight: 600; text-align: center; animation: slideInScale 0.3s ease;" data-i18n="booking_fully_booked">
+                                <i class="fas fa-times-circle" style="margin-right: 8px;"></i>
+                                This time slot is fully booked. Select another date or time.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- No Availability Error Message -->
+                    <div id="no-availability-msg" style="padding: 15px; background: linear-gradient(135deg, #fee 0%, #fdd 100%); border: 2px solid #f99; border-radius: 10px; color: #c00; display: none; font-weight: 600; text-align: center;" data-i18n="booking_no_availability">
+                        <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+                        This package cannot be booked at this time. Admin has not configured available dates and times.
+                    </div>
+                </div>
+
+                <!-- Additional Notes Section -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="font-size: 14px; color: #667eea; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fas fa-comment-dots"></i> <span data-i18n="booking_special_requests">Special Requests</span>
+                    </h3>
+                    
+                    <div class="form-group form-full">
+                        <label data-i18n="booking_additional_notes"><i class="fas fa-note-sticky"></i> Additional Notes</label>
+                        <textarea id="notes" rows="4" data-i18n-placeholder="booking_notes_placeholder" placeholder="Any special requests, dietary requirements, or additional information..."></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submit-btn" data-i18n="booking_submit">
+                    <i class="fas fa-check-circle"></i> Complete Booking
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+<script>
+
+const API_URL = 'http://localhost:5000/api';
+let selectedService = null;
+let selectedPackage = null;
+
+// Apply translations to booking form on page load
+function applyBookingFormTranslations() {
+  const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+  
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    const key = element.getAttribute('data-i18n');
+    if (translations[savedLanguage] && translations[savedLanguage][key]) {
+      element.textContent = translations[savedLanguage][key];
+    }
+  });
+  
+  // Handle placeholder attributes
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    const key = element.getAttribute('data-i18n-placeholder');
+    if (translations[savedLanguage] && translations[savedLanguage][key]) {
+      element.setAttribute('placeholder', translations[savedLanguage][key]);
+    }
+  });
+  
+  // Update language selector value
+  document.getElementById('language-select').value = savedLanguage;
+}
+
+function changeLanguage(event) {
+  const lang = event.target.value;
+  localStorage.setItem('selectedLanguage', lang);
+  applyBookingFormTranslations();
+}
+
+async function loadPackageAvailability(packageId) {
+    try {
+        const response = await fetch(`${API_URL}/packages/${packageId}/availability`);
+        const data = await response.json();
+        
+        const hasAvailableDates = data.availableDates && data.availableDates.length > 0;
+        const hasAvailableTimes = data.availableTimes && data.availableTimes.length > 0;
+        
+        if (hasAvailableDates && hasAvailableTimes) {
+            // Show the availability dropdown section
+            document.getElementById('availability-section').style.display = 'block';
+            document.getElementById('no-availability-msg').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
+            
+            // Display initial capacity overview
+            displayInitialCapacityOverview(data);
+            
+            // Populate dates
+            const dateSelect = document.getElementById('bookingDate');
+            dateSelect.innerHTML = '<option value="">Select a date</option>';
+            
+            data.availableDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                // Format date for display
+                const dateObj = new Date(date + 'T00:00:00');
+                option.textContent = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                dateSelect.appendChild(option);
+            });
+            
+            // Populate times
+            const timeSelect = document.getElementById('bookingTime');
+            timeSelect.innerHTML = '<option value="">Select a time</option>';
+            
+            data.availableTimes.forEach(time => {
+                const option = document.createElement('option');
+                option.value = time;
+                // Format time for display (convert 24h to 12h format)
+                const [hours, minutes] = time.split(':');
+                const timeObj = new Date(2000, 0, 1, hours, minutes);
+                option.textContent = timeObj.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                timeSelect.appendChild(option);
+            });
+        } else {
+            // No availability data - show error message and disable booking
+            document.getElementById('availability-section').style.display = 'none';
+            document.getElementById('no-availability-msg').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+        }
+    } catch (err) {
+        console.error('Error loading availability:', err);
+        // Show error if availability endpoint fails
+        document.getElementById('availability-section').style.display = 'none';
+        document.getElementById('no-availability-msg').style.display = 'block';
+        document.getElementById('submit-btn').disabled = true;
+    }
+}
+
+// Display initial capacity overview when package loads
+async function displayInitialCapacityOverview(availabilityData) {
+    try {
+        const capacityContainer = document.getElementById('capacity-info-container');
+        const capacityText = document.getElementById('capacity-text');
+        const capacityBar = document.getElementById('capacity-bar');
+        const capacityPercentage = document.getElementById('capacity-percentage');
+        const capacityTotal = document.getElementById('capacity-total');
+        const capacityBooked = document.getElementById('capacity-booked');
+        const capacityAvailable = document.getElementById('capacity-available');
+        const availableSpotsLabel = document.getElementById('available-spots-label');
+        
+        // Get the max booking per slot from admin configuration
+        const maxPerSlot = availabilityData.bookingLimitPerSlot || 5;
+        const totalSlots = (availabilityData.availableDates?.length || 0) * (availabilityData.availableTimes?.length || 0);
+        const totalMaxCapacity = maxPerSlot * totalSlots;
+        
+        // Display capacity information immediately
+        capacityContainer.style.display = 'block';
+        
+        // Show initial state: max booking per slot
+        capacityText.textContent = `Max ${maxPerSlot} people per slot`;
+        capacityText.style.color = '#667eea';
+        availableSpotsLabel.textContent = `(${maxPerSlot} max per slot)`;
+        availableSpotsLabel.style.color = '#667eea';
+        
+        // Update total fields to show overall capacity
+        capacityTotal.textContent = totalMaxCapacity;
+        capacityPercentage.textContent = 'Select date & time for details';
+        capacityBar.style.width = '0%';
+        capacityBar.style.background = 'linear-gradient(to right, #667eea, #764ba2)';
+        
+        // Reset booked/available until user selects date/time
+        capacityBooked.textContent = '—';
+        capacityAvailable.textContent = '—';
+        
+        // Hide fully booked message initially
+        document.getElementById('fully-booked-message').style.display = 'none';
+        
+    } catch (error) {
+        console.error('Error displaying initial capacity:', error);
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply translations as soon as the DOM is loaded
+    applyBookingFormTranslations();
+    
+    const packageData = sessionStorage.getItem('selectedPackage');
+    console.log('Package data from sessionStorage:', packageData);
+    if (packageData) {
+        try {
+            selectedPackage = JSON.parse(packageData);
+            console.log('Parsed selectedPackage:', selectedPackage);
+            document.getElementById('selected-item').value = selectedPackage.name;
+            
+            // Load availability for the selected package
+            loadPackageAvailability(selectedPackage._id);
+        } catch (err) {
+            console.error('Error parsing packageData:', err);
+            selectedPackage = null;
+        }
+    } else {
+        console.log('No packageData in sessionStorage');
+        loadServices();
+    }
+
+    // Add event listeners for date and time selection
+    const dateSelect = document.getElementById('bookingDate');
+    const timeSelect = document.getElementById('bookingTime');
+
+    // Date selector listeners
+    dateSelect.addEventListener('change', function() {
+        updateDateBadge(this.value, this.selectedOptions[0].text);
+        checkSlotCapacity();
+        // Add slight pulse animation
+        this.style.animation = 'none';
+        setTimeout(() => {
+            this.style.animation = 'pulse 0.3s ease';
+        }, 10);
+    });
+
+    dateSelect.addEventListener('focus', function() {
+        this.style.borderColor = '#667eea';
+        this.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.2), 0 6px 20px rgba(102, 126, 234, 0.2)';
+        this.style.transform = 'scale(1.02)';
+    });
+
+    dateSelect.addEventListener('blur', function() {
+        this.style.borderColor = 'rgba(102, 126, 234, 0.25)';
+        this.style.boxShadow = 'none';
+        this.style.transform = 'scale(1)';
+    });
+
+    // Time selector listeners
+    timeSelect.addEventListener('change', function() {
+        updateTimeBadge(this.value, this.selectedOptions[0].text);
+        checkSlotCapacity();
+        // Add slight pulse animation
+        this.style.animation = 'none';
+        setTimeout(() => {
+            this.style.animation = 'pulse 0.3s ease';
+        }, 10);
+    });
+
+    timeSelect.addEventListener('focus', function() {
+        this.style.borderColor = '#667eea';
+        this.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.2), 0 6px 20px rgba(102, 126, 234, 0.2)';
+        this.style.transform = 'scale(1.02)';
+    });
+
+    timeSelect.addEventListener('blur', function() {
+        this.style.borderColor = 'rgba(102, 126, 234, 0.25)';
+        this.style.boxShadow = 'none';
+        this.style.transform = 'scale(1)';
+    });
+
+    // Listen for numberOfPeople changes to validate against capacity
+    document.getElementById('numberOfPeople').addEventListener('change', validatePartySize);
+    document.getElementById('numberOfPeople').addEventListener('input', validatePartySize);
+
+    // Add CSS animation for pulse effect
+    if (!document.getElementById('pulse-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-animation-style';
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2); }
+                50% { box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.15); }
+                100% { box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+function updateDateBadge(value, text) {
+    const container = document.getElementById('date-badge-container');
+    if (value) {
+        container.innerHTML = `
+            <span class="date-time-badge">
+                <i class="fas fa-check-circle"></i> 
+                <span style="margin-left: 4px;">${text}</span>
+            </span>
+        `;
+        // Trigger animation
+        const badge = container.querySelector('.date-time-badge');
+        badge.style.animation = 'slideInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    } else {
+        container.innerHTML = '';
+    }
+}
+
+function updateTimeBadge(value, text) {
+    const container = document.getElementById('time-badge-container');
+    if (value) {
+        container.innerHTML = `
+            <span class="date-time-badge">
+                <i class="fas fa-clock"></i>
+                <span style="margin-left: 4px;">${text}</span>
+            </span>
+        `;
+        // Trigger animation
+        const badge = container.querySelector('.date-time-badge');
+        badge.style.animation = 'slideInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    } else {
+        container.innerHTML = '';
+    }
+}
+
+// Store current slot capacity for validation
+let currentSlotCapacity = null;
+
+async function checkSlotCapacity() {
+    const dateValue = document.getElementById('bookingDate').value;
+    const timeValue = document.getElementById('bookingTime').value;
+    const capacityContainer = document.getElementById('capacity-info-container');
+    const fullyBookedMsg = document.getElementById('fully-booked-message');
+    const capacityText = document.getElementById('capacity-text');
+    const capacityBar = document.getElementById('capacity-bar');
+    const capacityPercentage = document.getElementById('capacity-percentage');
+    const capacityTotal = document.getElementById('capacity-total');
+    const capacityBooked = document.getElementById('capacity-booked');
+    const capacityAvailable = document.getElementById('capacity-available');
+    const availableSpotsLabel = document.getElementById('available-spots-label');
+    
+    // Only check if both date and time are selected
+    if (!dateValue || !timeValue) {
+        // Show initial state with max per slot
+        const packageData = JSON.parse(sessionStorage.getItem('packageData') || '{}');
+        const maxPerSlot = packageData.bookingLimitPerSlot || 5;
+        capacityText.textContent = `Max ${maxPerSlot} people per slot`;
+        capacityText.style.color = '#667eea';
+        availableSpotsLabel.textContent = `(${maxPerSlot} max per slot)`;
+        availableSpotsLabel.style.color = '#667eea';
+        capacityPercentage.textContent = 'Select date & time for details';
+        capacityBar.style.width = '0%';
+        capacityBooked.textContent = '—';
+        capacityAvailable.textContent = '—';
+        fullyBookedMsg.style.display = 'none';
+        currentSlotCapacity = null;
+        return;
+    }
+    
+    try {
+        // Get package ID from the global selectedPackage variable
+        if (!selectedPackage || !selectedPackage._id) {
+            console.warn('Package not loaded yet');
+            return;
+        }
+        
+        const packageId = selectedPackage._id;
+        const maxPerSlot = selectedPackage.bookingLimitPerSlot || 5;
+        
+        console.log('Checking capacity for package:', { packageId, dateValue, timeValue, maxPerSlot });
+        
+        // Call API to get capacity for this specific slot
+        const response = await fetch(
+            `${API_URL}/packages/${packageId}/availability?date=${dateValue}&time=${timeValue}`
+        );
+        
+        if (!response.ok) {
+            console.error('Failed to fetch slot capacity');
+            return;
+        }
+        
+        const data = await response.json();
+        currentSlotCapacity = data.remainingCapacity;
+        
+        // Calculate percentage
+        const bookedPercentage = Math.round((data.bookedPeople / data.totalCapacity) * 100);
+        
+        // Display capacity information
+        capacityContainer.style.display = 'block';
+        
+        // Update all fields with specific slot data
+        capacityTotal.textContent = data.totalCapacity;
+        capacityBooked.textContent = data.bookedPeople;
+        capacityAvailable.textContent = data.remainingCapacity;
+        capacityBar.style.width = bookedPercentage + '%';
+        capacityPercentage.textContent = bookedPercentage + '% Booked';
+        
+        if (data.isFullyBooked) {
+            fullyBookedMsg.style.display = 'block';
+            capacityText.textContent = `0 / ${data.totalCapacity} spots available`;
+            capacityText.style.color = '#c00';
+            capacityAvailable.style.color = '#c00';
+            capacityPercentage.style.color = '#c00';
+            capacityBar.style.background = 'linear-gradient(to right, #f99, #d66)';
+            availableSpotsLabel.textContent = `(fully booked)`;
+            availableSpotsLabel.style.color = '#c00';
+            
+            // Disable the numberOfPeople input
+            document.getElementById('numberOfPeople').max = 0;
+            document.getElementById('numberOfPeople').disabled = true;
+        } else {
+            fullyBookedMsg.style.display = 'none';
+            capacityText.textContent = `${data.remainingCapacity} available for ${new Date(dateValue + 'T' + timeValue).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+            capacityText.style.color = '#667eea';
+            capacityAvailable.style.color = '#66c864';
+            capacityPercentage.style.color = '#667eea';
+            capacityBar.style.background = 'linear-gradient(to right, #667eea, #764ba2)';
+            availableSpotsLabel.textContent = `(${data.remainingCapacity} available)`;
+            availableSpotsLabel.style.color = '#66c864';
+            
+            // Enable and update max for numberOfPeople input
+            document.getElementById('numberOfPeople').max = data.remainingCapacity;
+            document.getElementById('numberOfPeople').disabled = false;
+            
+            // Validate current party size
+            validatePartySize();
+        }
+    } catch (error) {
+        console.error('Error checking slot capacity:', error);
+        capacityContainer.style.display = 'none';
+        currentSlotCapacity = null;
+    }
+}
+
+function validatePartySize() {
+    const numberOfPeople = parseInt(document.getElementById('numberOfPeople').value) || 1;
+    const numberOfPeopleInput = document.getElementById('numberOfPeople');
+    const submitBtn = document.getElementById('submit-btn');
+    const capacityAvailable = document.getElementById('capacity-available');
+    
+    // Check if capacity is loaded
+    if (currentSlotCapacity === null) {
+        numberOfPeopleInput.style.borderColor = 'rgba(102, 126, 234, 0.25)';
+        if (submitBtn) submitBtn.disabled = false;
+        return;
+    }
+    
+    // If capacity is 0 (fully booked), disable submit
+    if (currentSlotCapacity === 0) {
+        numberOfPeopleInput.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+        numberOfPeopleInput.style.borderColor = '#f99';
+        return;
+    }
+    
+    // Validate party size against capacity
+    if (numberOfPeople > currentSlotCapacity) {
+        numberOfPeopleInput.style.borderColor = '#f99';
+        numberOfPeopleInput.style.boxShadow = '0 0 0 4px rgba(255, 153, 153, 0.2)';
+        if (capacityAvailable) {
+            capacityAvailable.style.color = '#f99';
+            capacityAvailable.textContent = numberOfPeople + ' (exceeds!)';
+        }
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+    } else if (numberOfPeople === currentSlotCapacity && currentSlotCapacity > 0) {
+        numberOfPeopleInput.style.borderColor = '#ff9800';
+        numberOfPeopleInput.style.boxShadow = '0 0 0 4px rgba(255, 152, 0, 0.15)';
+        if (capacityAvailable) {
+            capacityAvailable.style.color = '#ff9800';
+            capacityAvailable.textContent = numberOfPeople + ' (fills slot)';
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    } else {
+        numberOfPeopleInput.style.borderColor = 'rgba(102, 126, 234, 0.25)';
+        numberOfPeopleInput.style.boxShadow = 'none';
+        if (capacityAvailable) {
+            capacityAvailable.style.color = '#66c864';
+            const remaining = currentSlotCapacity - numberOfPeople;
+            capacityAvailable.textContent = remaining + ' remaining';
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+}
+
+document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+
+
+async function loadServices() {
+    try {
+        const response = await fetch(`${API_URL}/services`);
+        const data = await response.json();
+        const servicesList = document.getElementById('services-list');
+        servicesList.innerHTML = '';
+        (data.services || []).forEach(service => {
+            if (service.isAvailable) {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                card.innerHTML =  `
+                    <h3>${service.name}</h3>
+                    <p>${service.description || 'Professional service experience'}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="service-price">$${service.price}</span>
+                        <span class="service-capacity">Max: ${service.maxCapacity} people</span>
+                    </div>
+                `;
+                card.addEventListener('click', () => selectService(service, card));
+                servicesList.appendChild(card);
+            }
+        });
+    } catch (err) {
+        showError('Failed to load services');
+        console.error('Error:', err);
+    }
+}
+
+
+function selectService(service, cardElement) {
+    document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
+    cardElement.classList.add('selected');
+    selectedService = service;
+    document.getElementById('selected-item').value = service.name;
+}
+
+
+async function handleBookingSubmit(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    try {
+        console.log('Form submitted. selectedPackage:', selectedPackage);
+        if (!selectedPackage) {
+            showError('Please select a package');
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // Get date and time from dropdowns (admin-provided slots only)
+        const bookingDate = document.getElementById('bookingDate').value;
+        const bookingTime = document.getElementById('bookingTime').value;
+        
+        if (!bookingDate) {
+            showError('Please select a booking date');
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        if (!bookingTime) {
+            showError('Please select a preferred time');
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // Validate capacity
+        const numberOfPeople = parseInt(document.getElementById('numberOfPeople').value);
+        if (currentSlotCapacity !== null && numberOfPeople > currentSlotCapacity) {
+            showError(`Only ${currentSlotCapacity} spot${currentSlotCapacity > 1 ? 's' : ''} available for this time slot`);
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        if (currentSlotCapacity === 0) {
+            showError('This time slot is fully booked. Please select another date or time');
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // Check if user is logged in and include userId
+        let userId = null;
+        const userData = localStorage.getItem('userLoggedIn');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                userId = user.id;
+                console.log('User logged in with ID:', userId);
+            } catch (err) {
+                console.log('Could not parse user data');
+            }
+        }
+        
+        const bookingData = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            packageName: selectedPackage.name,
+            duration: selectedPackage.duration,
+            price: selectedPackage.price,
+            bookingDate: bookingDate,
+            bookingTime: bookingTime,
+            numberOfPeople: numberOfPeople,
+            notes: document.getElementById('notes').value
+        };
+        
+        // Add userId if user is logged in
+        if (userId) {
+            bookingData.userId = userId;
+        }
+        
+        console.log('Booking data:', bookingData);
+        const response = await fetch(`${API_URL}/bookings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+        });
+        const data = await response.json();
+        if (data.success) {
+            showSuccess(`Booking successful! Booking ID: ${data.data.bookingId}`);
+            document.getElementById('booking-form').reset();
+            document.getElementById('selected-item').value = '';
+            selectedService = null;
+            selectedPackage = null;
+            sessionStorage.removeItem('selectedPackage');
+            
+            // Redirect to home page after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        } else {
+            showError(data.message || 'Booking failed');
+        }
+    } catch (err) {
+        showError('Error: ' + err.message);
+        console.error('Error:', err);
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+function showSuccess(message) {
+    const msgDiv = document.getElementById('success-msg');
+    msgDiv.textContent = message;
+    msgDiv.style.display = 'block';
+    document.getElementById('error-msg').style.display = 'none';
+    
+    setTimeout(() => {
+        msgDiv.style.display = 'none';
+    }, 5000);
+}
+
+function showError(message) {
+    const msgDiv = document.getElementById('error-msg');
+    msgDiv.textContent = message;
+    msgDiv.style.display = 'block';
+    document.getElementById('success-msg').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

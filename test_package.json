@@ -1,0 +1,80 @@
+{
+  "name": "Paris City Romance",
+  "description": "Discover the magic of Paris with a romantic getaway",
+  "price": 2200,
+  "category": "City",
+  "duration": "4 Days",
+  "destination": "Paris, France",
+  "image": "https://via.placeholder.com/400x300?text=Paris",
+  "features": ["Eiffel Tower", "Louvre Museum", "Seine Cruise"],
+  "status": "active",
+  "availableDates": ["2024-04-01", "2024-04-02", "2024-04-03"],
+  "availableTimes": ["10:00", "15:00"],
+  "bookingLimitPerSlot": 8,
+  "translations": {
+    "en": {
+      "name": "Paris City Romance",
+      "description": "Discover the magic of Paris with a romantic getaway",
+      "duration": "4 Days",
+      "destination": "Paris, France",
+      "category": "City",
+      "features": ["Eiffel Tower", "Louvre Museum", "Seine Cruise"]
+    },
+    "es": {
+      "name": "París Romance en la Ciudad",
+      "description": "Descubre la magia de París con una escapada romántica",
+      "duration": "4 Días",
+      "destination": "París, Francia",
+      "category": "Ciudad",
+      "features": ["Torre Eiffel", "Museo del Louvre", "Crucero por el Sena"]
+    },
+    "fr": {
+      "name": "Romance de la Ville de Paris",
+      "description": "Découvrez la magie de Paris avec une escapade romantique",
+      "duration": "4 Jours",
+      "destination": "Paris, France",
+      "category": "Ville",
+      "features": ["Tour Eiffel", "Musée du Louvre", "Croisière sur la Seine"]
+    },
+    "ja": {
+      "name": "パリシティロマンス",
+      "description": "ロマンチックな休暇でパリの魔法を発見してください",
+      "duration": "4日間",
+      "destination": "パリ、フランス",
+      "category": "都市",
+      "features": ["エッフェル塔", "ルーヴル美術館", "セーヌ川クルーズ"]
+    },
+    "zh": {
+      "name": "巴黎城市浪漫",
+      "description": "通过浪漫的度假发现巴黎的魔力",
+      "duration": "4天",
+      "destination": "巴黎，法国",
+      "category": "城市",
+      "features": ["埃菲尔铁塔", "卢浮宫", "塞纳河游船"]
+    },
+    "ar": {
+      "name": "رومانسية مدينة باريس",
+      "description": "اكتشف سحر باريس برحلة رومانسية",
+      "duration": "4 أيام",
+      "destination": "باريس، فرنسا",
+      "category": "مدينة",
+      "features": ["برج إيفل", "متحف اللوفر", "رحلة بحرية على نهر السين"]
+    },
+    "nl": {
+      "name": "Parijs City Romance",
+      "description": "Ontdek de magie van Parijs met een romantisch uitje",
+      "duration": "4 Dagen",
+      "destination": "Parijs, Frankrijk",
+      "category": "Stad",
+      "features": ["Eiffeltoren", "Louvre Museum", "Rondvaart op de Seine"]
+    },
+    "mn": {
+      "name": "Парис хөдөлмөрийн сэтгэл ханамж",
+      "description": "Романтик аялалаар Парисийн ид шидийг нээж үзээрэй",
+      "duration": "4 Өдөр",
+      "destination": "Парис, Франц",
+      "category": "Хот",
+      "features": ["Эйфелийн цамхаг", "Лувр музей", "Сенийн голын аялал"]
+    }
+  }
+}
