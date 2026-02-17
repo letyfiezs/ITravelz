@@ -25,7 +25,12 @@ app.set("trust proxy", 1);
 // ========================================
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
+
 
 // CORS
 app.use(
