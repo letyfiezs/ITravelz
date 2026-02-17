@@ -505,7 +505,7 @@ const sendContactNotification = async (contact) => {
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.ADMIN_URL || 'http://localhost:3000/admin'}/contacts/${contact._id}" style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+              <a href="${process.env.ADMIN_URL || 'https://itravelz.onrender.com/admin'}/contacts/${contact._id}" style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
                 View & Respond in Admin Panel
               </a>
             </div>
