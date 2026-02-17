@@ -1677,7 +1677,7 @@ function getSiteContentOverrides() {
 // ========================================
 async function loadDynamicContent() {
   try {
-    const response = await fetch('https://itravelz.onrender.com/api/content');
+    const response = await fetch('https://itravelz.onrender.com/login.html');
     const data = await response.json();
     
     if (data.success && data.content) {
