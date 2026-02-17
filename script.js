@@ -1725,7 +1725,7 @@ async function loadDynamicContent() {
 
 async function loadItineraries() {
   try {
-    const response = await fetch('http://localhost:5000/api/itineraries');
+    const response = await fetch('http://travelz.onrender.com/api/itineraries');
     const data = await response.json();
     
     const container = document.getElementById('itineraries-container');
@@ -2248,7 +2248,7 @@ function viewBookings(e) {
 
 async function loadBookingSectionContent() {
   try {
-    const response = await fetch("http://localhost:5000/api/content");
+    const response = await fetch("http://travelz.onrender.com/api/content");
     const data = await response.json();
     
     const bookingSection = data.content?.find(item => item.key === "booking-section");
@@ -2304,7 +2304,7 @@ async function loadPackages() {
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;padding:2em;">Loading packages...</div>';
   try {
-    const response = await fetch("http://localhost:5000/api/packages");
+    const response = await fetch("http://travelz.onrender.com/api/packages");
     const packages = await response.json();
     if (!Array.isArray(packages) || packages.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:2em;">No packages available.</div>';
@@ -2338,7 +2338,7 @@ async function loadPackages() {
       // Fetch availability data
       let availabilityHtml = '';
       try {
-        const availResponse = await fetch(`http://localhost:5000/api/packages/${pkg._id}/availability`);
+        const availResponse = await fetch(`http://travelz.onrender.com/api/packages/${pkg._id}/availability`);
         const availData = await availResponse.json();
         
         const maxPerSlot = pkg.bookingLimitPerSlot || 5;
@@ -2474,7 +2474,7 @@ async function handleBookingLogin(e) {
   const errorDiv = document.getElementById('booking-login-error');
   
   try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch('http://travelz.onrender.com/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2564,7 +2564,7 @@ function setupContactForm() {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending...';
 
-      const response = await fetch('http://localhost:5000/api/contact', {
+      const response = await fetch('http://travelz.onrender.com/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
