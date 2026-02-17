@@ -91,13 +91,12 @@ app.get("/booking-form.html", (req, res) => {
 });
 
 // Serve index.html for all other non-API, non-static routes (SPA fallback)
-app.get(/^\/(?!api\/|uploads\/|static\/).*/, (req, res) => {
-  const indexPath = path.join(__dirname, "../index.html");
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      res.status(404).json({ success: false, message: "Page not found" });
-    }
-  });
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api") || req.path.includes(".")) {
+    return next();
+  }
+
+  res.sendFile(path.join(__dirname, "../index.html"));
 });
 
 // 404 handler
