@@ -117,6 +117,7 @@ app.use((err, req, res, next) => {
 // ========================================
 // DATABASE CONNECTION
 // ========================================
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 mongoose
   .connect(process.env.MONGO_URI)
