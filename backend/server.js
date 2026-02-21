@@ -52,10 +52,16 @@ app.use("/api/", limiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-// Serve static files (uploads and frontend if needed)
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve React / HTML Frontend
+app.use(express.static(path.join(__dirname, "../frontend")));
 
+// SPA fallback index
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api") || req.path.includes(".")) {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
 
 // ========================================
 // ROUTES
