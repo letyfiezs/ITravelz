@@ -31,7 +31,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await authService.login({ email, password });
-      const { token, user: u } = res.data;
+      const token = res.data.token;
+      const u = res.data.user || res.data.data;
       localStorage.setItem('token', token);
       setUser(u);
       setIsAuth(true);
@@ -43,11 +44,14 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password) => {
     try {
-      const res = await authService.register({ name, email, password });
-      const { token, user: u } = res.data;
-      localStorage.setItem('token', token);
-      setUser(u);
-      setIsAuth(true);
+      const res = await authService.register({ name, email, password, confirmPassword: password });
+      const token = res.data.token;
+      const u = res.data.user || res.data.data;
+      if (token && u) {
+        localStorage.setItem('token', token);
+        setUser(u);
+        setIsAuth(true);
+      }
       return { success: true };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || 'Registration failed' };

@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookingService, packageService } from '../services/api';
+import { useAuth } from '../hooks/useContext';
 import styles from './BookingForm.module.css';
 
 const BookingForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [packages, setPackages] = useState([]);
   const [form, setForm] = useState({
     packageId: '',
     travelDate: '',
     numberOfGuests: 1,
+    phone: '',
     specialRequests: '',
   });
   const [error, setError]   = useState('');
@@ -27,8 +30,19 @@ const BookingForm = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    const selectedPkg = packages.find((p) => p._id === form.packageId);
     try {
-      await bookingService.create(form);
+      await bookingService.create({
+        customerName:  user?.name  || '',
+        customerEmail: user?.email || '',
+        customerPhone: form.phone,
+        packageName:   selectedPkg?.name || form.packageId,
+        packageId:     form.packageId,
+        travelDate:    form.travelDate,
+        numberOfPeople: Number(form.numberOfGuests),
+        specialRequests: form.specialRequests,
+        userId:        user?.id,
+      });
       navigate('/bookings');
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
@@ -70,6 +84,11 @@ const BookingForm = () => {
                 <label>Number of Guests</label>
                 <input className="form-input" type="number" min="1" max="20" value={form.numberOfGuests} onChange={set('numberOfGuests')} required />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label>Phone Number</label>
+              <input className="form-input" type="tel" value={form.phone} onChange={set('phone')} placeholder="+1 (555) 000-0000" required />
             </div>
 
             <div className="form-group">

@@ -1,22 +1,28 @@
 services:
-  # ── Backend API (Web Service) ──────────────────────────────────────────
+  # ── Single Web Service: backend serves the built React frontend ────────
   - type: web
-    name: itravelz-backend
+    name: itravelz
     env: node
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: node server.js
+    # Build React app, then install backend deps
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: node backend/server.js
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5000
-      - key: MONGODB_URI
-        sync: false   # Set in Render dashboard
+
+      # Required — set in the Render dashboard
+      - key: MONGO_URI
+        sync: false   # MongoDB Atlas connection string
       - key: JWT_SECRET
-        sync: false
+        sync: false   # Long random secret
       - key: JWT_EXPIRE
         value: 7d
+
+      # Set to your Render service URL once deployed (e.g. https://itravelz.onrender.com)
+      - key: CLIENT_URL
+        sync: false
+
+      # Optional — email / SMTP
       - key: EMAIL_HOST
         sync: false
       - key: EMAIL_PORT
@@ -25,19 +31,3 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
-      - key: FRONTEND_URL
-        sync: false   # e.g. https://itravelz-frontend.onrender.com
-
-  # ── Frontend (Static Site) ─────────────────────────────────────────────
-  - type: static
-    name: itravelz-frontend
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        sync: false   # e.g. https://itravelz-backend.onrender.com/api

@@ -73,16 +73,19 @@ exports.signup = async (req, res) => {
       verificationTokenHash.substring(0, 10) + "...",
     );
 
-    // Create user
+    // Create user — mark email verified immediately so the user can sign in right away.
+    // A verification email is still sent as a courtesy.
     user = new User({
       name,
       email,
       password,
+      isEmailVerified: true,
       emailVerificationToken: verificationTokenHash,
-      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000,
     });
 
     await user.save();
+    const loginToken = generateToken(user._id);
     console.log("✅ User saved to database:", user._id);
     console.log(
       "✅ Stored token hash in DB:",
@@ -120,15 +123,11 @@ exports.signup = async (req, res) => {
       console.log("✅ Verification email sent successfully to:", email);
       res.status(201).json({
         success: true,
-        message:
-          "Account created! Please check your email to verify your account.",
+        message: "Account created successfully!",
         emailSent: true,
-        data: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isEmailVerified: user.isEmailVerified,
-        },
+        token: loginToken,
+        user: { id: user._id, name: user.name, email: user.email, role: user.role || "user" },
+        data: { id: user._id, name: user.name, email: user.email, role: user.role || "user", isEmailVerified: true },
       });
     } else {
       console.warn(
@@ -138,15 +137,11 @@ exports.signup = async (req, res) => {
       );
       res.status(201).json({
         success: true,
-        message:
-          "Account created! Verification email could not be sent. Check SMTP configuration in .env",
+        message: "Account created successfully!",
         emailSent: false,
-        data: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isEmailVerified: user.isEmailVerified,
-        },
+        token: loginToken,
+        user: { id: user._id, name: user.name, email: user.email, role: user.role || "user" },
+        data: { id: user._id, name: user.name, email: user.email, role: user.role || "user", isEmailVerified: true },
       });
     }
   } catch (error) {
@@ -386,13 +381,8 @@ exports.login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified,
-      },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      data: { id: user._id, name: user.name, email: user.email, role: user.role, isEmailVerified: user.isEmailVerified },
     });
   } catch (error) {
     console.error("❌ Login error:", error);
@@ -437,7 +427,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Build reset link
-    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}&email=${email}`;
+    const resetLink = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password/${resetToken}`;
 
     // Send password reset email
     const emailSent = await sendPasswordResetEmail(
@@ -622,5 +612,84 @@ exports.changePassword = async (req, res) => {
       message: "Error changing password",
       error: error.message,
     });
+  }
+};
+
+// ── New functions required by the React frontend ────────────────────────
+
+// Validate stored JWT token (called on app load to restore session)
+exports.validateToken = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) return res.status(401).json({ success: false, message: "User not found" });
+    res.json({
+      success: true,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Verify email by token in URL param (React frontend: GET /verify-email/:token)
+exports.verifyEmailByToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token) return res.status(400).json({ success: false, message: "Token required" });
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      emailVerificationToken: tokenHash,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired verification link" });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Email verified! You can now sign in." });
+  } catch (err) {
+    console.error("verifyEmailByToken error:", err);
+    res.status(500).json({ success: false, message: "Verification failed" });
+  }
+};
+
+// Reset password with token in URL param (React frontend: POST /reset-password/:token)
+exports.resetPasswordWithToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ success: false, message: "Token and new password are required" });
+    }
+    if (confirmPassword && password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      passwordResetToken: tokenHash,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired reset link" });
+    }
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successfully! You can now sign in." });
+  } catch (err) {
+    console.error("resetPasswordWithToken error:", err);
+    res.status(500).json({ success: false, message: "Error resetting password" });
   }
 };
