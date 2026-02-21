@@ -1,131 +1,97 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useContext';
-import { useLanguage } from '../hooks/useContext';
 import styles from './Auth.module.css';
 
 const Signup = () => {
-  const { t } = useLanguage();
-  const { signup, loading, error } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [formError, setFormError] = useState('');
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormError('');
-  };
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setFormError('Please fill in all fields');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setFormError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setFormError('Password must be at least 6 characters');
-      return;
-    }
-
-    try {
-      await signup({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-    } catch (err) {
-      setFormError(err.message);
-    }
+    setError('');
+    if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return; }
+    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    setLoading(true);
+    const result = await signup(form.name, form.email, form.password);
+    setLoading(false);
+    if (result.success) navigate('/');
+    else setError(result.message || 'Registration failed. Please try again.');
   };
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authBox}>
-        <div className={styles.authHeader}>
-          <h2>{t('signup_title')}</h2>
-          <p>{t('signup_subtitle')}</p>
+    <div className={styles.authPage}>
+      <div className={styles.authLeft}>
+        <div className={styles.authLeftContent}>
+          <Link to="/" className={styles.authBrand}>
+            <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
+            <span className={styles.brandText}>I<span>Travelz</span></span>
+          </Link>
+          <h2>Start your adventure today</h2>
+          <p>Create your free account and unlock access to exclusive deals, curated itineraries, and a world of possibilities.</p>
+          <ul className={styles.authFeatures}>
+            <li><i className="fas fa-check-circle" /> Free to join, no credit card needed</li>
+            <li><i className="fas fa-check-circle" /> Exclusive member-only deals</li>
+            <li><i className="fas fa-check-circle" /> Personalized travel recommendations</li>
+          </ul>
         </div>
+        <div className={styles.authLeftOverlay} />
+      </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {formError && <div className={styles.errorMessage}>{formError}</div>}
-          {error && <div className={styles.errorMessage}>{error}</div>}
-
-          <div className={styles.formGroup}>
-            <label htmlFor="name">{t('signup_name')}</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="John Doe"
-              required
-            />
+      <div className={styles.authRight}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <h1>Create account</h1>
+            <p>Join ITravelz and explore the world your way</p>
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="email">{t('signup_email')}</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+          {error && (
+            <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>
+          )}
 
-          <div className={styles.formGroup}>
-            <label htmlFor="password">{t('signup_password')}</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className={styles.authForm}>
+            <div className="form-group">
+              <label>Full name</label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-user" />
+                <input className="form-input" type="text" value={form.name} onChange={set('name')} placeholder="John Doe" required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Email address</label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-envelope" />
+                <input className="form-input" type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-lock" />
+                <input className="form-input" type="password" value={form.password} onChange={set('password')} placeholder="Min. 6 characters" required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Confirm password</label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-lock" />
+                <input className="form-input" type="password" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Repeat your password" required />
+              </div>
+            </div>
+            <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>
+              {loading ? <><span className="spinner" />Creating account...</> : <>Create Account <i className="fas fa-arrow-right" /></>}
+            </button>
+          </form>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="confirmPassword">{t('signup_confirm')}</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Creating account...' : t('signup_button')}
-          </button>
-        </form>
-
-        <div className={styles.divider}></div>
-
-        <p className={styles.authFooter}>
-          {t('signup_login') || 'Already have an account?'}
-          <Link to="/login"> Login</Link>
-        </p>
+          <p className={styles.switchText}>
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

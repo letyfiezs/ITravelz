@@ -1,102 +1,86 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+﻿import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useContext';
-import { useLanguage } from '../hooks/useContext';
 import styles from './Auth.module.css';
 
 const Login = () => {
-  const { t } = useLanguage();
-  const { login, loading, error } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password:'' });
-  const [remember, setRemember] = useState(false);
-  const [formError, setFormError] = useState('');
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormError('');
-  };
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      setFormError('Please fill in all fields');
-      return;
-    }
-    try {
-      await login(formData.email, formData.password);
-      if (remember) {
-        localStorage.setItem('rememberEmail', formData.email);
-      }
-    } catch (err) {
-      setFormError(err.message);
-    }
+    setError('');
+    setLoading(true);
+    const result = await login(form.email, form.password);
+    setLoading(false);
+    if (result.success) navigate(from, { replace: true });
+    else setError(result.message || 'Invalid email or password');
   };
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authBox}>
-        <div className={styles.authHeader}>
-          <h2>{t('login_title')}</h2>
-          <p>{t('login_subtitle')}</p>
+    <div className={styles.authPage}>
+      <div className={styles.authLeft}>
+        <div className={styles.authLeftContent}>
+          <Link to="/" className={styles.authBrand}>
+            <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
+            <span className={styles.brandText}>I<span>Travelz</span></span>
+          </Link>
+          <h2>Your next adventure awaits</h2>
+          <p>Join thousands of travelers discovering the world with ITravelz. Personalized itineraries, expert guides, and unforgettable experiences.</p>
+          <ul className={styles.authFeatures}>
+            <li><i className="fas fa-check-circle" /> 120+ handpicked destinations</li>
+            <li><i className="fas fa-check-circle" /> Secure & transparent pricing</li>
+            <li><i className="fas fa-check-circle" /> 24/7 travel support</li>
+          </ul>
         </div>
+        <div className={styles.authLeftOverlay} />
+      </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {formError && <div className={styles.errorMessage}>{formError}</div>}
-          {error && <div className={styles.errorMessage}>{error}</div>}
-
-          <div className={styles.formGroup}>
-            <label htmlFor="email">{t('login_email')}</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              required
-            />
+      <div className={styles.authRight}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <h1>Welcome back</h1>
+            <p>Sign in to your account to continue your journey</p>
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="password">{t('login_password')}</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
-          </div>
+          {error && (
+            <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>
+          )}
 
-          <div className={styles.rememberForgot}>
-            <label className={styles.rememberCheck}>
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-              />
-              <span>{t('login_remember') || 'Remember me'}</span>
-            </label>
-            <Link to="/forgot-password" className={styles.forgotLink}>
-              {t('login_forgot') || 'Forgot password?'}
-            </Link>
-          </div>
+          <form onSubmit={handleSubmit} className={styles.authForm}>
+            <div className="form-group">
+              <label>Email address</label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-envelope" />
+                <input className="form-input" type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>
+                Password
+                <Link to="/forgot-password" className={styles.forgotLink}>Forgot password?</Link>
+              </label>
+              <div className={styles.inputWrap}>
+                <i className="fas fa-lock" />
+                <input className="form-input" type="password" value={form.password} onChange={set('password')} placeholder="Enter your password" required />
+              </div>
+            </div>
+            <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>
+              {loading ? <><span className="spinner" />Signing in...</> : <>Sign In <i className="fas fa-arrow-right" /></>}
+            </button>
+          </form>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Signing in...' : t('login_button')}
-          </button>
-        </form>
-
-        <div className={styles.divider}></div>
-
-        <p className={styles.authFooter}>
-          {t('login_signup') || "Don't have an account?"}
-          <Link to="/signup"> Sign up</Link>
-        </p>
+          <p className={styles.switchText}>
+            Do not have an account? <Link to="/signup">Create one free</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

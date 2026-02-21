@@ -1,253 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../hooks/useContext';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import ContactForm from '../Forms/ContactForm';
+import { useLanguage } from '../hooks/useContext';
+import ContactForm from '../components/Forms/ContactForm';
 import styles from './Home.module.css';
+
+const destinations = [
+  { id: 1, name: 'Dubai',     country: 'UAE',       img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80', tag: 'Luxury' },
+  { id: 2, name: 'Paris',     country: 'France',    img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80', tag: 'Romance' },
+  { id: 3, name: 'Bali',      country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80', tag: 'Adventure' },
+  { id: 4, name: 'Tokyo',     country: 'Japan',     img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&q=80', tag: 'Culture' },
+  { id: 5, name: 'Santorini', country: 'Greece',    img: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&q=80', tag: 'Scenic' },
+  { id: 6, name: 'New York',  country: 'USA',       img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80', tag: 'City' },
+];
+
+const packages = [
+  { id: 1, name: 'Desert Safari & Luxury Stay', dest: 'Dubai', days: 7,  price: 1299, rating: 4.9, reviews: 312, img: 'https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?w=600&q=80' },
+  { id: 2, name: 'Romantic Paris Getaway',      dest: 'Paris', days: 5,  price: 1099, rating: 4.8, reviews: 274, img: 'https://images.unsplash.com/photo-1431274172761-fcdab704a698?w=600&q=80' },
+  { id: 3, name: 'Bali Spirit & Culture',       dest: 'Bali',  days: 10, price: 899,  rating: 4.9, reviews: 198, img: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&q=80' },
+];
+
+const features = [
+  { icon: 'fa-headset',        title: '24/7 Support',    desc: 'Round-the-clock assistance whenever you need it, anywhere in the world.' },
+  { icon: 'fa-shield-alt',     title: 'Safe & Secure',   desc: 'Fully insured trips with vetted partners and transparent pricing.' },
+  { icon: 'fa-map-marked-alt', title: 'Expert Guides',   desc: 'Local expert guides with insider knowledge to elevate every journey.' },
+  { icon: 'fa-tags',           title: 'Best Price',      desc: 'Price-match guarantee. We beat any comparable package, every time.' },
+];
+
+const stats = [
+  { value: '50K+', label: 'Happy Travelers' },
+  { value: '120+', label: 'Destinations' },
+  { value: '15+',  label: 'Years Experience' },
+  { value: '4.9',  label: 'Average Rating' },
+];
 
 const Home = () => {
   const { t } = useLanguage();
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Mock data - replace with actual API call
-    setPackages([
-      {
-        id: 1,
-        name: t('package1_name'),
-        description: t('package1_desc'),
-        duration: t('package1_duration'),
-        price: '$1,500',
-        image: 'https://via.placeholder.com/300x200?text=Caribbean',
-        tags: [t('tag_tropical'), t('feature_beach')],
-        features: [t('feature_beach'), t('feature_lodging'), t('feature_meals')],
-      },
-      {
-        id: 2,
-        name: t('package2_name'),
-        description: t('package2_desc'),
-        duration: t('package2_duration'),
-        price: '$2,000',
-        image: 'https://via.placeholder.com/300x200?text=Alpine',
-        tags: [t('tag_mountain'), t('feature_hiking')],
-        features: [t('feature_hiking'), t('feature_camping'), t('feature_guide')],
-      },
-      {
-        id: 3,
-        name: t('package3_name'),
-        description: t('package3_desc'),
-        duration: t('package3_duration'),
-        price: '$2,500',
-        image: 'https://via.placeholder.com/300x200?text=Civilizations',
-        tags: [t('tag_cultural'), t('feature_museum')],
-        features: [t('feature_museum'), t('feature_local'), t('feature_guide')],
-      },
-    ]);
-    setLoading(false);
-  }, [t]);
-
-  const destinations = [
-    {
-      id: 1,
-      name: t('dest_bali'),
-      description: t('dest_bali_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Bali',
-    },
-    {
-      id: 2,
-      name: t('dest_paris'),
-      description: t('dest_paris_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Paris',
-    },
-    {
-      id: 3,
-      name: t('dest_tokyo'),
-      description: t('dest_tokyo_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Tokyo',
-    },
-    {
-      id: 4,
-      name: t('dest_swiss'),
-      description: t('dest_swiss_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Alps',
-    },
-    {
-      id: 5,
-      name: t('dest_egypt'),
-      description: t('dest_egypt_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Egypt',
-    },
-    {
-      id: 6,
-      name: t('dest_maldives'),
-      description: t('dest_maldives_desc'),
-      image: 'https://via.placeholder.com/300x200?text=Maldives',
-    },
-  ];
-
-  const features = [
-    {
-      icon: 'fa-users',
-      title: t('feature1_title'),
-      description: t('feature1_desc'),
-    },
-    {
-      icon: 'fa-shield-alt',
-      title: t('feature2_title'),
-      description: t('feature2_desc'),
-    },
-    {
-      icon: 'fa-dollar-sign',
-      title: t('feature3_title'),
-      description: t('feature3_desc'),
-    },
-    {
-      icon: 'fa-headset',
-      title: t('feature4_title'),
-      description: t('feature4_desc'),
-    },
-    {
-      icon: 'fa-handshake',
-      title: t('feature5_title'),
-      description: t('feature5_desc'),
-    },
-    {
-      icon: 'fa-star',
-      title: t('feature6_title'),
-      description: t('feature6_desc'),
-    },
-  ];
+  const [heroSearch, setHeroSearch] = useState('');
 
   return (
-    <div className={styles.home}>
-      {/* Hero Section */}
+    <main>
       <section className={styles.hero}>
+        <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>{t('hero_title')}</h1>
-          <p className={styles.heroSubtitle}>{t('hero_subtitle')}</p>
-          <button className={`btn btn-primary ${styles.ctaButton}`}>
-            {t('cta_explore')}
-          </button>
+          <span className="section-label">Trusted by 50,000+ Travelers</span>
+          <h1 className={styles.heroTitle}>
+            Explore the World<br /><span>Your Way</span>
+          </h1>
+          <p className={styles.heroSub}>
+            Discover handcrafted itineraries, luxury packages, and hidden gems across 120+ destinations worldwide.
+          </p>
+          <div className={styles.heroSearch}>
+            <div className={styles.searchBox}>
+              <i className="fas fa-search" />
+              <input
+                type="text"
+                placeholder="Where do you want to go?"
+                value={heroSearch}
+                onChange={(e) => setHeroSearch(e.target.value)}
+              />
+            </div>
+            <a href="#tours" className="btn btn-primary btn-lg">Search Tours</a>
+          </div>
+          <div className={styles.heroBadges}>
+            {['No hidden fees', 'Free cancellation', 'Instant confirmation'].map((item) => (
+              <span key={item} className={styles.heroBadge}><i className="fas fa-check-circle" /> {item}</span>
+            ))}
+          </div>
         </div>
-        <div className={styles.heroImage}>
-          <img
-            src="https://via.placeholder.com/500x400?text=Travel+Hero"
-            alt="Travel Adventure"
-          />
+        <div className={styles.heroScroll}><span>Scroll to explore</span><i className="fas fa-chevron-down" /></div>
+      </section>
+
+      <section className={styles.statsBar}>
+        <div className="container">
+          <div className={styles.statsGrid}>
+            {stats.map(({ value, label }) => (
+              <div key={label} className={styles.statItem}><strong>{value}</strong><span>{label}</span></div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Tours/Packages Section */}
-      <section id="tours" className={styles.toursSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('tours_title')}</h2>
-          <p className={styles.sectionSubtitle}>{t('tours_subtitle')}</p>
-
-          {loading ? (
-            <div className={styles.loading}>
-              <div className="loading"></div>
+      <section className="section" id="destinations">
+        <div className="container">
+          <div className={styles.sectionHead}>
+            <div>
+              <span className="section-label">Top Picks</span>
+              <h2 className="section-title">Popular Destinations</h2>
+              <p className="section-subtitle">From iconic landmarks to hidden paradises, find your next dream destination.</p>
             </div>
-          ) : (
-            <div className={styles.packagesGrid}>
-              {packages.map((pkg) => (
-                <div key={pkg.id} className={styles.packageCard}>
-                  <div className={styles.cardImage}>
-                    <img src={pkg.image} alt={pkg.name} />
-                    <div className={styles.tags}>
-                      {pkg.tags.map((tag, i) => (
-                        <span key={i} className={styles.tag}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+            <a href="#tours" className="btn btn-outline">View All <i className="fas fa-arrow-right" /></a>
+          </div>
+          <div className={styles.destGrid}>
+            {destinations.map((d) => (
+              <div key={d.id} className={styles.destCard}>
+                <img src={d.img} alt={d.name} loading="lazy" />
+                <div className={styles.destOverlay}>
+                  <span className={styles.destTag}>{d.tag}</span>
+                  <div className={styles.destInfo}><h3>{d.name}</h3><p><i className="fas fa-map-marker-alt" /> {d.country}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={`section ${styles.packSection}`} id="tours">
+        <div className="container">
+          <div className={styles.sectionHead}>
+            <div>
+              <span className="section-label">Curated For You</span>
+              <h2 className="section-title">Featured Tour Packages</h2>
+              <p className="section-subtitle">Expertly crafted packages with everything included.</p>
+            </div>
+            <Link to="/bookings" className="btn btn-outline">All Packages <i className="fas fa-arrow-right" /></Link>
+          </div>
+          <div className={styles.packGrid}>
+            {packages.map((p) => (
+              <div key={p.id} className={styles.packCard}>
+                <div className={styles.packImg}>
+                  <img src={p.img} alt={p.name} loading="lazy" />
+                  <span className={styles.packBadge}>{p.days} Days</span>
+                </div>
+                <div className={styles.packBody}>
+                  <p className={styles.packDest}><i className="fas fa-map-marker-alt" /> {p.dest}</p>
+                  <h3 className={styles.packName}>{p.name}</h3>
+                  <div className={styles.packMeta}>
+                    <span className={styles.rating}><i className="fas fa-star" /> {p.rating} <em>({p.reviews} reviews)</em></span>
                   </div>
-                  <div className={styles.cardContent}>
-                    <h3>{pkg.name}</h3>
-                    <p>{pkg.description}</p>
-                    <ul className={styles.features}>
-                      {pkg.features.map((feature, i) => (
-                        <li key={i}>
-                          <i className="fas fa-check"></i> {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className={styles.cardFooter}>
-                      <div>
-                        <div className={styles.duration}>
-                          <i className="fas fa-calendar"></i> {t('duration')} {pkg.duration}
-                        </div>
-                        <div className={styles.price}>
-                          {t('price')} {pkg.price}
-                        </div>
-                      </div>
-                      <Link to="/booking/new" className={styles.bookBtn}>
-                        {t('btn_book')}
-                      </Link>
-                    </div>
+                  <div className={styles.packFooter}>
+                    <div className={styles.price}><span>From</span><strong>${p.price}</strong><span>/ person</span></div>
+                    <Link to="/booking/new" className="btn btn-primary btn-sm">Book Now</Link>
                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={`section ${styles.whySection}`}>
+        <div className="container">
+          <div className={styles.whyInner}>
+            <div className={styles.whyLeft}>
+              <span className="section-label">Why ITravelz</span>
+              <h2 className="section-title">Travel With Confidence</h2>
+              <p className="section-subtitle">We go beyond booking to deliver seamless, memorable journeys tailored to you.</p>
+              <Link to="/signup" className="btn btn-secondary" style={{marginTop:'16px'}}>
+                Start Your Journey <i className="fas fa-arrow-right" />
+              </Link>
+            </div>
+            <div className={styles.whyRight}>
+              {features.map(({ icon, title, desc }) => (
+                <div key={title} className={styles.featureCard}>
+                  <div className={styles.featureIcon}><i className={`fas ${icon}`} /></div>
+                  <div><h4>{title}</h4><p>{desc}</p></div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Destinations Section */}
-      <section id="destinations" className={styles.destinationsSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('destinations_title')}</h2>
-          <p className={styles.sectionSubtitle}>{t('destinations_subtitle')}</p>
-
-          <div className={styles.destinationsGrid}>
-            {destinations.map((dest) => (
-              <div key={dest.id} className={styles.destinationCard}>
-                <div className={styles.destImage}>
-                  <img src={dest.image} alt={dest.name} />
-                </div>
-                <div className={styles.destContent}>
-                  <h3>{dest.name}</h3>
-                  <p>{dest.description}</p>
-                  <button className={styles.exploreBtn}>
-                    {t('cta_explore')}
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className={styles.featuresSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('features_title')}</h2>
-
-          <div className={styles.featuresGrid}>
-            {features.map((feature, index) => (
-              <div key={index} className={styles.featureCard}>
-                <div className={styles.featureIcon}>
-                  <i className={`fas ${feature.icon}`}></i>
-                </div>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </div>
-            ))}
+      <section className={`section ${styles.contactSection}`} id="contact">
+        <div className="container">
+          <div className={styles.contactInner}>
+            <div className={styles.contactLeft}>
+              <span className="section-label">Get In Touch</span>
+              <h2 className="section-title" style={{color:'#fff'}}>Plan Your Dream Trip</h2>
+              <p style={{color:'rgba(255,255,255,.7)',lineHeight:'1.7',margin:'0'}}>
+                Our travel experts are ready to craft the perfect itinerary for you. Drop us a message and we will get back within 24 hours.
+              </p>
+              <ul className={styles.contactInfoList}>
+                {[
+                  { icon: 'fa-envelope', text: 'hello@itravelz.com' },
+                  { icon: 'fa-phone',    text: '+971 4 000 0000' },
+                  { icon: 'fa-clock',    text: 'Mon to Fri, 9am to 6pm GST' },
+                ].map(({ icon, text }) => (<li key={text}><i className={`fas ${icon}`} /><span>{text}</span></li>))}
+              </ul>
+            </div>
+            <div className={styles.contactRight}><ContactForm /></div>
           </div>
         </div>
       </section>
-
-      {/* Contact Section */}
-      <section id="contact" className={styles.contactSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('contact_title')}</h2>
-          <p className={styles.sectionSubtitle}>{t('contact_subtitle')}</p>
-
-          <div className={styles.contactContent}>
-            <ContactForm />
-          </div>
-        </div>
-      </section>
-    </div>
+    </main>
   );
 };
 
