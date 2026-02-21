@@ -54,7 +54,8 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Serve static files (uploads and frontend if needed)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-app.use(express.static(path.join(__dirname, "../")));
+app.use(express.static(path.join(__dirname, 'dist')));
+
 
 // ========================================
 // ROUTES
