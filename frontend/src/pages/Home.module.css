@@ -1,0 +1,399 @@
+.home {
+  width: 100%;
+}
+
+.hero {
+  background: var(--color-hero);
+  color: white;
+  padding: 80px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.heroContent {
+  animation: slideUp 0.8s ease;
+}
+
+.heroTitle {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  margin-bottom: 30px;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.ctaButton {
+  padding: 14px 40px;
+  font-size: 16px;
+}
+
+.heroImage {
+  animation: slideUp 0.8s ease 0.2s both;
+}
+
+.heroImage img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.toursSection,
+.destinationsSection,
+.featuresSection,
+.contactSection {
+  padding: 60px 20px;
+}
+
+.sectionTitle {
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.sectionSubtitle {
+  font-size: 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.packagesGrid,
+.destinationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.packageCard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px var(--color-shadow);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.6s ease;
+}
+
+.packageCard:hover {
+  box-shadow: 0 12px 30px var(--color-shadow);
+  transform: translateY(-8px);
+}
+
+.cardImage {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
+.cardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.packageCard:hover .cardImage img {
+  transform: scale(1.1);
+}
+
+.tags {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cardContent {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardContent h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.cardContent p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 15px;
+  flex: 1;
+}
+
+.features {
+  list-style: none;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.features li {
+  padding: 6px 0;
+  color: var(--color-text-secondary);
+}
+
+.features i {
+  color: var(--color-primary);
+  margin-right: 8px;
+}
+
+html[dir="rtl"] .features i {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.cardFooter {
+  border-top: 1px solid var(--color-border);
+  padding-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.duration,
+.price {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 3px;
+}
+
+.price {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 16px;
+}
+
+.bookBtn {
+  background: var(--color-primary);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
+
+.bookBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.destinationCard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px var(--color-shadow);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.6s ease;
+}
+
+.destinationCard:hover {
+  box-shadow: 0 12px 30px var(--color-shadow);
+}
+
+.destImage {
+  overflow: hidden;
+  height: 250px;
+}
+
+.destImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.destinationCard:hover .destImage img {
+  transform: scale(1.1);
+}
+
+.destContent {
+  padding: 20px;
+}
+
+.destContent h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.destContent p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 15px;
+}
+
+.exploreBtn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.exploreBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.destinationsSection {
+  background: var(--color-bg-tertiary);
+}
+
+.featuresSection {
+  background: var(--color-bg-secondary);
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.featureCard {
+  background: var(--color-bg-tertiary);
+  padding: 30px 20px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.6s ease;
+}
+
+.featureCard:hover {
+  background: var(--color-bg-secondary);
+  box-shadow: 0 8px 24px var(--color-shadow);
+  transform: translateY(-5px);
+}
+
+.featureIcon {
+  width: 60px;
+  height: 60px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+  color: white;
+  animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.featureCard h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.featureCard p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.contactSection {
+  background: var(--color-bg-tertiary);
+}
+
+.contactContent {
+  max-width: 600px;
+  margin: 40px auto 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 40px 20px;
+  }
+
+  .heroTitle {
+    font-size: 32px;
+  }
+
+  .heroSubtitle {
+    font-size: 16px;
+  }
+
+  .sectionTitle {
+    font-size: 28px;
+  }
+
+  .toursSection,
+  .destinationsSection,
+  .featuresSection,
+  .contactSection {
+    padding: 40px 20px;
+  }
+
+  .packagesGrid,
+  .destinationsGrid,
+  .featuresGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

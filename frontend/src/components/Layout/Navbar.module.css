@@ -1,0 +1,248 @@
+.navbar {
+  background: var(--color-navbar);
+  padding: 1rem 0;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navBrand:hover {
+  opacity: 0.8;
+}
+
+.navMenu {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navLink:hover,
+.navLink.active {
+  color: white;
+}
+
+.navLink.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: white;
+}
+
+.navControls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: auto;
+}
+
+.themeToggle,
+.langSelect {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.themeToggle:hover,
+.langSelect:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.langSelect {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+}
+
+.langSelect option {
+  background: #1e3a8a;
+  color: white;
+}
+
+.userProfile {
+  position: relative;
+}
+
+.userBtn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.userBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.userDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--color-shadow);
+  min-width: 200px;
+  margin-top: 8px;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  text-align: left;
+}
+
+html[dir="rtl"] .dropdownItem {
+  text-align: right;
+}
+
+.dropdownItem:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-primary);
+}
+
+.btnSecondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .mobileMenuBtn {
+    display: block;
+  }
+
+  .navMenu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--color-navbar);
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .navMenu.active {
+    max-height: 400px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .navLink {
+    padding: 12px 20px;
+    display: block;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .navLink.active::after {
+    display: none;
+  }
+
+  .navLink.active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .navControls {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
