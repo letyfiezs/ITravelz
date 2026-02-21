@@ -12,20 +12,17 @@ const destinations = [
   { id: 5, name: 'Santorini', country: 'Greece',    img: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&q=80', tag: 'Scenic' },
   { id: 6, name: 'New York',  country: 'USA',       img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80', tag: 'City' },
 ];
-
 const packages = [
   { id: 1, name: 'Desert Safari & Luxury Stay', dest: 'Dubai', days: 7,  price: 1299, rating: 4.9, reviews: 312, img: 'https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?w=600&q=80' },
   { id: 2, name: 'Romantic Paris Getaway',      dest: 'Paris', days: 5,  price: 1099, rating: 4.8, reviews: 274, img: 'https://images.unsplash.com/photo-1431274172761-fcdab704a698?w=600&q=80' },
-  { id: 3, name: 'Bali Spirit & Culture',       dest: 'Bali',  days: 10, price: 899,  rating: 4.9, reviews: 198, img: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&q=80' },
+  { id: 3, name: 'Bali Spirit and Culture',     dest: 'Bali',  days: 10, price: 899,  rating: 4.9, reviews: 198, img: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&q=80' },
 ];
-
 const features = [
-  { icon: 'fa-headset',        title: '24/7 Support',    desc: 'Round-the-clock assistance whenever you need it, anywhere in the world.' },
-  { icon: 'fa-shield-alt',     title: 'Safe & Secure',   desc: 'Fully insured trips with vetted partners and transparent pricing.' },
-  { icon: 'fa-map-marked-alt', title: 'Expert Guides',   desc: 'Local expert guides with insider knowledge to elevate every journey.' },
-  { icon: 'fa-tags',           title: 'Best Price',      desc: 'Price-match guarantee. We beat any comparable package, every time.' },
+  { icon: 'fa-headset',        title: '24/7 Support',   desc: 'Round-the-clock assistance wherever you are in the world.' },
+  { icon: 'fa-shield-alt',     title: 'Safe and Secure', desc: 'Fully insured trips with vetted partners and transparent pricing.' },
+  { icon: 'fa-map-marked-alt', title: 'Expert Guides',  desc: 'Local expert guides with insider knowledge to elevate every journey.' },
+  { icon: 'fa-tags',           title: 'Best Price',     desc: 'Price-match guarantee. We beat any comparable package, every time.' },
 ];
-
 const stats = [
   { value: '50K+', label: 'Happy Travelers' },
   { value: '120+', label: 'Destinations' },
@@ -35,29 +32,19 @@ const stats = [
 
 const Home = () => {
   const { t } = useLanguage();
-  const [heroSearch, setHeroSearch] = useState('');
-
+  const [search, setSearch] = useState('');
   return (
     <main>
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
           <span className="section-label">Trusted by 50,000+ Travelers</span>
-          <h1 className={styles.heroTitle}>
-            Explore the World<br /><span>Your Way</span>
-          </h1>
-          <p className={styles.heroSub}>
-            Discover handcrafted itineraries, luxury packages, and hidden gems across 120+ destinations worldwide.
-          </p>
+          <h1 className={styles.heroTitle}>Explore the World<br /><span>Your Way</span></h1>
+          <p className={styles.heroSub}>Discover handcrafted itineraries, luxury packages, and hidden gems across 120+ destinations worldwide.</p>
           <div className={styles.heroSearch}>
             <div className={styles.searchBox}>
               <i className="fas fa-search" />
-              <input
-                type="text"
-                placeholder="Where do you want to go?"
-                value={heroSearch}
-                onChange={(e) => setHeroSearch(e.target.value)}
-              />
+              <input type="text" placeholder="Where do you want to go?" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
             <a href="#tours" className="btn btn-primary btn-lg">Search Tours</a>
           </div>
@@ -145,9 +132,7 @@ const Home = () => {
               <span className="section-label">Why ITravelz</span>
               <h2 className="section-title">Travel With Confidence</h2>
               <p className="section-subtitle">We go beyond booking to deliver seamless, memorable journeys tailored to you.</p>
-              <Link to="/signup" className="btn btn-secondary" style={{marginTop:'16px'}}>
-                Start Your Journey <i className="fas fa-arrow-right" />
-              </Link>
+              <Link to="/signup" className="btn btn-secondary" style={{marginTop:'16px'}}>Start Your Journey <i className="fas fa-arrow-right" /></Link>
             </div>
             <div className={styles.whyRight}>
               {features.map(({ icon, title, desc }) => (
@@ -167,9 +152,7 @@ const Home = () => {
             <div className={styles.contactLeft}>
               <span className="section-label">Get In Touch</span>
               <h2 className="section-title" style={{color:'#fff'}}>Plan Your Dream Trip</h2>
-              <p style={{color:'rgba(255,255,255,.7)',lineHeight:'1.7',margin:'0'}}>
-                Our travel experts are ready to craft the perfect itinerary for you. Drop us a message and we will get back within 24 hours.
-              </p>
+              <p style={{color:'rgba(255,255,255,.7)',lineHeight:'1.7',margin:'0'}}>Our travel experts are ready to craft the perfect itinerary for you. Drop us a message and we will get back within 24 hours.</p>
               <ul className={styles.contactInfoList}>
                 {[
                   { icon: 'fa-envelope', text: 'hello@itravelz.com' },

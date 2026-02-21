@@ -1,61 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useLanguage } from '../hooks/useContext';
+import { Link, useParams } from 'react-router-dom';
 import { authService } from '../services/api';
 import styles from './Auth.module.css';
 
 const VerifyEmail = () => {
-  const { t } = useLanguage();
   const { token } = useParams();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [status, setStatus] = useState('loading');
+  const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    const verifyEmail = async () => {
-      try {
-        await authService.verifyEmail(token);
-        setSuccess(true);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Email verification failed');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyEmail();
+    authService.verifyEmail(token)
+      .then(() => { setStatus('success'); setMsg('Your email has been verified! You can now sign in.'); })
+      .catch((err) => { setStatus('error'); setMsg(err.response?.data?.message || 'Verification link is invalid or expired.'); });
   }, [token]);
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authBox}>
-        <div className={styles.authHeader}>
-          <h2>Email Verification</h2>
-        </div>
-
-        {loading ? (
-          <div className={styles.loadingMessage}>
-            <div className="loading"></div>
-            <p>Verifying your email...</p>
-          </div>
-        ) : success ? (
-          <div className={styles.successMessage}>
-            <i className="fas fa-check-circle"></i>
-            <h3>Email Verified!</h3>
-            <p>Your email has been successfully verified. You can now log in to your account.</p>
-            <Link to="/login" className={styles.submitBtn}>
-              Go to Login
-            </Link>
-          </div>
-        ) : (
-          <div className={styles.errorMessageBox}>
-            <i className="fas fa-exclamation-circle"></i>
-            <h3>Verification Failed</h3>
-            <p>{error}</p>
-            <Link to="/signup" className={styles.submitBtn}>
-              Sign Up Again
-            </Link>
-          </div>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', background: 'var(--bg)' }}>
+      <div style={{ maxWidth: 440, width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {status === 'loading' && (
+          <><div className="page-loader" style={{ minHeight: 'auto' }}><span className="spinner spinner-dark" />Verifying your email...</div></>
+        )}
+        {status === 'success' && (
+          <>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: 32, color: 'var(--success)' }}>
+              <i className="fas fa-check-circle" />
+            </div>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: 'var(--text-dark)' }}>Email Verified!</h1>
+            <p style={{ color: 'var(--text-body)' }}>{msg}</p>
+            <Link to="/login" className="btn btn-primary" style={{ justifyContent: 'center' }}>Sign In Now <i className="fas fa-arrow-right" /></Link>
+          </>
+        )}
+        {status === 'error' && (
+          <>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--error-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: 32, color: 'var(--error)' }}>
+              <i className="fas fa-times-circle" />
+            </div>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: 'var(--text-dark)' }}>Verification Failed</h1>
+            <p style={{ color: 'var(--text-body)' }}>{msg}</p>
+            <Link to="/login" className="btn btn-outline" style={{ justifyContent: 'center' }}>Back to Sign In</Link>
+          </>
         )}
       </div>
     </div>

@@ -4,8 +4,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const path = require("path");
-
 // Import routes
 const authRoutes = require("./routes/auth");
 const bookingRoutes = require("./routes/bookings");
@@ -33,11 +31,22 @@ app.use(
 
 
 // CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+  "http://localhost:5173",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://itravelz.onrender.com",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
-  }),
+  })
 );
 
 // Rate limiting
@@ -51,17 +60,6 @@ app.use("/api/", limiter);
 // Body parser
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
-
-// Serve React / HTML Frontend
-app.use(express.static(path.join(__dirname, "../frontend")));
-
-// SPA fallback index
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.includes(".")) {
-    return next();
-  }
-  res.sendFile(path.join(__dirname, "../frontend/index.html"));
-});
 
 // ========================================
 // ROUTES
@@ -84,34 +82,6 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, status: "Server is running" });
 });
 
-
-// Serve admin.html for /admin* and booking-form.html for /booking-form.html
-app.get(/^\/admin.*/, (req, res) => {
-  const adminPath = path.join(__dirname, "../admin.html");
-  res.sendFile(adminPath, (err) => {
-    if (err) {
-      res.status(404).json({ success: false, message: "Page not found" });
-    }
-  });
-});
-
-app.get("/booking-form.html", (req, res) => {
-  const bookingPath = path.join(__dirname, "../booking-form.html");
-  res.sendFile(bookingPath, (err) => {
-    if (err) {
-      res.status(404).json({ success: false, message: "Page not found" });
-    }
-  });
-});
-
-// Serve index.html for all other non-API, non-static routes (SPA fallback)
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.includes(".")) {
-    return next();
-  }
-
-  res.sendFile(path.join(__dirname, "../index.html"));
-});
 
 // 404 handler
 app.use("/api/*", (req, res) => {
@@ -153,7 +123,7 @@ const server = app.listen(PORT, () => {
   console.log(`[SERVER] Running on port ${PORT}`);
   console.log(`[ENV] Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`[API] API running at: http://localhost:${PORT}/api`);
-  console.log(`[CLIENT] Client URL: ${process.env.CLIENT_URL || "http://localhost:3000"}`);
+  console.log(`[CLIENT] Client URL: ${process.env.FRONTEND_URL || "http://localhost:3000"}`);
   console.log("========================================");
 });
 

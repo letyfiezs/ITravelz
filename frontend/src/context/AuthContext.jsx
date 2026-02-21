@@ -1,116 +1,73 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/api';
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [user, setUser]               = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [isAuthenticated, setIsAuth]  = useState(false);
   const navigate = useNavigate();
 
-  // Initialize auth from stored token
+  // Validate stored token on mount
   useEffect(() => {
+    const token = localStorage.getItem('token');
     if (token) {
-      validateToken();
+      authService.validateToken()
+        .then((res) => {
+          setUser(res.data.user);
+          setIsAuth(true);
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, []);
 
-  const validateToken = async () => {
+  const login = async (email, password) => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/auth/validate', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-      } else {
-        setToken(null);
-        localStorage.removeItem('token');
-      }
+      const res = await authService.login({ email, password });
+      const { token, user: u } = res.data;
+      localStorage.setItem('token', token);
+      setUser(u);
+      setIsAuth(true);
+      return { success: true };
     } catch (err) {
-      setToken(null);
-      localStorage.removeItem('token');
-    } finally {
-      setLoading(false);
+      return { success: false, message: err.response?.data?.message || 'Login failed' };
     }
   };
 
-  const login = useCallback(async (email, password) => {
-    setLoading(true);
-    setError(null);
+  const signup = async (name, email, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Login failed');
-      
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('token', data.token);
-      navigate('/');
-      return data;
+      const res = await authService.register({ name, email, password });
+      const { token, user: u } = res.data;
+      localStorage.setItem('token', token);
+      setUser(u);
+      setIsAuth(true);
+      return { success: true };
     } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+      return { success: false, message: err.response?.data?.message || 'Registration failed' };
     }
-  }, [navigate]);
+  };
 
-  const signup = useCallback(async (formData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Signup failed');
-      
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('token', data.token);
-      navigate('/');
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
+  const logout = () => {
     localStorage.removeItem('token');
+    setUser(null);
+    setIsAuth(false);
     navigate('/login');
-  }, [navigate]);
+  };
 
-  const isAuthenticated = Boolean(user && token);
+  const updateUser = (updated) => setUser((prev) => ({ ...prev, ...updated }));
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        loading,
-        error,
-        isAuthenticated,
-        login,
-        signup,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, login, signup, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;

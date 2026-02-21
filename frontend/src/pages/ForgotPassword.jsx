@@ -1,77 +1,72 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../hooks/useContext';
 import { authService } from '../services/api';
 import styles from './Auth.module.css';
 
 const ForgotPassword = () => {
-  const { t } = useLanguage();
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [status, setStatus] = useState('idle');
+  const [msg, setMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
+    setStatus('loading');
     try {
-      await authService.forgotPassword(email);
-      setSuccess(true);
-      setEmail('');
+      await authService.forgotPassword({ email });
+      setStatus('success');
+      setMsg('Check your inbox! Password reset instructions have been sent to ' + email);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset email');
-    } finally {
-      setLoading(false);
+      setStatus('error');
+      setMsg(err.response?.data?.message || 'Failed to send reset email. Please try again.');
     }
   };
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authBox}>
-        <div className={styles.authHeader}>
-          <h2>Reset Password</h2>
-          <p>Enter your email to receive password reset instructions</p>
+    <div className={styles.authPage}>
+      <div className={styles.authLeft}>
+        <div className={styles.authLeftContent}>
+          <Link to="/" className={styles.authBrand}>
+            <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
+            <span className={styles.brandText}>I<span>Travelz</span></span>
+          </Link>
+          <h2>Reset your password</h2>
+          <p>Enter your email address and we will send you a link to reset your password securely.</p>
         </div>
-
-        {success ? (
-          <div className={styles.successMessage}>
-            <i className="fas fa-check-circle"></i>
-            <h3>Check your email</h3>
-            <p>We've sent password reset instructions to your email address.</p>
-            <Link to="/login" className={styles.submitBtn}>
-              Back to Login
-            </Link>
+        <div className={styles.authLeftOverlay} />
+      </div>
+      <div className={styles.authRight}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <h1>Forgot password?</h1>
+            <p>We will email you a reset link</p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className={styles.form}>
-            {error && <div className={styles.errorMessage}>{error}</div>}
 
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
+          {status === 'success' && (
+            <div className="alert alert-success"><i className="fas fa-check-circle" />{msg}</div>
+          )}
+          {status === 'error' && (
+            <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{msg}</div>
+          )}
 
-            <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-          </form>
-        )}
+          {status !== 'success' && (
+            <form onSubmit={handleSubmit} className={styles.authForm}>
+              <div className="form-group">
+                <label>Email address</label>
+                <div className={styles.inputWrap}>
+                  <i className="fas fa-envelope" />
+                  <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                </div>
+              </div>
+              <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={status === 'loading'}>
+                {status === 'loading' ? <><span className="spinner" /> Sending...</> : <>Send Reset Link <i className="fas fa-arrow-right" /></>}
+              </button>
+            </form>
+          )}
 
-        <div className={styles.divider}></div>
-
-        <p className={styles.authFooter}>
-          Remember your password?
-          <Link to="/login"> Back to Login</Link>
-        </p>
+          <p className={styles.switchText}>
+            Remember your password? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

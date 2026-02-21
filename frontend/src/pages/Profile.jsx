@@ -1,206 +1,110 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useContext';
-import { useLanguage } from '../hooks/useContext';
 import { userService } from '../services/api';
 import styles from './Profile.module.css';
 
 const Profile = () => {
-  const { t } = useLanguage();
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { user, updateUser } = useAuth();
+  const [form, setForm] = useState({ name: '', email: '' });
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
+  const [profileStatus, setProfileStatus] = useState('idle');
+  const [pwStatus, setPwStatus] = useState('idle');
+  const [profileMsg, setProfileMsg] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    if (user) setForm({ name: user.name || '', email: user.email || '' });
+  }, [user]);
 
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const response = await userService.getProfile();
-      setProfile(response.data);
-      setFormData(response.data);
-    } catch (err) {
-      setError('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const setF = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+  const setPw = (k) => (e) => setPwForm((p) => ({ ...p, [k]: e.target.value }));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
+  const handleProfile = async (e) => {
     e.preventDefault();
+    setProfileStatus('loading');
     try {
-      await userService.updateProfile(formData);
-      setProfile(formData);
-      setEditMode(false);
-      setSuccess('Profile updated successfully');
-      setTimeout(() => setSuccess(''), 3000);
+      const res = await userService.updateProfile({ name: form.name });
+      updateUser(res.data.user || { name: form.name });
+      setProfileStatus('success');
+      setProfileMsg('Profile updated successfully.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+      setProfileStatus('error');
+      setProfileMsg(err.response?.data?.message || 'Update failed.');
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className="loading"></div>
-      </div>
-    );
-  }
+  const handlePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirm) { setPwStatus('error'); setPwMsg('Passwords do not match.'); return; }
+    setPwStatus('loading');
+    try {
+      await userService.changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword });
+      setPwStatus('success');
+      setPwMsg('Password changed successfully.');
+      setPwForm({ currentPassword: '', newPassword: '', confirm: '' });
+    } catch (err) {
+      setPwStatus('error');
+      setPwMsg(err.response?.data?.message || 'Failed to change password.');
+    }
+  };
 
   return (
-    <div className={styles.profileContainer}>
-      <div className={styles.profileSidebar}>
-        <div className={styles.profileCard}>
-          <i className="fas fa-user-circle"></i>
-          <h2>{user?.name}</h2>
-          <p>{user?.email}</p>
+    <div className={styles.page}>
+      <div className="container">
+        <div className={styles.header}>
+          <div className={styles.avatar}>{(user?.name?.[0] || 'U').toUpperCase()}</div>
+          <div>
+            <h1 className={styles.name}>{user?.name}</h1>
+            <p className={styles.email}>{user?.email}</p>
+            {user?.role === 'admin' && <span className="badge badge-primary"><i className="fas fa-shield-alt" /> Admin</span>}
+          </div>
         </div>
 
-        <nav className={styles.profileNav}>
-          <button
-            className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            <i className="fas fa-user"></i> {t('user_profile')}
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'bookings' ? styles.active : ''}`}
-            onClick={() => setActiveTab('bookings')}
-          >
-            <i className="fas fa-calendar"></i> {t('user_bookings')}
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'settings' ? styles.active : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            <i className="fas fa-cog"></i> {t('user_settings')}
-          </button>
-        </nav>
-      </div>
-
-      <div className={styles.profileContent}>
-        {activeTab === 'profile' && (
-          <div className={styles.section}>
-            <h2>Profile Information</h2>
-            {error && <div className={styles.errorMessage}>{error}</div>}
-            {success && <div className={styles.successMessage}>{success}</div>}
-
-            {editMode ? (
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.formGroup}>
-                  <label>Full Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name || ''}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone || ''}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address || ''}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className={styles.formActions}>
-                  <button type="submit" className={styles.submitBtn}>
-                    Save Changes
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.cancelBtn}
-                    onClick={() => {
-                      setEditMode(false);
-                      setFormData(profile);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className={styles.profileInfo}>
-                <div className={styles.infoRow}>
-                  <span>Name:</span>
-                  <span>{profile?.name}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span>Email:</span>
-                  <span>{profile?.email}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span>Phone:</span>
-                  <span>{profile?.phone || 'Not provided'}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span>Address:</span>
-                  <span>{profile?.address || 'Not provided'}</span>
-                </div>
-                <button className={styles.editBtn} onClick={() => setEditMode(true)}>
-                  <i className="fas fa-edit"></i> Edit Profile
-                </button>
+        <div className={styles.grid}>
+          {/* Profile info */}
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}><i className="fas fa-user" /> Profile Information</h2>
+            {profileStatus === 'success' && <div className="alert alert-success"><i className="fas fa-check-circle" />{profileMsg}</div>}
+            {profileStatus === 'error'   && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{profileMsg}</div>}
+            <form onSubmit={handleProfile}>
+              <div className="form-group">
+                <label>Full Name</label>
+                <input className="form-input" type="text" value={form.name} onChange={setF('name')} required />
               </div>
-            )}
+              <div className="form-group">
+                <label>Email Address</label>
+                <input className="form-input" type="email" value={form.email} disabled style={{ opacity: .6 }} />
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={profileStatus === 'loading'}>
+                {profileStatus === 'loading' ? <><span className="spinner" /> Saving...</> : 'Save Changes'}
+              </button>
+            </form>
           </div>
-        )}
 
-        {activeTab === 'bookings' && (
-          <div className={styles.section}>
-            <h2>My Bookings</h2>
-            <p>Your bookings will appear here.</p>
+          {/* Password */}
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}><i className="fas fa-lock" /> Change Password</h2>
+            {pwStatus === 'success' && <div className="alert alert-success"><i className="fas fa-check-circle" />{pwMsg}</div>}
+            {pwStatus === 'error'   && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{pwMsg}</div>}
+            <form onSubmit={handlePassword}>
+              <div className="form-group">
+                <label>Current Password</label>
+                <input className="form-input" type="password" value={pwForm.currentPassword} onChange={setPw('currentPassword')} required />
+              </div>
+              <div className="form-group">
+                <label>New Password</label>
+                <input className="form-input" type="password" value={pwForm.newPassword} onChange={setPw('newPassword')} placeholder="Min. 6 characters" required />
+              </div>
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <input className="form-input" type="password" value={pwForm.confirm} onChange={setPw('confirm')} required />
+              </div>
+              <button type="submit" className="btn btn-secondary" disabled={pwStatus === 'loading'}>
+                {pwStatus === 'loading' ? <><span className="spinner" /> Updating...</> : 'Update Password'}
+              </button>
+            </form>
           </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className={styles.section}>
-            <h2>Settings</h2>
-            <div className={styles.settingGroup}>
-              <label>
-                <input type="checkbox" defaultChecked />
-                <span>Email me updates about my bookings</span>
-              </label>
-            </div>
-            <div className={styles.settingGroup}>
-              <label>
-                <input type="checkbox" defaultChecked />
-                <span>Subscribe to our newsletter</span>
-              </label>
-            </div>
-            <button className={styles.dangerBtn}>Change Password</button>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,134 +1,145 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useContext';
 import { useLanguage } from '../../hooks/useContext';
 import styles from './Navbar.module.css';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated } = useAuth();
-  const { t, language, toggleLanguage, theme, toggleTheme } = useLanguage();
-  const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [dropOpen, setDropOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
+  const navigate = useNavigate();
+
   const [scrolled, setScrolled] = useState(false);
-  const dropRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
     const handler = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
+  const handleLogout = () => {
+    logout();
+    setDropdownOpen(false);
+    setMenuOpen(false);
+    navigate('/');
+  };
 
-  const isActive = (path) => location.pathname === path;
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U';
 
   return (
-    <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
+    <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
       <div className={styles.inner}>
-        {/* Brand */}
-        <Link to="/" className={styles.brand}>
-          <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
-          <span className={styles.brandText}>I<span>Travelz</span></span>
+        {/* Logo */}
+        <Link to="/" className={styles.logo} onClick={() => setMenuOpen(false)}>
+          <span className={styles.logoIcon}><i className="fas fa-plane-departure"></i></span>
+          <span className={styles.logoText}>ITravelz</span>
         </Link>
 
         {/* Desktop nav links */}
-        <ul className={styles.links}>
-          {[
-            { to: '/', label: t('nav_home') || 'Home' },
-            { to: '/#tours', label: t('nav_tours') || 'Tours', hash: true },
-            { to: '/#destinations', label: t('nav_destinations') || 'Destinations', hash: true },
-            { to: '/#itineraries', label: t('nav_itineraries') || 'Itineraries', hash: true },
-            { to: '/#contact', label: t('nav_contact') || 'Contact', hash: true },
-          ].map(({ to, label, hash }) => (
-            <li key={to}>
-              {hash
-                ? <a href={to} className={styles.link}>{label}</a>
-                : <Link to={to} className={`${styles.link} ${isActive(to) ? styles.linkActive : ''}`}>{label}</Link>
-              }
-            </li>
-          ))}
-        </ul>
+        <nav className={styles.links}>
+          <NavLink to="/" end className={({ isActive }) => isActive ? styles.active : ''}>Home</NavLink>
+          <NavLink to="/bookings" className={({ isActive }) => isActive ? styles.active : ''}>Bookings</NavLink>
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" className={({ isActive }) => isActive ? styles.active : ''}>Admin</NavLink>
+          )}
+        </nav>
 
-        {/* Controls */}
-        <div className={styles.controls}>
-          <button className={styles.iconBtn} onClick={toggleTheme} title="Toggle theme" aria-label="Toggle theme">
-            <i className={`fas fa-${theme === 'light' ? 'moon' : 'sun'}`} />
-          </button>
-          <button className={styles.iconBtn} onClick={() => toggleLanguage(language === 'en' ? 'ar' : language === 'ar' ? 'es' : 'en')} title="Change language" aria-label="Change language">
-            <i className="fas fa-globe" />
+        {/* Right section */}
+        <div className={styles.right}>
+          {/* Language toggle */}
+          <button className={styles.langBtn} onClick={toggleLanguage} title="Change language">
+            <i className="fas fa-globe"></i>
+            <span>{language.toUpperCase()}</span>
           </button>
 
-          {isAuthenticated ? (
-            <div className={styles.userWrap} ref={dropRef}>
-              <button className={styles.avatar} onClick={() => setDropOpen(!dropOpen)}>
-                <span className={styles.avatarInitial}>{(user?.name?.[0] || 'U').toUpperCase()}</span>
-                <i className={`fas fa-chevron-${dropOpen ? 'up' : 'down'}`} />
+          {user ? (
+            <div className={styles.userMenu} ref={dropdownRef}>
+              <button
+                className={styles.avatar}
+                onClick={() => setDropdownOpen(v => !v)}
+                aria-expanded={dropdownOpen}
+              >
+                {initials}
               </button>
-              {dropOpen && (
+              {dropdownOpen && (
                 <div className={styles.dropdown}>
-                  <div className={styles.dropHeader}>
-                    <strong>{user?.name || 'User'}</strong>
-                    <span>{user?.email}</span>
+                  <div className={styles.dropdownHeader}>
+                    <span className={styles.dropdownName}>{user.name}</span>
+                    <span className={styles.dropdownEmail}>{user.email}</span>
                   </div>
-                  <div className={styles.dropDivider} />
-                  <Link to="/profile"  className={styles.dropItem} onClick={() => setDropOpen(false)}><i className="fas fa-user" /> My Profile</Link>
-                  <Link to="/bookings" className={styles.dropItem} onClick={() => setDropOpen(false)}><i className="fas fa-calendar-alt" /> My Bookings</Link>
-                  {user?.role === 'admin' && (
-                    <Link to="/admin" className={styles.dropItem} onClick={() => setDropOpen(false)}><i className="fas fa-shield-alt" /> Admin Panel</Link>
+                  <Link to="/profile" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                    <i className="fas fa-user"></i> Profile
+                  </Link>
+                  <Link to="/bookings" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                    <i className="fas fa-suitcase"></i> My Bookings
+                  </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                      <i className="fas fa-shield-halved"></i> Admin Panel
+                    </Link>
                   )}
-                  <div className={styles.dropDivider} />
-                  <button className={`${styles.dropItem} ${styles.dropLogout}`} onClick={() => { logout(); setDropOpen(false); }}>
-                    <i className="fas fa-sign-out-alt" /> Sign Out
+                  <hr className={styles.dropdownDivider} />
+                  <button className={styles.dropdownItem} onClick={handleLogout}>
+                    <i className="fas fa-right-from-bracket"></i> Log out
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <Link to="/login" className={`btn btn-primary btn-sm ${styles.loginBtn}`}>
-              <i className="fas fa-sign-in-alt" /> Login
-            </Link>
+            <div className={styles.authLinks}>
+              <Link to="/login" className={styles.loginBtn}>Login</Link>
+              <Link to="/signup" className={styles.signupBtn}>Sign up</Link>
+            </div>
           )}
 
-          {/* Mobile hamburger */}
-          <button className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
-            <span className={`${styles.bar} ${menuOpen ? styles.open : ''}`} />
-            <span className={`${styles.bar} ${menuOpen ? styles.open : ''}`} />
-            <span className={`${styles.bar} ${menuOpen ? styles.open : ''}`} />
+          {/* Hamburger */}
+          <button
+            className={`${styles.hamburger} ${menuOpen ? styles.open : ''}`}
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Toggle menu"
+          >
+            <span></span><span></span><span></span>
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
-      <div className={`${styles.mobileMenu} ${menuOpen ? styles.mobileOpen : ''}`}>
-        <ul>
-          {[
-            { to: '/', label: 'Home' },
-            { to: '/#tours', label: 'Tours', hash: true },
-            { to: '/#destinations', label: 'Destinations', hash: true },
-            { to: '/#contact', label: 'Contact', hash: true },
-          ].map(({ to, label, hash }) => (
-            <li key={to}>
-              {hash
-                ? <a href={to} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>{label}</a>
-                : <Link to={to} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>{label}</Link>
-              }
-            </li>
-          ))}
-          {!isAuthenticated && (
-            <li><Link to="/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Login</Link></li>
+      {menuOpen && (
+        <div className={styles.mobileMenu}>
+          <NavLink to="/" end onClick={() => setMenuOpen(false)}>Home</NavLink>
+          <NavLink to="/bookings" onClick={() => setMenuOpen(false)}>Bookings</NavLink>
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" onClick={() => setMenuOpen(false)}>Admin</NavLink>
           )}
-        </ul>
-      </div>
-    </nav>
+          {user ? (
+            <>
+              <NavLink to="/profile" onClick={() => setMenuOpen(false)}>Profile</NavLink>
+              <button onClick={handleLogout}>Log out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link to="/signup" onClick={() => setMenuOpen(false)}>Sign up</Link>
+            </>
+          )}
+        </div>
+      )}
+    </header>
   );
 };
 

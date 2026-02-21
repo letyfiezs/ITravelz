@@ -1,104 +1,135 @@
-import React, { useState } from 'react';
-import { useLanguage } from '../hooks/useContext';
+import React, { useState, useEffect } from 'react';
+import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
+const TABS = ['overview', 'bookings', 'users'];
+
 const Admin = () => {
-  const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [tab, setTab]         = useState('overview');
+  const [stats, setStats]     = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [users, setUsers]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
+
+  useEffect(() => {
+    Promise.all([
+      adminService.getStats(),
+      adminService.getBookings(),
+      adminService.getUsers(),
+    ])
+      .then(([s, b, u]) => {
+        setStats(s.data);
+        setBookings(b.data.bookings || b.data || []);
+        setUsers(u.data.users || u.data || []);
+      })
+      .catch(() => setError('Failed to load admin data.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const updateStatus = async (id, status) => {
+    try {
+      await adminService.updateBookingStatus(id, status);
+      setBookings((prev) => prev.map((b) => b._id === id ? { ...b, status } : b));
+    } catch {
+      alert('Update failed.');
+    }
+  };
 
   return (
-    <div className={styles.adminContainer}>
-      <div className={styles.adminSidebar}>
-        <h2>Admin Panel</h2>
-        <nav className={styles.adminNav}>
-          <button
-            className={`${styles.navItem} ${activeTab === 'dashboard' ? styles.active : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <i className="fas fa-chart-line"></i> Dashboard
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'packages' ? styles.active : ''}`}
-            onClick={() => setActiveTab('packages')}
-          >
-            <i className="fas fa-box"></i> Packages
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'bookings' ? styles.active : ''}`}
-            onClick={() => setActiveTab('bookings')}
-          >
-            <i className="fas fa-calendar"></i> Bookings
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'users' ? styles.active : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <i className="fas fa-users"></i> Users
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'content' ? styles.active : ''}`}
-            onClick={() => setActiveTab('content')}
-          >
-            <i className="fas fa-file-alt"></i> Content
-          </button>
-        </nav>
-      </div>
+    <div className={styles.page}>
+      <div className="container">
+        <div className={styles.pageHeader}>
+          <div>
+            <h1 className={styles.title}>Admin Panel</h1>
+            <p className={styles.subtitle}>Manage the ITravelz platform</p>
+          </div>
+        </div>
 
-      <div className={styles.adminContent}>
-        {activeTab === 'dashboard' && (
-          <div className={styles.section}>
-            <h2>Dashboard</h2>
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <i className="fas fa-users"></i>
-                <h3>Total Users</h3>
-                <p className={styles.statValue}>1,234</p>
-              </div>
-              <div className={styles.statCard}>
-                <i className="fas fa-calendar"></i>
-                <h3>Total Bookings</h3>
-                <p className={styles.statValue}>567</p>
-              </div>
-              <div className={styles.statCard}>
-                <i className="fas fa-dollar-sign"></i>
-                <h3>Revenue</h3>
-                <p className={styles.statValue}>$45,678</p>
-              </div>
-              <div className={styles.statCard}>
-                <i className="fas fa-star"></i>
-                <h3>Average Rating</h3>
-                <p className={styles.statValue}>4.8/5</p>
-              </div>
+        {loading && <div className="page-loader" style={{ minHeight: 300 }}><span className="spinner spinner-dark" />Loading...</div>}
+        {error   && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>}
+
+        {!loading && !error && (
+          <>
+            {/* Tabs */}
+            <div className={styles.tabs}>
+              {TABS.map((t) => (
+                <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
             </div>
-          </div>
-        )}
 
-        {activeTab === 'packages' && (
-          <div className={styles.section}>
-            <h2>Packages</h2>
-            <p>Manage travel packages here.</p>
-          </div>
-        )}
+            {/* Overview */}
+            {tab === 'overview' && stats && (
+              <div className={styles.statsGrid}>
+                {[
+                  { icon: 'fa-users',          label: 'Total Users',    val: stats.totalUsers    ?? '—' },
+                  { icon: 'fa-calendar-check', label: 'Total Bookings', val: stats.totalBookings ?? '—' },
+                  { icon: 'fa-dollar-sign',    label: 'Total Revenue',  val: stats.totalRevenue  ? `$${stats.totalRevenue.toLocaleString()}` : '—' },
+                  { icon: 'fa-box-open',       label: 'Packages',       val: stats.totalPackages ?? '—' },
+                ].map(({ icon, label, val }) => (
+                  <div key={label} className={styles.statCard}>
+                    <div className={styles.statIcon}><i className={`fas ${icon}`} /></div>
+                    <div><strong>{val}</strong><span>{label}</span></div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        {activeTab === 'bookings' && (
-          <div className={styles.section}>
-            <h2>Bookings</h2>
-            <p>View and manage all bookings.</p>
-          </div>
-        )}
+            {/* Bookings */}
+            {tab === 'bookings' && (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr><th>Package</th><th>Date</th><th>Guests</th><th>Status</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((b) => (
+                      <tr key={b._id}>
+                        <td>{b.packageName || 'Package'}</td>
+                        <td>{new Date(b.travelDate).toLocaleDateString()}</td>
+                        <td>{b.numberOfGuests}</td>
+                        <td><span className={`badge badge-${b.status === 'confirmed' ? 'success' : b.status === 'cancelled' ? 'error' : 'accent'}`}>{b.status}</span></td>
+                        <td>
+                          <select
+                            value={b.status}
+                            onChange={(e) => updateStatus(b._id, e.target.value)}
+                            className={styles.select}
+                          >
+                            {['pending','confirmed','completed','cancelled'].map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-        {activeTab === 'users' && (
-          <div className={styles.section}>
-            <h2>Users</h2>
-            <p>Manage user accounts and permissions.</p>
-          </div>
-        )}
-
-        {activeTab === 'content' && (
-          <div className={styles.section}>
-            <h2>Content Management</h2>
-            <p>Edit website content and pages.</p>
-          </div>
+            {/* Users */}
+            {tab === 'users' && (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u._id}>
+                        <td>{u.name}</td>
+                        <td>{u.email}</td>
+                        <td><span className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-accent'}`}>{u.role}</span></td>
+                        <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

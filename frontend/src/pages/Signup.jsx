@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useContext';
 import styles from './Auth.module.css';
@@ -6,7 +6,7 @@ import styles from './Auth.module.css';
 const Signup = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,8 +15,8 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return; }
-    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
+    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     setLoading(true);
     const result = await signup(form.name, form.email, form.password);
     setLoading(false);
@@ -42,18 +42,13 @@ const Signup = () => {
         </div>
         <div className={styles.authLeftOverlay} />
       </div>
-
       <div className={styles.authRight}>
         <div className={styles.authCard}>
           <div className={styles.authHeader}>
             <h1>Create account</h1>
             <p>Join ITravelz and explore the world your way</p>
           </div>
-
-          {error && (
-            <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>
-          )}
-
+          {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>}
           <form onSubmit={handleSubmit} className={styles.authForm}>
             <div className="form-group">
               <label>Full name</label>
@@ -80,14 +75,13 @@ const Signup = () => {
               <label>Confirm password</label>
               <div className={styles.inputWrap}>
                 <i className="fas fa-lock" />
-                <input className="form-input" type="password" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Repeat your password" required />
+                <input className="form-input" type="password" value={form.confirm} onChange={set('confirm')} placeholder="Repeat your password" required />
               </div>
             </div>
             <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>
-              {loading ? <><span className="spinner" />Creating account...</> : <>Create Account <i className="fas fa-arrow-right" /></>}
+              {loading ? <><span className="spinner" /> Creating account...</> : <>Create Account <i className="fas fa-arrow-right" /></>}
             </button>
           </form>
-
           <p className={styles.switchText}>
             Already have an account? <Link to="/login">Sign in</Link>
           </p>

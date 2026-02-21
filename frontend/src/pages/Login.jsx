@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useContext';
 import styles from './Auth.module.css';
@@ -36,24 +36,19 @@ const Login = () => {
           <p>Join thousands of travelers discovering the world with ITravelz. Personalized itineraries, expert guides, and unforgettable experiences.</p>
           <ul className={styles.authFeatures}>
             <li><i className="fas fa-check-circle" /> 120+ handpicked destinations</li>
-            <li><i className="fas fa-check-circle" /> Secure & transparent pricing</li>
+            <li><i className="fas fa-check-circle" /> Secure and transparent pricing</li>
             <li><i className="fas fa-check-circle" /> 24/7 travel support</li>
           </ul>
         </div>
         <div className={styles.authLeftOverlay} />
       </div>
-
       <div className={styles.authRight}>
         <div className={styles.authCard}>
           <div className={styles.authHeader}>
             <h1>Welcome back</h1>
             <p>Sign in to your account to continue your journey</p>
           </div>
-
-          {error && (
-            <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>
-          )}
-
+          {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>}
           <form onSubmit={handleSubmit} className={styles.authForm}>
             <div className="form-group">
               <label>Email address</label>
@@ -73,12 +68,11 @@ const Login = () => {
               </div>
             </div>
             <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>
-              {loading ? <><span className="spinner" />Signing in...</> : <>Sign In <i className="fas fa-arrow-right" /></>}
+              {loading ? <><span className="spinner" /> Signing in...</> : <>Sign In <i className="fas fa-arrow-right" /></>}
             </button>
           </form>
-
           <p className={styles.switchText}>
-            Do not have an account? <Link to="/signup">Create one free</Link>
+            New to ITravelz? <Link to="/signup">Create a free account</Link>
           </p>
         </div>
       </div>

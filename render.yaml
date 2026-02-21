@@ -1,0 +1,43 @@
+services:
+  # ── Backend API (Web Service) ──────────────────────────────────────────
+  - type: web
+    name: itravelz-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false   # Set in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false   # e.g. https://itravelz-frontend.onrender.com
+
+  # ── Frontend (Static Site) ─────────────────────────────────────────────
+  - type: static
+    name: itravelz-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false   # e.g. https://itravelz-backend.onrender.com/api

@@ -1,83 +1,64 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
 
-const Footer = () => {
-  const year = new Date().getFullYear();
-  return (
-    <footer className={styles.footer}>
-      <div className={styles.inner}>
-        <div className={styles.grid}>
-          {/* Brand */}
-          <div className={styles.col}>
-            <Link to="/" className={styles.brand}>
-              <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
-              <span className={styles.brandText}>I<span>Travelz</span></span>
-            </Link>
-            <p className={styles.tagline}>Your gateway to extraordinary journeys. We craft unforgettable travel experiences across the globe.</p>
-            <div className={styles.socials}>
-              {[
-                { icon: 'fab fa-facebook-f', href: '#' },
-                { icon: 'fab fa-instagram',  href: '#' },
-                { icon: 'fab fa-twitter',    href: '#' },
-                { icon: 'fab fa-youtube',    href: '#' },
-              ].map(({ icon, href }) => (
-                <a key={icon} href={href} className={styles.social} target="_blank" rel="noopener noreferrer">
-                  <i className={icon} />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick links */}
-          <div className={styles.col}>
-            <h4 className={styles.colTitle}>Quick Links</h4>
-            <ul className={styles.list}>
-              <li><Link to="/">Home</Link></li>
-              <li><a href="/#tours">Tours & Packages</a></li>
-              <li><a href="/#destinations">Destinations</a></li>
-              <li><a href="/#itineraries">Itineraries</a></li>
-              <li><a href="/#contact">Contact Us</a></li>
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div className={styles.col}>
-            <h4 className={styles.colTitle}>Services</h4>
-            <ul className={styles.list}>
-              <li><a href="#">Flight Booking</a></li>
-              <li><a href="#">Hotel Reservations</a></li>
-              <li><a href="#">Tour Packages</a></li>
-              <li><a href="#">Travel Insurance</a></li>
-              <li><a href="#">24/7 Support</a></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div className={styles.col}>
-            <h4 className={styles.colTitle}>Get in Touch</h4>
-            <ul className={styles.contactList}>
-              <li><i className="fas fa-map-marker-alt" /><span>123 Travel Street, Dubai, UAE</span></li>
-              <li><i className="fas fa-phone" /><span>+971 4 000 0000</span></li>
-              <li><i className="fas fa-envelope" /><span>hello@itravelz.com</span></li>
-            </ul>
-            <div className={styles.badge}>
-              <i className="fas fa-shield-alt" /> Trusted by 50,000+ travelers
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.bottom}>
-          <p>&copy; {year} ITravelz. All rights reserved.</p>
-          <div className={styles.bottomLinks}>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Cookie Policy</a>
-          </div>
+const Footer = () => (
+  <footer className={styles.footer}>
+    <div className={styles.inner}>
+      {/* Brand */}
+      <div className={styles.brand}>
+        <Link to="/" className={styles.logo}>
+          <i className="fas fa-plane-departure"></i>
+          <span>ITravelz</span>
+        </Link>
+        <p className={styles.tagline}>
+          Crafting extraordinary travel experiences since 2020. Let us take you to the world.
+        </p>
+        <div className={styles.socials}>
+          <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Twitter"><i className="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="YouTube"><i className="fab fa-youtube"></i></a>
         </div>
       </div>
-    </footer>
-  );
-};
+
+      {/* Explore */}
+      <div className={styles.col}>
+        <h4>Explore</h4>
+        <Link to="/">Home</Link>
+        <Link to="/bookings">My Bookings</Link>
+        <Link to="/booking/new">Book a Trip</Link>
+        <Link to="/profile">Profile</Link>
+      </div>
+
+      {/* Destinations */}
+      <div className={styles.col}>
+        <h4>Destinations</h4>
+        <a href="#">Dubai</a>
+        <a href="#">Paris</a>
+        <a href="#">Bali</a>
+        <a href="#">New York</a>
+        <a href="#">Tokyo</a>
+      </div>
+
+      {/* Contact */}
+      <div className={styles.col}>
+        <h4>Contact</h4>
+        <p><i className="fas fa-envelope"></i> hello@itravelz.com</p>
+        <p><i className="fas fa-phone"></i> +1 (800) TRAVELZ</p>
+        <p><i className="fas fa-location-dot"></i> 123 Adventure Ave, NY</p>
+      </div>
+    </div>
+
+    <div className={styles.bottom}>
+      <p>© {new Date().getFullYear()} ITravelz. All rights reserved.</p>
+      <div className={styles.bottomLinks}>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;
