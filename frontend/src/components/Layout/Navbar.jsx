@@ -1,18 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useContext';
-import { useLanguage } from '../../hooks/useContext';
+﻿import { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth, useLanguage } from '../../hooks/useContext';
 import styles from './Navbar.module.css';
 
-const Navbar = () => {
-  const { user, logout } = useAuth();
-  const { language, toggleLanguage, t } = useLanguage();
-  const navigate = useNavigate();
+const NAV_LINKS = [
+  { to: '/',            label: 'Home'         },
+  { to: '/packages',   label: 'Tours'         },
+  { to: '/services',   label: 'Destinations'  },
+  { to: '/itineraries',label: 'Itineraries'   },
+  { to: '/contact',    label: 'Contact'       },
+];
 
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [scrolled,  setScrolled]  = useState(false);
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [dropOpen,  setDropOpen]  = useState(false);
+  const dropRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -20,127 +28,121 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => { setMenuOpen(false); setDropOpen(false); }, [location]);
+
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setDropdownOpen(false);
-    setMenuOpen(false);
-    navigate('/');
-  };
+  const handleLogout = () => { logout(); navigate('/'); };
 
   const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'U';
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)
+    : '?';
 
   return (
-    <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
-      <div className={styles.inner}>
+    <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
+      <div className={`${styles.inner} container`}>
         {/* Logo */}
-        <Link to="/" className={styles.logo} onClick={() => setMenuOpen(false)}>
-          <span className={styles.logoIcon}><i className="fas fa-plane-departure"></i></span>
-          <span className={styles.logoText}>ITravelz</span>
+        <Link to="/" className={styles.logo}>
+          <span className={styles.logoIcon}><i className="fas fa-plane-departure" /></span>
+          <span className={styles.logoText}>I<em>Travelz</em></span>
         </Link>
 
-        {/* Desktop nav links */}
-        <nav className={styles.links}>
-          <NavLink to="/" end className={({ isActive }) => isActive ? styles.active : ''}>Home</NavLink>
-          <NavLink to="/bookings" className={({ isActive }) => isActive ? styles.active : ''}>Bookings</NavLink>
-          {user?.role === 'admin' && (
-            <NavLink to="/admin" className={({ isActive }) => isActive ? styles.active : ''}>Admin</NavLink>
-          )}
+        {/* Desktop nav */}
+        <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`}>
+          {NAV_LINKS.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.active : ''}`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+
+          {/* Mobile-only auth */}
+          <div className={styles.mobileAuth}>
+            {user ? (
+              <>
+                <Link to="/profile" className={`btn btn-secondary btn-sm`}>My Profile</Link>
+                <button onClick={handleLogout} className={`btn btn-primary btn-sm`}>Sign Out</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login"  className={`btn btn-secondary btn-sm`}>Sign In</Link>
+                <Link to="/signup" className={`btn btn-primary  btn-sm`}>Register</Link>
+              </>
+            )}
+          </div>
         </nav>
 
-        {/* Right section */}
-        <div className={styles.right}>
-          {/* Language toggle */}
-          <button className={styles.langBtn} onClick={toggleLanguage} title="Change language">
-            <i className="fas fa-globe"></i>
+        {/* Desktop right controls */}
+        <div className={styles.actions}>
+          <button
+            className={styles.langBtn}
+            onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+            title="Switch language"
+          >
+            <i className="fas fa-globe" />
             <span>{language.toUpperCase()}</span>
           </button>
 
           {user ? (
-            <div className={styles.userMenu} ref={dropdownRef}>
+            <div className={styles.userMenu} ref={dropRef}>
               <button
                 className={styles.avatar}
-                onClick={() => setDropdownOpen(v => !v)}
-                aria-expanded={dropdownOpen}
+                onClick={() => setDropOpen(p => !p)}
+                aria-expanded={dropOpen}
               >
                 {initials}
               </button>
-              {dropdownOpen && (
+              {dropOpen && (
                 <div className={styles.dropdown}>
-                  <div className={styles.dropdownHeader}>
-                    <span className={styles.dropdownName}>{user.name}</span>
-                    <span className={styles.dropdownEmail}>{user.email}</span>
+                  <div className={styles.dropUser}>
+                    <span className={styles.dropName}>{user.name}</span>
+                    <span className={styles.dropEmail}>{user.email}</span>
                   </div>
-                  <Link to="/profile" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                    <i className="fas fa-user"></i> Profile
-                  </Link>
-                  <Link to="/bookings" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                    <i className="fas fa-suitcase"></i> My Bookings
-                  </Link>
+                  <div className={styles.dropDivider} />
+                  <Link to="/profile"   className={styles.dropItem}><i className="fas fa-user"/>   Profile</Link>
+                  <Link to="/bookings"  className={styles.dropItem}><i className="fas fa-ticket-alt"/> My Bookings</Link>
                   {user.role === 'admin' && (
-                    <Link to="/admin" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                      <i className="fas fa-shield-halved"></i> Admin Panel
-                    </Link>
+                    <Link to="/admin"   className={styles.dropItem}><i className="fas fa-shield-alt"/> Admin</Link>
                   )}
-                  <hr className={styles.dropdownDivider} />
-                  <button className={styles.dropdownItem} onClick={handleLogout}>
-                    <i className="fas fa-right-from-bracket"></i> Log out
+                  <div className={styles.dropDivider} />
+                  <button onClick={handleLogout} className={`${styles.dropItem} ${styles.dropLogout}`}>
+                    <i className="fas fa-sign-out-alt"/> Sign Out
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className={styles.authLinks}>
-              <Link to="/login" className={styles.loginBtn}>Login</Link>
-              <Link to="/signup" className={styles.signupBtn}>Sign up</Link>
+            <div className={styles.authBtns}>
+              <Link to="/login"  className={styles.signInBtn}>Sign In</Link>
+              <Link to="/signup" className={`btn btn-primary btn-sm ${styles.registerBtn}`}>Register</Link>
             </div>
           )}
-
-          {/* Hamburger */}
-          <button
-            className={`${styles.hamburger} ${menuOpen ? styles.open : ''}`}
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
-          >
-            <span></span><span></span><span></span>
-          </button>
         </div>
+
+        {/* Hamburger */}
+        <button
+          className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
+          onClick={() => setMenuOpen(p => !p)}
+          aria-label="Toggle menu"
+        >
+          <span /><span /><span />
+        </button>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <NavLink to="/" end onClick={() => setMenuOpen(false)}>Home</NavLink>
-          <NavLink to="/bookings" onClick={() => setMenuOpen(false)}>Bookings</NavLink>
-          {user?.role === 'admin' && (
-            <NavLink to="/admin" onClick={() => setMenuOpen(false)}>Admin</NavLink>
-          )}
-          {user ? (
-            <>
-              <NavLink to="/profile" onClick={() => setMenuOpen(false)}>Profile</NavLink>
-              <button onClick={handleLogout}>Log out</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
-              <Link to="/signup" onClick={() => setMenuOpen(false)}>Sign up</Link>
-            </>
-          )}
-        </div>
-      )}
+      {/* Mobile nav overlay */}
+      {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
     </header>
   );
-};
-
-export default Navbar;
+}

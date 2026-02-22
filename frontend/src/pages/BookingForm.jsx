@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { bookingService, packageService } from '../services/api';
 import { useAuth } from '../hooks/useContext';
 import styles from './BookingForm.module.css';
@@ -7,6 +7,7 @@ import styles from './BookingForm.module.css';
 const BookingForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
   const [form, setForm] = useState({
     packageId: '',
@@ -20,7 +21,12 @@ const BookingForm = () => {
 
   useEffect(() => {
     packageService.getAll()
-      .then((res) => setPackages(res.data.packages || res.data || []))
+      .then((res) => {
+        const list = res.data.packages || res.data || [];
+        setPackages(list);
+        const preId = searchParams.get('package');
+        if (preId) setForm((p) => ({ ...p, packageId: preId }));
+      })
       .catch(() => {});
   }, []);
 

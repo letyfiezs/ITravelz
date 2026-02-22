@@ -14,6 +14,10 @@ const Bookings       = lazy(() => import('./pages/Bookings'));
 const BookingForm    = lazy(() => import('./pages/BookingForm'));
 const Admin          = lazy(() => import('./pages/Admin'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
+const Packages       = lazy(() => import('./pages/Packages'));
+const Services       = lazy(() => import('./pages/Services'));
+const Itineraries    = lazy(() => import('./pages/Itineraries'));
+const Contact        = lazy(() => import('./pages/Contact'));
 
 const Loader = () => (
   <div className="page-loader">
@@ -33,12 +37,16 @@ const App = () => (
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/verify-email/:token"   element={<VerifyEmail />} />
+        <Route path="/packages"              element={<Packages />} />
+        <Route path="/services"              element={<Services />} />
+        <Route path="/itineraries"           element={<Itineraries />} />
+        <Route path="/contact"               element={<Contact />} />
 
         {/* Protected routes */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile"      element={<Profile />} />
           <Route path="/bookings"     element={<Bookings />} />
-          <Route path="/booking/new"  element={<BookingForm />} />
+          <Route path="/booking"      element={<BookingForm />} />
         </Route>
 
         {/* Admin */}

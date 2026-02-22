@@ -1,0 +1,125 @@
+/* Contact Page */
+.page { min-height: 100vh; }
+
+.hero {
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  background: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&q=70') center/cover no-repeat;
+}
+.heroOverlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,21,50,.88), rgba(0,53,128,.82)); }
+.heroContent { position: relative; z-index: 1; padding-top: var(--nav-height); color: #fff; }
+.heroTitle { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; color: #fff; margin-bottom: 8px; }
+.heroSub { color: rgba(255,255,255,.75); font-size: 1rem; max-width: 500px; }
+
+/* Contact grid */
+.grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start; }
+
+/* Form card */
+.formCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+}
+.formTitle { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.formSub { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; }
+.form { display: flex; flex-direction: column; gap: 18px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Info panel */
+.infoPanel { display: flex; flex-direction: column; gap: 24px; }
+
+.infoCards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.infoCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: box-shadow .2s;
+}
+.infoCard:hover { box-shadow: var(--shadow-sm); }
+
+.infoIcon {
+  width: 42px; height: 42px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ic) 15%, transparent);
+  color: var(--ic);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.infoCard h4 { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.infoCard a, .infoCard span { display: block; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; text-decoration: none; }
+.infoCard a:hover { color: var(--primary); }
+
+/* Social box */
+.socialBox {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  color: #fff;
+}
+.socialBox h4 { font-weight: 700; font-size: 0.95rem; margin-bottom: 16px; }
+.socials { display: flex; gap: 10px; flex-wrap: wrap; }
+.social {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  transition: all .2s;
+  text-decoration: none;
+}
+.social:hover { background: var(--sc, var(--accent)); transform: translateY(-2px); }
+
+/* FAQ */
+.faqSection { background: var(--bg-secondary); }
+.faqHead { text-align: center; margin-bottom: 48px; }
+.faqHead .section-label { margin-bottom: 10px; }
+.faqs { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+.faq {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+.faq:hover { box-shadow: var(--shadow-xs); }
+
+.faqQ {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 18px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  gap: 12px;
+}
+.faqQ i { color: var(--text-muted); flex-shrink: 0; transition: transform .2s; }
+.faqOpen .faqQ i { color: var(--primary); }
+
+.faqA {
+  padding: 0 20px 18px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+/* Responsive */
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .infoCards { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .row { grid-template-columns: 1fr; } .infoCards { grid-template-columns: 1fr; } .formCard { padding: 24px; } }

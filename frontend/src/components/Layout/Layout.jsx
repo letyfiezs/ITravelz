@@ -7,9 +7,9 @@ import styles from './Layout.module.css';
 const Layout = () => (
   <div className={styles.wrapper}>
     <Navbar />
-    <main className={styles.main}>
+    <div className={styles.main}>
       <Outlet />
-    </main>
+    </div>
     <Footer />
   </div>
 );
