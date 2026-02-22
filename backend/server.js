@@ -84,12 +84,13 @@ app.get("/api/health", (req, res) => {
 // SERVE REACT FRONTEND
 // ========================================
 
-// SPA fallback — let React Router handle all non-API, non-asset routes
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.includes(".")) {
-    return next();
-  }
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+// Serve built React static files
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// SPA fallback — let React Router handle all non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 // ========================================
