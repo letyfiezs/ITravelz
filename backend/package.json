@@ -4,7 +4,7 @@
   "description": "TravelHub Backend - Travel Agency Management System",
   "main": "server.js",
   "scripts": {
-    "build": "cd ../frontend && npm install && npm run build",
+    "build": "cd ../frontend && npm install --include=dev && npm run build",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "create-admin": "node scripts/createAdmin.js",
