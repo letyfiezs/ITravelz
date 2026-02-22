@@ -49,6 +49,37 @@ exports.login = async (req, res, next) => {
   }
 };
 
+exports.getStats = async (req, res, next) => {
+  try {
+    const User    = require('../models/User');
+    const Booking = require('../models/Booking');
+    const Package = require('../models/Package');
+
+    const [totalUsers, totalBookings, totalPackages, revenueAgg] = await Promise.all([
+      User.countDocuments(),
+      Booking.countDocuments(),
+      Package.countDocuments(),
+      Booking.aggregate([{ $group: { _id: null, total: { $sum: '$totalPrice' } } }]),
+    ]);
+
+    res.json({
+      success: true,
+      totalUsers,
+      totalBookings,
+      totalPackages,
+      totalRevenue: revenueAgg[0]?.total || 0,
+    });
+  } catch (err) { next(err); }
+};
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    res.json({ success: true, users });
+  } catch (err) { next(err); }
+};
+
 exports.getProfile = async (req, res, next) => {
   try {
     const admin = await Admin.findById(req.admin.id).select('-password');

@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
 const axios = require("axios");
 
 const sendEmail = async (to, subject, htmlContent) => {
@@ -168,17 +168,26 @@ const sendBookingApprovedEmail = async (
   booking
 ) => {
   const content = `
-    <h2>✅ Booking Approved!</h2>
+    <h2>✅ Your Booking is Approved!</h2>
     <p>Hello ${name},</p>
+    <p>Great news! Your booking has been <strong style="color:#059669">approved</strong>. Get ready for an amazing journey! 🎉</p>
 
-    <p>Your booking for <strong>${booking.packageName}</strong> has been approved.</p>
+    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
+      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ''}
+      <p><strong>Package:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ''}
+      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ''}
+      ${booking.duration && booking.duration !== 'N/A' ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ''}
+    </div>
 
-    <p>Travel Date: ${booking.travelDate}</p>
+    <p>Our team will reach out with further details. If you have any questions please reply to this email.</p>
+    <p>We look forward to making your trip unforgettable!</p>
   `;
 
   return await sendEmail(
     email,
-    `Booking Approved - ${booking.packageName}`,
+    `✅ Booking Approved - ${booking.packageName}`,
     baseTemplate(content)
   );
 };
@@ -195,10 +204,15 @@ const sendBookingDeclinedEmail = async (
     <h2>❌ Booking Update</h2>
     <p>Hello ${name},</p>
 
-    <p>Unfortunately your booking for 
-    <strong>${booking.packageName}</strong> was declined.</p>
+    <p>We're sorry to inform you that your booking for <strong>${booking.packageName}</strong> could not be approved at this time.</p>
 
-    <p>Please contact support for assistance.</p>
+    <div style="background:#fff5f5;padding:20px;border-radius:8px;border-left:4px solid #ef4444;margin:20px 0">
+      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ''}
+      <p><strong>Package:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>Requested Date:</strong> ${booking.travelDate}</p>` : ''}
+    </div>
+
+    <p>Please contact our support team for assistance or to re-schedule your trip. We apologize for the inconvenience.</p>
   `;
 
   return await sendEmail(

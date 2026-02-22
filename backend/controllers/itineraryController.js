@@ -1,6 +1,14 @@
 const Itinerary = require('../models/Itinerary');
 const mongoose = require('mongoose');
 
+// Get all itineraries (admin - includes inactive)
+exports.getAllItinerariesAdmin = async (req, res, next) => {
+  try {
+    const itineraries = await Itinerary.find().sort({ order: 1, createdAt: -1 });
+    res.status(200).json({ success: true, count: itineraries.length, itineraries });
+  } catch (err) { next(err); }
+};
+
 // Get all itineraries (public - only active ones)
 exports.getAllItineraries = async (req, res, next) => {
   try {

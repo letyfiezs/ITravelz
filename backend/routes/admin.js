@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { login, getProfile, updateProfile } = require('../controllers/adminController');
+const { login, getProfile, updateProfile, getStats, getUsers } = require('../controllers/adminController');
 const {
   getAllBookings,
   getBookingById,
   updateBooking,
-  deleteBooking
+  deleteBooking,
+  approveBooking,
+  declineBooking,
 } = require('../controllers/bookingController');
 const {
   createService,
@@ -28,8 +30,15 @@ const {
 const {
   createItinerary,
   updateItinerary,
-  deleteItinerary
+  deleteItinerary,
+  getAllItinerariesAdmin
 } = require('../controllers/itineraryController');
+const {
+  getAllDestinationsAdmin,
+  createDestination,
+  updateDestination,
+  deleteDestination,
+} = require('../controllers/destinationController');
 const { protectAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -38,10 +47,17 @@ router.post('/login', login);
 router.get('/profile', protectAdmin, getProfile);
 router.put('/profile', protectAdmin, updateProfile);
 
+// Stats & Users
+router.get('/stats', protectAdmin, getStats);
+router.get('/users', protectAdmin, getUsers);
+
 // Booking Management Routes
 router.get('/bookings', protectAdmin, getAllBookings);
 router.get('/bookings/:id', protectAdmin, getBookingById);
+router.patch('/bookings/:id/approve', protectAdmin, approveBooking);
+router.patch('/bookings/:id/decline', protectAdmin, declineBooking);
 router.put('/bookings/:id', protectAdmin, updateBooking);
+router.patch('/bookings/:id', protectAdmin, updateBooking);
 router.delete('/bookings/:id', protectAdmin, deleteBooking);
 
 // Service Management Routes
@@ -61,9 +77,16 @@ router.put('/packages/:id', protectAdmin, updatePackage);
 router.delete('/packages/:id', protectAdmin, deletePackage);
 
 // Itinerary Management Routes
+router.get('/itineraries', protectAdmin, getAllItinerariesAdmin);
 router.post('/itineraries', protectAdmin, createItinerary);
 router.put('/itineraries/:id', protectAdmin, updateItinerary);
 router.delete('/itineraries/:id', protectAdmin, deleteItinerary);
+
+// Destination Management Routes
+router.get('/destinations', protectAdmin, getAllDestinationsAdmin);
+router.post('/destinations', protectAdmin, createDestination);
+router.put('/destinations/:id', protectAdmin, updateDestination);
+router.delete('/destinations/:id', protectAdmin, deleteDestination);
 
 // Image Upload
 router.post('/upload', protectAdmin, upload.single('image'), uploadImage);

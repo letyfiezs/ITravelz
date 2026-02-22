@@ -2,6 +2,7 @@ const Booking = require("../models/Booking");
 const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
@@ -11,9 +12,19 @@ const {
 // Create Booking (Client)
 exports.createBooking = async (req, res) => {
   try {
-    console.log('=== CREATE BOOKING REQUEST ===');
-    console.log('Request body:', req.body);
-    
+    // Try to extract the authenticated userId from the Bearer token if present
+    let authenticatedUserId = null;
+    let authenticatedUserEmail = null;
+    try {
+      const auth = req.headers.authorization;
+      if (auth && auth.startsWith('Bearer ')) {
+        const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET || 'secret-key-change-in-production');
+        authenticatedUserId = decoded.id;
+        const authUser = await User.findById(decoded.id).select('email name');
+        if (authUser) authenticatedUserEmail = authUser.email;
+      }
+    } catch (_) { /* token invalid or absent – continue as guest */ }
+
     const {
       fullName,
       email,
@@ -34,18 +45,17 @@ exports.createBooking = async (req, res) => {
       specialRequests,
       userId,
     } = req.body;
-    
-    console.log('Received userId:', userId);
-    console.log('Received email:', email);
 
     // Support both new and legacy field names
     const finalFullName = fullName || customerName;
-    const finalEmail = email || customerEmail;
+    const finalEmail = email || customerEmail || authenticatedUserEmail;
     const finalPhone = phone || customerPhone;
     const finalServiceName = serviceName || packageName;
     const finalBookingDate = bookingDate || travelDate;
     const finalBookingTime = bookingTime || "";
     const finalNotes = notes || specialRequests;
+    // Use token-authenticated userId over body-supplied (more secure)
+    const finalUserId = authenticatedUserId || userId || null;
 
     // Validation
     if (!finalFullName || !finalEmail || !finalPhone || !finalServiceName || !finalBookingDate) {
@@ -128,28 +138,20 @@ exports.createBooking = async (req, res) => {
       fullName: finalFullName,
       email: finalEmail,
       phone: finalPhone,
-      userId: userId || null,
+      userId: finalUserId,
       serviceName: finalServiceName,
-      duration: duration || "N/A",
+      duration: duration || 'N/A',
       price: price || 0,
       bookingDate: new Date(finalBookingDate),
       bookingTime: finalBookingTime,
       numberOfPeople: numberOfPeople || 1,
-      notes: finalNotes || "",
-      status: "pending",
+      notes: finalNotes || '',
+      status: 'pending',
       totalPrice: price ? price * (numberOfPeople || 1) : 0,
     });
 
-    console.log('Booking object before save:', {
-      userId: booking.userId,
-      email: booking.email,
-      fullName: booking.fullName,
-    });
-
     await booking.save();
-    
-    console.log('✅ Booking saved successfully with ID:', booking._id);
-    console.log('Booking userId:', booking.userId);
+    console.log('✅ Booking saved. userId:', booking.userId, 'email:', booking.email);
 
     // Try to send confirmation email
     try {
@@ -223,42 +225,32 @@ exports.getAllBookings = async (req, res) => {
 // Get User Bookings
 exports.getUserBookings = async (req, res) => {
   try {
-    console.log('=== GET USER BOOKINGS ===');
-    console.log('req.userId:', req.userId);
-    console.log('req.userEmail:', req.userEmail);
-    
     if (!req.userId) {
-      console.warn('❌ No userId in request');
-      return res.status(401).json({
-        success: false,
-        message: "User ID not found",
-      });
+      return res.status(401).json({ success: false, message: 'User ID not found' });
     }
-    
-    // Query by userId first, then fall back to email
-    console.log('🔍 Querying bookings for userId:', req.userId);
-    const bookings = await Booking.find({
-      $or: [
-        { userId: req.userId },
-        { email: req.userEmail }
-      ]
-    }).sort({ createdAt: -1 });
-    
-    console.log('✅ Found', bookings.length, 'bookings');
-    console.log('Bookings:', bookings.map(b => ({ _id: b._id, userId: b.userId, email: b.email })));
+
+    // Build query: match by userId (ObjectId) OR by email
+    const orConditions = [];
+    try {
+      orConditions.push({ userId: new mongoose.Types.ObjectId(req.userId) });
+    } catch (_) {}
+    if (req.userEmail) orConditions.push({ email: req.userEmail });
+
+    const bookings = await Booking.find(
+      orConditions.length > 1 ? { $or: orConditions } : orConditions[0] || {}
+    ).sort({ createdAt: -1 });
+
+    console.log(`✅ getUserBookings: userId=${req.userId} email=${req.userEmail} → found ${bookings.length}`);
 
     res.status(200).json({
       success: true,
       count: bookings.length,
       data: bookings,
+      bookings,
     });
   } catch (error) {
-    console.error("Get user bookings error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching your bookings",
-      error: error.message,
-    });
+    console.error('Get user bookings error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching your bookings', error: error.message });
   }
 };
 
@@ -306,6 +298,12 @@ exports.updateBooking = async (req, res) => {
     }
     const { status, paymentStatus, notes } = req.body;
 
+    // Get the old booking first so we can compare status
+    const oldBooking = await Booking.findById(req.params.id);
+    if (!oldBooking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
       { status, paymentStatus, notes, updatedAt: Date.now() },
@@ -317,6 +315,34 @@ exports.updateBooking = async (req, res) => {
         success: false,
         message: "Booking not found",
       });
+    }
+
+    // Send email notification if status changed
+    if (status && status !== oldBooking.status) {
+      try {
+        const bookingDetails = {
+          bookingId: booking.bookingId,
+          packageName: booking.serviceName,
+          duration: booking.duration || 'N/A',
+          travelDate: new Date(booking.bookingDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          bookingTime: booking.bookingTime || '',
+          numberOfPeople: booking.numberOfPeople,
+        };
+
+        if (status === 'approved') {
+          await sendBookingApprovedEmail(booking.email, booking.fullName, bookingDetails);
+          console.log('✅ Approval email sent to', booking.email);
+        } else if (status === 'cancelled' || status === 'declined') {
+          await sendBookingDeclinedEmail(booking.email, booking.fullName, bookingDetails);
+          console.log('✅ Decline email sent to', booking.email);
+        } else if (status === 'completed') {
+          // Reuse confirmation email template as a "trip completed" notification
+          await sendBookingConfirmationEmail(booking.email, booking.fullName, { ...bookingDetails, status: 'completed' });
+          console.log('✅ Completion email sent to', booking.email);
+        }
+      } catch (emailErr) {
+        console.log('Email send failed but booking updated:', emailErr.message);
+      }
     }
 
     res.status(200).json({

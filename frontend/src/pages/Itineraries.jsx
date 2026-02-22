@@ -22,8 +22,29 @@ const Itineraries = () => {
   useEffect(() => {
     itineraryService.getAll()
       .then((res) => {
-        const data = res.data?.data || res.data?.itineraries || res.data || [];
-        setItineraries(data.length > 0 ? data : FALLBACK);
+        const raw = res.data?.data || res.data?.itineraries || res.data || [];
+        if (raw.length > 0) {
+          // Normalize DB records to the shape this component expects
+          const normalized = raw.map((it) => ({
+            ...it,
+            // duration is a string like "14 Days"; extract number or keep string
+            days: typeof it.days === 'number'
+              ? it.days
+              : (typeof it.duration === 'string'
+                  ? parseInt(it.duration) || it.duration
+                  : Array.isArray(it.days) ? it.days.length : null),
+            // highlights: use existing array of strings, or extract titles from days objects
+            highlights: Array.isArray(it.highlights) && typeof it.highlights[0] === 'string'
+              ? it.highlights
+              : Array.isArray(it.days) && it.days.length > 0
+                ? it.days.slice(0, 4).map((d) => (typeof d === 'object' ? d.title : d))
+                : [],
+            destination: it.destination || it.locations || null,
+          }));
+          setItineraries(normalized);
+        } else {
+          setItineraries(FALLBACK);
+        }
       })
       .catch(() => setItineraries(FALLBACK))
       .finally(() => setLoading(false));
@@ -64,7 +85,7 @@ const Itineraries = () => {
                     )}
                     {itin.days && (
                       <span className={styles.daysBadge}>
-                        <i className="fas fa-calendar-check" /> {itin.days} Days
+                        <i className="fas fa-calendar-check" /> {typeof itin.days === 'number' ? `${itin.days} Days` : itin.days}
                       </span>
                     )}
                   </div>
@@ -103,10 +124,10 @@ const Itineraries = () => {
                       </div>
                     )}
                     <Link
-                      to={`/booking?package=${itin._id}&type=itinerary`}
+                      to="/booking"
                       className="btn btn-primary btn-sm"
                     >
-                      Book This Trip
+                      <i className="fas fa-calendar-check" /> Book a Tour
                     </Link>
                   </div>
                 </div>

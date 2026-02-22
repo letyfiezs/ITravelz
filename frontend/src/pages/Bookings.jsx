@@ -17,7 +17,7 @@ const Bookings = () => {
 
   useEffect(() => {
     bookingService.getAll()
-      .then((res) => setBookings(res.data.bookings || res.data || []))
+      .then((res) => setBookings(res.data.data || res.data.bookings || res.data || []))
       .catch(() => setError('Failed to load bookings.'))
       .finally(() => setLoading(false));
   }, []);
@@ -40,7 +40,7 @@ const Bookings = () => {
             <h1 className={styles.title}>My Bookings</h1>
             <p className={styles.subtitle}>Manage all your travel reservations</p>
           </div>
-          <Link to="/booking/new" className="btn btn-primary">
+          <Link to="/booking" className="btn btn-primary">
             <i className="fas fa-plus" /> New Booking
           </Link>
         </div>
@@ -53,7 +53,7 @@ const Bookings = () => {
             <i className="fas fa-suitcase-rolling" />
             <h3>No bookings yet</h3>
             <p>Start planning your first adventure!</p>
-            <Link to="/booking/new" className="btn btn-primary">Book a Tour</Link>
+            <Link to="/booking" className="btn btn-primary">Book a Tour</Link>
           </div>
         )}
 

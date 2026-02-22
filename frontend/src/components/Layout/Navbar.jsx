@@ -4,11 +4,11 @@ import { useAuth, useLanguage } from '../../hooks/useContext';
 import styles from './Navbar.module.css';
 
 const NAV_LINKS = [
-  { to: '/',            label: 'Home'         },
-  { to: '/packages',   label: 'Tours'         },
-  { to: '/services',   label: 'Destinations'  },
-  { to: '/itineraries',label: 'Itineraries'   },
-  { to: '/contact',    label: 'Contact'       },
+  { to: '/',             label: 'Home'         },
+  { to: '/packages',    label: 'Tours'         },
+  { to: '/destinations',label: 'Destinations'  },
+  { to: '/itineraries', label: 'Itineraries'   },
+  { to: '/contact',     label: 'Contact'       },
 ];
 
 export default function Navbar() {

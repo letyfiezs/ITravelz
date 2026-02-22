@@ -201,6 +201,14 @@ input, textarea, select { font-family: inherit; }
   background: var(--border);
 }
 
+.btn-error {
+  background: #ef4444;
+  color: #fff;
+}
+.btn-error:hover:not(:disabled) {
+  background: #dc2626;
+}
+
 .btn-sm  { padding: 9px 20px;  font-size: 0.82rem; }
 .btn-lg  { padding: 16px 40px; font-size: 1rem;    }
 .btn-xl  { padding: 18px 48px; font-size: 1.05rem; }

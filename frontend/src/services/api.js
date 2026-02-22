@@ -66,6 +66,11 @@ export const itineraryService = {
   getById: (id)     => api.get(`/itineraries/${id}`),
 };
 
+export const destinationService = {
+  getAll:  (params) => api.get('/destinations', { params }),
+  getById: (id)     => api.get(`/destinations/${id}`),
+};
+
 export const serviceService = {
   getAll:  () => api.get('/services'),
 };
@@ -76,10 +81,25 @@ export const contentService = {
 };
 
 export const adminService = {
-  getStats:    () => api.get('/admin/stats'),
-  getUsers:    () => api.get('/admin/users'),
-  getBookings: () => api.get('/admin/bookings'),
-  updateBookingStatus: (id, status) => api.patch(`/admin/bookings/${id}`, { status }),
+  getStats:              () => api.get('/admin/stats'),
+  getUsers:              () => api.get('/admin/users'),
+  getBookings:           () => api.get('/admin/bookings'),
+  updateBookingStatus:   (id, status) => api.patch(`/admin/bookings/${id}`, { status }),
+  approveBooking:        (id) => api.patch(`/admin/bookings/${id}/approve`),
+  declineBooking:        (id) => api.patch(`/admin/bookings/${id}/decline`),
+  deleteBooking:         (id) => api.delete(`/admin/bookings/${id}`),
+  getItineraries:        () => api.get('/admin/itineraries'),
+  createItinerary:       (data) => api.post('/admin/itineraries', data),
+  updateItinerary:       (id, data) => api.put(`/admin/itineraries/${id}`, data),
+  deleteItinerary:       (id) => api.delete(`/admin/itineraries/${id}`),
+  getPackages:           () => api.get('/admin/packages'),
+  createPackage:         (data) => api.post('/admin/packages', data),
+  updatePackage:         (id, data) => api.put(`/admin/packages/${id}`, data),
+  deletePackage:         (id) => api.delete(`/admin/packages/${id}`),
+  getDestinations:       () => api.get('/admin/destinations'),
+  createDestination:     (data) => api.post('/admin/destinations', data),
+  updateDestination:     (id, data) => api.put(`/admin/destinations/${id}`, data),
+  deleteDestination:     (id) => api.delete(`/admin/destinations/${id}`),
 };
 
 export default api;

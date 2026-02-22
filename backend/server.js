@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -13,8 +13,9 @@ const adminRoutes = require("./routes/admin");
 const servicesRoutes = require("./routes/services");
 const contentRoutes = require("./routes/content");
 const packagesRoutes = require("./routes/packages");
-const itinerariesRoutes = require("./routes/itineraries");
-const contactRoutes = require("./routes/contact");
+const itinerariesRoutes = require('./routes/itineraries');
+const destinationsRoutes = require('./routes/destinations');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 app.set("trust proxy", 1);
@@ -32,7 +33,9 @@ app.use(
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:3000",
+  "http://localhost:3001",
   "http://localhost:5173",
+  "http://localhost:5174",
 ].filter(Boolean);
 
 app.use(
@@ -68,8 +71,9 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/packages", packagesRoutes);
 app.use("/api/content", contentRoutes);
-app.use("/api/itineraries", itinerariesRoutes);
-app.use("/api/contact", contactRoutes);
+app.use('/api/itineraries', itinerariesRoutes);
+app.use('/api/destinations', destinationsRoutes);
+app.use('/api/contact', contactRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (req, res) => {

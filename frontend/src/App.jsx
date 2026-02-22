@@ -17,6 +17,7 @@ const NotFound       = lazy(() => import('./pages/NotFound'));
 const Packages       = lazy(() => import('./pages/Packages'));
 const Services       = lazy(() => import('./pages/Services'));
 const Itineraries    = lazy(() => import('./pages/Itineraries'));
+const Destinations   = lazy(() => import('./pages/Destinations'));
 const Contact        = lazy(() => import('./pages/Contact'));
 
 const Loader = () => (
@@ -40,6 +41,7 @@ const App = () => (
         <Route path="/packages"              element={<Packages />} />
         <Route path="/services"              element={<Services />} />
         <Route path="/itineraries"           element={<Itineraries />} />
+        <Route path="/destinations"          element={<Destinations />} />
         <Route path="/contact"               element={<Contact />} />
 
         {/* Protected routes */}

@@ -54,24 +54,33 @@ exports.authorize = (...roles) => {
   };
 };
 
-// Protect Admin Routes - Verify JWT Token for Admin
+// Protect Admin Routes - accepts both Admin model tokens and User tokens with role:'admin'
 exports.protectAdmin = async (req, res, next) => {
   try {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) {
       return res.status(401).json({ success: false, message: 'Not authorized - no token' });
     }
-    
+
     const token = auth.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret-key-change-in-production');
-    
-    const admin = await Admin.findById(decoded.id);
-    if (!admin || !admin.isActive) {
-      return res.status(401).json({ success: false, message: 'Admin not found or inactive' });
+
+    // Try User model first (users with role:'admin' created via createAdminUser.js)
+    const User = require('../models/User');
+    const user = await User.findById(decoded.id);
+    if (user && user.role === 'admin') {
+      req.admin = { id: user._id, email: user.email, name: user.name, role: 'admin' };
+      return next();
     }
-    
-    req.admin = admin;
-    next();
+
+    // Fallback: try legacy Admin model
+    const admin = await Admin.findById(decoded.id);
+    if (admin && admin.isActive) {
+      req.admin = admin;
+      return next();
+    }
+
+    return res.status(401).json({ success: false, message: 'Admin access required' });
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ success: false, message: 'Token expired' });
