@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { packageService } from '../services/api';
+import { packageService, destinationService } from '../services/api';
 import styles from './Home.module.css';
 
 const STATS = [
@@ -42,6 +42,8 @@ export default function Home() {
   const navigate = useNavigate();
   const [packages, setPackages]     = useState([]);
   const [pkgLoading, setPkgLoading] = useState(true);
+  const [dests, setDests]           = useState([]);
+  const [destLoading, setDestLoading] = useState(true);
   const [searchDest, setSearchDest]       = useState('');
   const [searchDate, setSearchDate]       = useState('');
   const [searchGuests, setSearchGuests]   = useState('');
@@ -53,6 +55,10 @@ export default function Home() {
       .then(r => setPackages((r.data?.data || r.data || []).slice(0, 3)))
       .catch(() => setPackages([]))
       .finally(() => setPkgLoading(false));
+    destinationService.getAll()
+      .then(r => setDests((r.data?.destinations || r.data?.data || r.data || []).slice(0, 6)))
+      .catch(() => setDests([]))
+      .finally(() => setDestLoading(false));
   }, []);
 
   const handleSearch = (e) => {
@@ -129,20 +135,39 @@ export default function Home() {
               <span className="section-label">Top Picks</span>
               <h2 className="section-title">Popular Destinations</h2>
             </div>
-            <Link to="/services" className="btn btn-outline btn-sm">View All <i className="fas fa-arrow-right" /></Link>
+            <Link to="/destinations" className="btn btn-outline btn-sm">View All <i className="fas fa-arrow-right" /></Link>
           </div>
           <div className={styles.destGrid}>
-            {DESTINATIONS.map(({ name, country, img, tag }) => (
-              <div key={name} className={styles.destCard}>
-                <img src={img} alt={name} loading="lazy" />
-                <div className={styles.destOverlay} />
-                <span className={styles.destTag}>{tag}</span>
-                <div className={styles.destInfo}>
-                  <h3 className={styles.destName}>{name}</h3>
-                  <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>
-                </div>
-              </div>
-            ))}
+            {destLoading
+              ? DESTINATIONS.map(({ name, country, img, tag }) => (
+                  <div key={name} className={styles.destCard} style={{ background: 'var(--bg-alt)' }}>
+                    <img src={img} alt={name} loading="lazy" />
+                    <div className={styles.destOverlay} />
+                    <span className={styles.destTag}>{tag}</span>
+                    <div className={styles.destInfo}>
+                      <h3 className={styles.destName}>{name}</h3>
+                      <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>
+                    </div>
+                  </div>
+                ))
+              : (dests.length > 0 ? dests : DESTINATIONS).map((d) => {
+                  const name    = d.name    || d.title || '';
+                  const country = [d.city, d.country].filter(Boolean).join(', ') || d.country || '';
+                  const tag     = d.category || d.tag || '';
+                  const img     = d.image || d.img || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80';
+                  return (
+                    <Link key={d._id || name} to="/destinations" className={styles.destCard}>
+                      <img src={img} alt={name} loading="lazy" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'; }} />
+                      <div className={styles.destOverlay} />
+                      {tag && <span className={styles.destTag}>{tag}</span>}
+                      <div className={styles.destInfo}>
+                        <h3 className={styles.destName}>{name}</h3>
+                        {country && <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>}
+                      </div>
+                    </Link>
+                  );
+                })
+            }
           </div>
         </div>
       </section>

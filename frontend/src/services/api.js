@@ -36,11 +36,12 @@ export const authService = {
 };
 
 export const packageService = {
-  getAll:   (params) => api.get('/packages', { params }),
-  getById:  (id)     => api.get(`/packages/${id}`),
-  create:   (data)   => api.post('/packages', data),
-  update:   (id, data) => api.put(`/packages/${id}`, data),
-  delete:   (id)     => api.delete(`/packages/${id}`),
+  getAll:           (params) => api.get('/packages', { params }),
+  getById:          (id)     => api.get(`/packages/${id}`),
+  getAvailability:  (id, params) => api.get(`/packages/${id}/availability`, { params }),
+  create:           (data)   => api.post('/packages', data),
+  update:           (id, data) => api.put(`/packages/${id}`, data),
+  delete:           (id)     => api.delete(`/packages/${id}`),
 };
 
 export const bookingService = {

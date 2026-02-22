@@ -543,11 +543,11 @@ exports.getProfile = async (req, res) => {
 // Update User Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, address, city, country } = req.body;
+    const { name, phone, address, city, country, avatar } = req.body;
 
     const user = await User.findByIdAndUpdate(
       req.userId,
-      { name, phone, address, city, country, updatedAt: Date.now() },
+      { name, phone, address, city, country, avatar, updatedAt: Date.now() },
       { new: true, runValidators: true },
     );
 

@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'destinations', 'itineraries', 'users'];
+const TABS             = ['overview', 'bookings', 'packages', 'destinations', 'users'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
-const DIFFICULTIES     = ['easy', 'moderate', 'challenging'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
 
-const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', image: '', isActive: true };
-const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', features: '', status: 'active', availableDates: [], availableTimes: [] };
+const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5 };
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', isActive: true };
 
 /* ─── Modal ─── */
@@ -30,7 +28,6 @@ const Admin = () => {
   const [stats, setStats]         = useState(null);
   const [bookings, setBookings]   = useState([]);
   const [users, setUsers]         = useState([]);
-  const [itins, setItins]         = useState([]);
   const [packages, setPackages]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
@@ -40,13 +37,6 @@ const Admin = () => {
 
   /* booking detail modal */
   const [bDetail, setBDetail]     = useState(null);
-
-  /* itinerary modal */
-  const [itinModal, setItinModal] = useState(false);
-  const [itinForm, setItinForm]   = useState(EMPTY_ITIN);
-  const [itinEdit, setItinEdit]   = useState(null);
-  const [itinSaving, setItinSaving] = useState(false);
-  const [itinMsg, setItinMsg]     = useState('');
 
   /* destinations */
   const [destinations, setDestinations] = useState([]);
@@ -71,15 +61,13 @@ const Admin = () => {
       adminService.getStats(),
       adminService.getBookings(),
       adminService.getUsers(),
-      adminService.getItineraries(),
       adminService.getPackages(),
       adminService.getDestinations(),
     ])
-      .then(([s, b, u, it, pk, dest]) => {
+      .then(([s, b, u, pk, dest]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
-        setItins(it.data.itineraries || it.data || []);
         setPackages(pk.data.packages || pk.data || []);
         setDestinations(dest.data.destinations || dest.data || []);
       })
@@ -114,7 +102,7 @@ const Admin = () => {
   const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
   const openPkgEdit   = (p) => {
     setPkgEdit(p._id);
-    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [] });
+    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5 });
     setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true);
   };
   const closePkg = () => { setPkgModal(false); setPkgMsg(''); };
@@ -149,39 +137,6 @@ const Admin = () => {
     if (!window.confirm('Delete this package?')) return;
     try { await adminService.deletePackage(id); setPackages((p) => p.filter((x) => x._id !== id)); }
     catch { alert('Delete failed.'); }
-  };
-
-  /* ── Itinerary helpers ── */
-  const openItinCreate = () => { setItinEdit(null); setItinForm(EMPTY_ITIN); setItinMsg(''); setItinModal(true); };
-  const openItinEdit   = (it) => { setItinEdit(it._id); setItinForm({ title: it.title, description: it.description, duration: it.duration, locations: it.locations, difficulty: it.difficulty, image: it.image || '', isActive: it.isActive ?? true }); setItinMsg(''); setItinModal(true); };
-  const closeItin  = () => { setItinModal(false); setItinMsg(''); };
-  const setF = (k) => (e) => setItinForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
-
-  const saveItin = async (e) => {
-    e.preventDefault(); setItinSaving(true); setItinMsg('');
-    try {
-      if (itinEdit) {
-        const res = await adminService.updateItinerary(itinEdit, itinForm);
-        setItins((prev) => prev.map((x) => x._id === itinEdit ? res.data.itinerary : x));
-        setItinMsg('✅ Updated!');
-      } else {
-        const res = await adminService.createItinerary(itinForm);
-        setItins((prev) => [res.data.itinerary, ...prev]);
-        setItinMsg('✅ Created!');
-        setItinForm(EMPTY_ITIN);
-      }
-      setTimeout(closeItin, 900);
-    } catch (err) { setItinMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setItinSaving(false); }
-  };
-  const deleteItin = async (id) => {
-    if (!window.confirm('Delete this itinerary?')) return;
-    try { await adminService.deleteItinerary(id); setItins((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
-  };
-  const toggleActive = async (it) => {
-    try { const res = await adminService.updateItinerary(it._id, { isActive: !it.isActive }); setItins((p) => p.map((x) => x._id === it._id ? res.data.itinerary : x)); }
-    catch { alert('Update failed.'); }
   };
 
   /* ── Destination helpers ── */
@@ -239,7 +194,7 @@ const Admin = () => {
           <div className={styles.tabs}>
             {TABS.map((t) => (
               <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
-                <i className={`fas ${t==='overview'?'fa-chart-bar':t==='bookings'?'fa-calendar-check':t==='packages'?'fa-box-open':t==='destinations'?'fa-globe':t==='itineraries'?'fa-map-marked-alt':'fa-users'}`} />
+                <i className={`fas ${t==='overview'?'fa-chart-bar':t==='bookings'?'fa-calendar-check':t==='packages'?'fa-box-open':t==='destinations'?'fa-globe':'fa-users'}`} />
                 {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
@@ -314,9 +269,9 @@ const Admin = () => {
               </div>
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Name</th><th>Destination</th><th>Duration</th><th>Price</th><th>Category</th><th>Dates</th><th>Status</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>Image</th><th>Name</th><th>Destination</th><th>Duration</th><th>Price</th><th>Category</th><th>Dates</th><th>Max Guests/Slot</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
-                    {packages.length===0&&<tr><td colSpan={9} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No packages yet — click "Add Package"</td></tr>}
+                    {packages.length===0&&<tr><td colSpan={10} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No packages yet — click "Add Package"</td></tr>}
                     {packages.map((p) => (
                       <tr key={p._id}>
                         <td>
@@ -330,6 +285,10 @@ const Admin = () => {
                         <td style={{fontWeight:600}}>${Number(p.price).toLocaleString()}</td>
                         <td><span className="badge badge-accent">{p.category}</span></td>
                         <td style={{fontSize:12,color:'var(--text-muted)'}}>{(p.availableDates||[]).length>0?`${(p.availableDates||[]).length} date(s)`:'Any date'}</td>
+                        <td style={{fontSize:12,textAlign:'center'}}>
+                          <span style={{fontWeight:700,color:'var(--primary)',fontSize:16}}>{p.bookingLimitPerSlot||5}</span>
+                          <span style={{display:'block',color:'var(--text-muted)',fontSize:10}}>per slot</span>
+                        </td>
                         <td><span className={`badge badge-${p.status==='active'?'success':'error'}`}>{p.status}</span></td>
                         <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openPkgEdit(p)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deletePkg(p._id)}><i className="fas fa-trash"/></button></div></td>
                       </tr>
@@ -349,9 +308,9 @@ const Admin = () => {
               </div>
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Name</th><th>Location</th><th>Category</th><th>Tagline</th><th>Highlights</th><th>Status</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>Image</th><th>Name</th><th>Location</th><th>Category</th><th>Tagline</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
-                    {destinations.length===0&&<tr><td colSpan={8} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No destinations yet — click "Add Destination"</td></tr>}
+                    {destinations.length===0&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No destinations yet — click "Add Destination"</td></tr>}
                     {destinations.map((d) => (
                       <tr key={d._id}>
                         <td>
@@ -363,42 +322,8 @@ const Admin = () => {
                         <td style={{fontSize:12,color:'var(--text-muted)'}}>{[d.city,d.country].filter(Boolean).join(', ')||'—'}</td>
                         <td><span className="badge badge-accent">{d.category}</span></td>
                         <td style={{fontSize:12,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.tagline||'—'}</td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{(d.highlights||[]).length} highlight{(d.highlights||[]).length!==1?'s':''}</td>
                         <td><button onClick={()=>toggleDestActive(d)} className={`${styles.toggleBtn} ${d.isActive?styles.toggleOn:styles.toggleOff}`}>{d.isActive?'Active':'Hidden'}</button></td>
                         <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openDestEdit(d)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteDest(d._id)}><i className="fas fa-trash"/></button></div></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ── Itineraries ── */}
-          {tab === 'itineraries' && (
-            <div>
-              <div className={styles.tabToolbar}>
-                <span>{itins.length} itinerary{itins.length!==1?'s':''}</span>
-                <button className="btn btn-primary btn-sm" onClick={openItinCreate}><i className="fas fa-plus"/> Add Itinerary</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Title</th><th>Duration</th><th>Locations</th><th>Difficulty</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {itins.length===0&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No itineraries yet</td></tr>}
-                    {itins.map((it) => (
-                      <tr key={it._id}>
-                        <td>
-                          {it.image
-                            ? <img src={it.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
-                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-image"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{it.title}</div><div style={{fontSize:12,color:'var(--text-muted)',maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{it.description}</div></td>
-                        <td>{it.duration}</td>
-                        <td>{it.locations}</td>
-                        <td><span className={`badge badge-${it.difficulty==='easy'?'success':it.difficulty==='challenging'?'error':'accent'}`}>{it.difficulty}</span></td>
-                        <td><button onClick={()=>toggleActive(it)} className={`${styles.toggleBtn} ${it.isActive?styles.toggleOn:styles.toggleOff}`}>{it.isActive?'Active':'Hidden'}</button></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openItinEdit(it)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteItin(it._id)}><i className="fas fa-trash"/></button></div></td>
                       </tr>
                     ))}
                   </tbody>
@@ -530,6 +455,23 @@ const Admin = () => {
               )}
             </div>
 
+            {/* Booking Capacity */}
+            <div className={styles.formGroup}>
+              <label>
+                Max Guests per Slot
+                <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6}}>How many total people can book the same date+time</span>
+              </label>
+              <input
+                className="form-input"
+                type="number"
+                min="1"
+                max="500"
+                value={pkgForm.bookingLimitPerSlot}
+                onChange={setP('bookingLimitPerSlot')}
+                placeholder="5"
+              />
+            </div>
+
             {pkgMsg && <p className={styles.formMsg}>{pkgMsg}</p>}
             <div className={styles.modalFooter}>
               <button type="button" className="btn btn-outline btn-sm" onClick={closePkg}>Cancel</button>
@@ -613,55 +555,6 @@ const Admin = () => {
         </Modal>
       )}
 
-      {/* ── Itinerary Create/Edit Modal ── */}
-      {itinModal && (
-        <Modal title={itinEdit?'Edit Itinerary':'Add Itinerary'} onClose={closeItin}>
-          <form onSubmit={saveItin} className={styles.itinForm}>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Title *</label>
-                <input className="form-input" value={itinForm.title} onChange={setF('title')} required placeholder="e.g. Classic Southeast Asia"/>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Duration *</label>
-                <input className="form-input" value={itinForm.duration} onChange={setF('duration')} required placeholder="e.g. 14 Days"/>
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Locations *</label>
-                <input className="form-input" value={itinForm.locations} onChange={setF('locations')} required placeholder="e.g. 6 Cities"/>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Difficulty</label>
-                <select className="form-input" value={itinForm.difficulty} onChange={setF('difficulty')}>
-                  {DIFFICULTIES.map((d)=><option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Image URL</label>
-              <input className="form-input" value={itinForm.image} onChange={setF('image')} placeholder="https://images.unsplash.com/..."/>
-              {itinForm.image && <img src={itinForm.image} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Description *</label>
-              <textarea className="form-input" rows={4} value={itinForm.description} onChange={setF('description')} required placeholder="Brief description…" style={{resize:'vertical'}}/>
-            </div>
-            <label className={styles.checkRow}>
-              <input type="checkbox" checked={itinForm.isActive} onChange={setF('isActive')}/>
-              <span>Visible to public (Active)</span>
-            </label>
-            {itinMsg && <p className={styles.formMsg}>{itinMsg}</p>}
-            <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeItin}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={itinSaving}>
-                {itinSaving?<><span className="spinner"/> Saving…</>:itinEdit?'Save Changes':'Create Itinerary'}
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
     </div>
   );
 };

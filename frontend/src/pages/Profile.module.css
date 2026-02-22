@@ -5,20 +5,54 @@
   border: 1px solid var(--border); box-shadow: var(--shadow);
   margin-bottom: 32px;
 }
-.avatar {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: var(--grad-primary); color: #fff;
+.avatarWrap { position: relative; flex-shrink: 0; width: 90px; height: 90px; }
+.avatarImg {
+  width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--primary);
+}
+.avatarFallback {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: var(--grad-primary, linear-gradient(135deg,#ff6b35,#e85d04)); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 800; flex-shrink: 0;
+  font-size: 32px; font-weight: 800;
+}
+.avatarPreview {
+  margin-top: 8px; width: 80px; height: 80px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
 }
 .name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800; color: var(--text-dark); }
 .email { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.phoneDisplay { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.phoneDisplay i { color: var(--primary); margin-right: 4px; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .card { background: var(--card); border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 20px; }
 .cardTitle { font-size: 18px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
 .cardTitle i { color: var(--primary); }
-
+/* Settings */
+.settingRow {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; background: var(--bg-secondary, #f8f9fa);
+  border-radius: 12px; border: 1px solid var(--border);
+}
+.settingInfo { display: flex; align-items: center; gap: 16px; }
+.settingInfo > i { font-size: 22px; }
+.settingInfo strong { display: block; font-size: 15px; font-weight: 700; color: var(--text-dark); }
+.settingInfo p { font-size: 13px; color: var(--text-muted); margin: 2px 0 0; }
+/* Toggle */
+.toggle {
+  width: 52px; height: 28px; border-radius: 99px; border: none; cursor: pointer;
+  position: relative; transition: background 0.25s; padding: 0; flex-shrink: 0;
+}
+.toggleOn  { background: var(--primary, #ff6b35); }
+.toggleOff { background: #d1d5db; }
+.toggleKnob {
+  position: absolute; top: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggleOn  .toggleKnob { transform: translateX(27px); }
+.toggleOff .toggleKnob { transform: translateX(3px); }
 @media (max-width: 768px) {
   .grid { grid-template-columns: 1fr; }
   .header { flex-direction: column; text-align: center; }
 }
+

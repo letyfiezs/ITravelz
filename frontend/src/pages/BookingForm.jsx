@@ -17,8 +17,10 @@ const BookingForm = () => {
     phone: '',
     specialRequests: '',
   });
-  const [error, setError]   = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError]         = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [availability, setAvail]  = useState(null);  // { remainingCapacity, totalCapacity, bookedPeople }
+  const [availLoading, setAvailLoading] = useState(false);
 
   useEffect(() => {
     packageService.getAll()
@@ -30,6 +32,24 @@ const BookingForm = () => {
       })
       .catch(() => {});
   }, []);
+
+  // Fetch real-time availability when package + date + time are all selected
+  useEffect(() => {
+    const { packageId, travelDate, bookingTime } = form;
+    if (!packageId || !travelDate || !bookingTime) { setAvail(null); return; }
+    setAvailLoading(true);
+    packageService.getAvailability(packageId, { date: travelDate, time: bookingTime })
+      .then((res) => {
+        setAvail(res.data);
+        // If current numberOfGuests exceeds remaining capacity, clamp it
+        const remaining = res.data.remainingCapacity;
+        if (remaining > 0 && Number(form.numberOfGuests) > remaining) {
+          setForm((p) => ({ ...p, numberOfGuests: remaining }));
+        }
+      })
+      .catch(() => setAvail(null))
+      .finally(() => setAvailLoading(false));
+  }, [form.packageId, form.travelDate, form.bookingTime]);
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -133,7 +153,35 @@ const BookingForm = () => {
                 </div>
                 <div className="form-group">
                   <label>Number of Guests</label>
-                  <input className="form-input" type="number" min="1" max="20" value={form.numberOfGuests} onChange={set('numberOfGuests')} required />
+                  <input
+                    className="form-input"
+                    type="number"
+                    min="1"
+                    max={availability?.remainingCapacity || selectedPkg?.bookingLimitPerSlot || 20}
+                    value={form.numberOfGuests}
+                    onChange={set('numberOfGuests')}
+                    required
+                  />
+                  {availLoading && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      <i className="fas fa-spinner fa-spin" style={{ marginRight: 4 }} /> Checking availability…
+                    </p>
+                  )}
+                  {!availLoading && availability && (
+                    <p style={{ fontSize: 12, marginTop: 4, color: availability.remainingCapacity === 0 ? 'var(--error)' : availability.remainingCapacity <= 3 ? '#f59e0b' : 'var(--success, #10b981)', fontWeight: 600 }}>
+                      <i className={`fas ${availability.remainingCapacity === 0 ? 'fa-ban' : availability.remainingCapacity <= 3 ? 'fa-exclamation-triangle' : 'fa-users'}`} style={{ marginRight: 4 }} />
+                      {availability.remainingCapacity === 0
+                        ? 'This slot is fully booked — choose another date or time'
+                        : `${availability.remainingCapacity} of ${availability.totalCapacity} spots available`
+                      }
+                    </p>
+                  )}
+                  {!availLoading && !availability && selectedPkg?.bookingLimitPerSlot && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      <i className="fas fa-users" style={{ color: 'var(--primary)', marginRight: 4 }} />
+                      Up to <strong>{selectedPkg.bookingLimitPerSlot}</strong> guests per slot — select date &amp; time to see live availability
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -176,7 +224,7 @@ const BookingForm = () => {
                 <button
                   type="submit"
                   className="btn btn-primary btn-lg"
-                  disabled={loading || !form.packageId || (hasTimes && !form.bookingTime)}
+                  disabled={loading || !form.packageId || (hasTimes && !form.bookingTime) || availability?.remainingCapacity === 0}
                 >
                   {loading ? <><span className="spinner" /> Confirming…</> : <><i className="fas fa-check" /> Confirm Booking</>}
                 </button>

@@ -147,11 +147,8 @@ const Destinations = () => {
                         className={styles.learnBtn}
                         onClick={() => toggle(d._id)}
                       >
-                        {isOpen ? <><i className="fas fa-chevron-up" /> Less Info</> : <><i className="fas fa-info-circle" /> Learn More</>}
+                        {isOpen ? <><i className="fas fa-chevron-up" /> Show Less</> : <><i className="fas fa-info-circle" /> Learn More</>}
                       </button>
-                      <Link to="/booking" className="btn btn-primary btn-sm">
-                        <i className="fas fa-plane" /> Book a Trip
-                      </Link>
                     </div>
                   </div>
                 </div>

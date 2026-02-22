@@ -1,5 +1,8 @@
 @echo off
+title ITravelz Frontend
+echo Starting frontend dev server...
 
-cd C:\Users\letyfiez\Music\website-main
+cd /d C:\Users\letyfiez\Documents\GitHub\ITravelz\frontend
 
-npx serve . -l 3000
+npm run dev
+pause

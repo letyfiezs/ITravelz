@@ -352,30 +352,29 @@
 .cardFooter {
   margin-top: auto;
   padding-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .learnBtn {
-  background: transparent;
-  border: 1.5px solid var(--border, #e5e7eb);
-  color: var(--text-muted, #6b7280);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 8px;
+  width: 100%;
+  background: var(--primary, #ff6b35);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
 }
 
 .learnBtn:hover {
-  border-color: var(--primary, #ff6b35);
-  color: var(--primary, #ff6b35);
+  background: #e85d04;
+  transform: translateY(-1px);
 }
 
 /* ─── CTA ─── */

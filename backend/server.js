@@ -135,7 +135,23 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-process.on("unhandledRejection", (err) => {
-  console.error("[UNHANDLED]", err);
+// Graceful shutdown for nodemon restarts (SIGUSR2) and normal exits
+const gracefulShutdown = (signal) => {
+  console.log(`[SHUTDOWN] ${signal} received — closing HTTP server`);
+  server.close(() => {
+    console.log('[SHUTDOWN] HTTP server closed');
+    mongoose.connection.close(false).then(() => {
+      console.log('[SHUTDOWN] MongoDB connection closed');
+      process.kill(process.pid, signal);
+    });
+  });
+};
+
+process.once('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+process.on('unhandledRejection', (err) => {
+  console.error('[UNHANDLED]', err);
   server.close(() => process.exit(1));
 });
