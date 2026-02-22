@@ -28,7 +28,7 @@ const Loader = () => (
   </div>
 );
 
-const App = () => (
+const App = () =>  (
   <Suspense fallback={<Loader />}>
     <Routes>
       {/* Public routes with navbar/footer */}
@@ -61,10 +61,6 @@ const App = () => (
     </Routes>
   </Suspense>
 );
-
-function App() {
-  return <h1 style={{color:"red"}}>REACT WORKING</h1>;
-}
 
 
 export default App;
