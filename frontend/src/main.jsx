@@ -7,8 +7,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import App from './App';
 import './styles/global.css';
 
-console.log("ENV:", import.meta.env.VITE_API_URL);
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -22,3 +20,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+console.log("ENV:", import.meta.env.VITE_API_URL);

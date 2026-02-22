@@ -19,6 +19,8 @@ const Services       = lazy(() => import('./pages/Services'));
 const Destinations   = lazy(() => import('./pages/Destinations'));
 const Contact        = lazy(() => import('./pages/Contact'));
 
+
+
 const Loader = () => (
   <div className="page-loader">
     <span className="spinner spinner-dark" />
@@ -60,4 +62,12 @@ const App = () => (
   </Suspense>
 );
 
+function App() {
+  return <h1 style={{color:"red"}}>REACT WORKING</h1>;
+}
+
+
 export default App;
+
+console.log("ENV:", import.meta.env.VITE_API_URL);
+
