@@ -1,13 +1,14 @@
 ﻿import { Link } from 'react-router-dom';
+import { useLanguage } from '../../hooks/useContext';
 import styles from './Footer.module.css';
 
-const explore = [
-  { to: '/', label: 'Home' },
-  { to: '/packages', label: 'Tour Packages' },
-  { to: '/services', label: 'Destinations' },
-  { to: '/itineraries', label: 'Itineraries' },
-  { to: '/about', label: 'About Us' },
-  { to: '/contact', label: 'Contact' },
+const EXPLORE_LINKS = [
+  { to: '/',             key: 'footer_home'        },
+  { to: '/packages',     key: 'footer_packages'    },
+  { to: '/destinations', key: 'footer_services'    },
+  { to: '/itineraries',  key: 'footer_itineraries' },
+  { to: '/about',        key: 'footer_about'       },
+  { to: '/contact',      key: 'nav_contact'        },
 ];
 
 const destinations = ['Bali, Indonesia', 'Paris, France', 'Santorini, Greece', 'Tokyo, Japan', 'New York, USA', 'Cape Town, SA'];
@@ -21,6 +22,7 @@ const socials = [
 ];
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className={styles.footer}>
       <div className={`${styles.inner} container`}>
@@ -30,9 +32,7 @@ export default function Footer() {
             <span className={styles.logoIcon}><i className="fas fa-plane-departure"/></span>
             <span className={styles.logoText}>I<em>Travelz</em></span>
           </Link>
-          <p className={styles.tagline}>
-            Crafting extraordinary journeys around the world. Let us turn your travel dreams into unforgettable memories.
-          </p>
+          <p className={styles.tagline}>{t('footer_tagline')}</p>
           <div className={styles.socials}>
             {socials.map(({ icon, href, label }) => (
               <a key={label} href={href} className={styles.social} aria-label={label} target="_blank" rel="noreferrer">
@@ -44,17 +44,17 @@ export default function Footer() {
 
         {/* Explore */}
         <div className={styles.col}>
-          <h4 className={styles.colTitle}>Explore</h4>
+          <h4 className={styles.colTitle}>{t('footer_explore')}</h4>
           <ul className={styles.colList}>
-            {explore.map(({ to, label }) => (
-              <li key={to}><Link to={to} className={styles.colLink}>{label}</Link></li>
+            {EXPLORE_LINKS.map(({ to, key }) => (
+              <li key={to}><Link to={to} className={styles.colLink}>{t(key)}</Link></li>
             ))}
           </ul>
         </div>
 
         {/* Destinations */}
         <div className={styles.col}>
-          <h4 className={styles.colTitle}>Destinations</h4>
+          <h4 className={styles.colTitle}>{t('nav_destinations')}</h4>
           <ul className={styles.colList}>
             {destinations.map(d => (
               <li key={d}><span className={styles.colLink}>{d}</span></li>
@@ -64,22 +64,22 @@ export default function Footer() {
 
         {/* Contact */}
         <div className={styles.col}>
-          <h4 className={styles.colTitle}>Contact Us</h4>
+          <h4 className={styles.colTitle}>{t('footer_contact')}</h4>
           <ul className={styles.contactList}>
             <li><i className="fas fa-map-marker-alt"/><span>123 Travel Lane, Wanderlust City</span></li>
             <li><i className="fas fa-phone"/><a href="tel:+1234567890">+1 (234) 567-890</a></li>
             <li><i className="fas fa-envelope"/><a href="mailto:hello@itravelz.com">hello@itravelz.com</a></li>
-            <li><i className="fas fa-clock"/><span>Mon  Fri: 9 AM  6 PM</span></li>
+            <li><i className="fas fa-clock"/><span>{t('footer_hours')}</span></li>
           </ul>
         </div>
       </div>
 
       <div className={styles.bottom}>
         <div className="container">
-          <p>&copy; {new Date().getFullYear()} ITravelz. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ITravelz. {t('footer_rights')}</p>
           <div className={styles.legal}>
-            <Link to="/privacy">Privacy Policy</Link>
-            <Link to="/terms">Terms of Service</Link>
+            <Link to="/privacy">{t('footer_privacy')}</Link>
+            <Link to="/terms">{t('footer_terms')}</Link>
           </div>
         </div>
       </div>

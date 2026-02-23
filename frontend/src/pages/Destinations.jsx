@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { destinationService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import styles from './Destinations.module.css';
 
 const CATEGORIES = ['All', 'Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
 
 const Destinations = () => {
+  const { t } = useLanguage();
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
@@ -32,11 +34,9 @@ const Destinations = () => {
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <p className={styles.heroEyebrow}><i className="fas fa-globe-americas" /> Explore the World</p>
-          <h1 className={styles.heroTitle}>Discover Destinations</h1>
-          <p className={styles.heroSub}>
-            Immerse yourself in the world's most extraordinary places — rich in culture, history, and natural wonder.
-          </p>
+          <p className={styles.heroEyebrow}><i className="fas fa-globe-americas" /> {t('btn_explore')}</p>
+          <h1 className={styles.heroTitle}>{t('page_destinations')}</h1>
+          <p className={styles.heroSub}>{t('page_dest_sub')}</p>
         </div>
         <div className={styles.heroCurve} />
       </section>
@@ -61,7 +61,7 @@ const Destinations = () => {
         <div className="container">
           {loading && (
             <div className={styles.stateBox}>
-              <span className="spinner spinner-dark" /> Loading destinations…
+              <span className="spinner spinner-dark" /> {t('loading')}
             </div>
           )}
           {error && !loading && (
@@ -147,7 +147,7 @@ const Destinations = () => {
                         className={styles.learnBtn}
                         onClick={() => toggle(d._id)}
                       >
-                        {isOpen ? <><i className="fas fa-chevron-up" /> Show Less</> : <><i className="fas fa-info-circle" /> Learn More</>}
+                      {isOpen ? <><i className="fas fa-chevron-up" /> {t('cancel')}</> : <><i className="fas fa-info-circle" /> {t('btn_learn_more')}</>}
                       </button>
                     </div>
                   </div>
@@ -161,11 +161,11 @@ const Destinations = () => {
       {/* ── CTA ── */}
       <section className={styles.cta}>
         <div className="container">
-          <h2>Ready to Start Your Adventure?</h2>
-          <p>Tell us your dream destination and we'll craft the perfect journey for you.</p>
+          <h2>{t('page_destinations')}</h2>
+          <p>{t('page_dest_sub')}</p>
           <div className={styles.ctaButtons}>
-            <Link to="/booking" className="btn btn-primary">Book a Tour</Link>
-            <Link to="/packages" className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>View Packages</Link>
+            <Link to="/booking" className="btn btn-primary">{t('btn_book_tour')}</Link>
+            <Link to="/packages" className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>{t('page_packages')}</Link>
           </div>
         </div>
       </section>

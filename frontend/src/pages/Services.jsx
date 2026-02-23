@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { serviceService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import styles from './Services.module.css';
 
 const FALLBACK = [
@@ -18,6 +19,7 @@ const FALLBACK = [
 const CATEGORIES = ['All', 'Beach', 'Culture', 'Romantic', 'Urban', 'Adventure', 'Nature'];
 
 const Services = () => {
+  const { t } = useLanguage();
   const [services,  setServices]  = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState('All');
@@ -45,16 +47,16 @@ const Services = () => {
       <div className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">Destinations</span>
-          <h1 className={styles.heroTitle}>Explore Our Destinations</h1>
-          <p className={styles.heroSub}>Discover breathtaking places handpicked by our travel experts</p>
+          <span className="section-label">{t('section_popular')}</span>
+          <h1 className={styles.heroTitle}>{t('page_destinations')}</h1>
+          <p className={styles.heroSub}>{t('page_dest_sub')}</p>
 
           {/* Search in hero */}
           <div className={styles.heroSearch}>
             <i className="fas fa-search" />
             <input
               type="text"
-              placeholder="Search destinations..."
+              placeholder={t('filter_search_ph')}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -77,7 +79,7 @@ const Services = () => {
         </div>
 
         <p className={styles.resultCount}>
-          <strong>{filtered.length}</strong> destination{filtered.length !== 1 ? 's' : ''}
+          <strong>{filtered.length}</strong> {t('nav_destinations')}
         </p>
 
         {/* Loading */}
@@ -109,7 +111,7 @@ const Services = () => {
                       </span>
                     )}
                     <Link to={`/packages?dest=${encodeURIComponent(s.name)}`} className="btn btn-primary btn-sm">
-                      View Tours <i className="fas fa-arrow-right" />
+                      {t('btn_view_details')} <i className="fas fa-arrow-right" />
                     </Link>
                   </div>
                 </div>
@@ -122,10 +124,10 @@ const Services = () => {
         {!loading && filtered.length === 0 && (
           <div className={styles.empty}>
             <i className="fas fa-globe" />
-            <h3>No destinations found</h3>
-            <p>Try a different search or category.</p>
+            <h3>{t('no_packages')}</h3>
+            <p>{t('no_packages_sub')}</p>
             <button className="btn btn-outline" onClick={() => { setSearch(''); setActiveTab('All'); }}>
-              Show All
+              {t('clear_filters')}
             </button>
           </div>
         )}

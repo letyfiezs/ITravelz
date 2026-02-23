@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { itineraryService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Itineraries.module.css';
 
@@ -16,6 +17,7 @@ const FALLBACK = [
 const DIFFICULTY_COLOR = { Easy: '#28c76f', Moderate: '#ff9f43', Challenging: '#ea5455' };
 
 const Itineraries = () => {
+  const { t } = useLanguage();
   const [itineraries, setItineraries] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [active,      setActive]      = useState(null);
@@ -57,9 +59,9 @@ const Itineraries = () => {
       <div className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">Itineraries</span>
-          <h1 className={styles.heroTitle}>Day-by-Day Travel Plans</h1>
-          <p className={styles.heroSub}>Expertly crafted itineraries — every moment planned, every experience curated</p>
+          <span className="section-label">{t('nav_itineraries')}</span>
+          <h1 className={styles.heroTitle}>{t('page_itineraries')}</h1>
+          <p className={styles.heroSub}>{t('page_itin_sub')}</p>
         </div>
       </div>
 
@@ -91,7 +93,7 @@ const Itineraries = () => {
                     )}
                     {itin.days && (
                       <span className={styles.daysBadge}>
-                        <i className="fas fa-calendar-check" /> {typeof itin.days === 'number' ? `${itin.days} Days` : itin.days}
+                        <i className="fas fa-calendar-check" /> {typeof itin.days === 'number' ? `${itin.days} ${t('days')}` : itin.days}
                       </span>
                     )}
                   </div>
@@ -124,16 +126,16 @@ const Itineraries = () => {
                   <div className={styles.footer}>
                     {itin.price && (
                       <div className={styles.price}>
-                        <span>from</span>
+                        <span>{t('from_price')}</span>
                         <strong>${itin.price}</strong>
-                        <span>/person</span>
+                        <span>{t('per_person')}</span>
                       </div>
                     )}
                     <Link
                       to="/booking"
                       className="btn btn-primary btn-sm"
                     >
-                      <i className="fas fa-calendar-check" /> Book a Tour
+                      <i className="fas fa-calendar-check" /> {t('btn_book_tour')}
                     </Link>
                   </div>
                 </div>
@@ -146,10 +148,10 @@ const Itineraries = () => {
         <div className={styles.cta}>
           <div className={styles.ctaOverlay} />
           <div className={styles.ctaContent}>
-            <h2>Want a Personalized Itinerary?</h2>
-            <p>Tell us your dream destination and travel style. Our experts will craft the perfect plan just for you.</p>
+            <h2>{t('section_newsletter')}</h2>
+            <p>{t('why_custom_desc')}</p>
             <Link to="/contact" className="btn btn-primary btn-lg">
-              <i className="fas fa-headset" /> Talk to an Expert
+              <i className="fas fa-headset" /> {t('btn_contact_us')}
             </Link>
           </div>
         </div>

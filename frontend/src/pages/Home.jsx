@@ -1,13 +1,14 @@
 ﻿import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { packageService, destinationService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import styles from './Home.module.css';
 
 const STATS = [
-  { icon: 'fas fa-users',          value: '15K+', label: 'Happy Travelers'  },
-  { icon: 'fas fa-map-marker-alt', value: '120+', label: 'Destinations'     },
-  { icon: 'fas fa-trophy',         value: '8+',   label: 'Years Experience' },
-  { icon: 'fas fa-star',           value: '4.9',  label: 'Average Rating'   },
+  { icon: 'fas fa-users',          value: '15K+', key: 'stat_travelers'   },
+  { icon: 'fas fa-map-marker-alt', value: '120+', key: 'stat_destinations' },
+  { icon: 'fas fa-trophy',         value: '8+',   key: 'stat_experience'   },
+  { icon: 'fas fa-star',           value: '4.9',  key: 'stat_rating'       },
 ];
 
 const DESTINATIONS = [
@@ -26,10 +27,10 @@ const TESTIMONIALS = [
 ];
 
 const WHY_US = [
-  { icon: 'fas fa-shield-alt',  color: '#4f75ff', title: 'Safe & Insured',       desc: 'All trips include travel insurance and 24/7 emergency support.'          },
-  { icon: 'fas fa-dollar-sign', color: '#28c76f', title: 'Best Price Guarantee', desc: "Find the same trip cheaper and we'll beat any price, guaranteed."        },
-  { icon: 'fas fa-headset',     color: '#ff9f43', title: '24/7 Support',         desc: 'Our travel experts are available around the clock to assist you.'        },
-  { icon: 'fas fa-route',       color: '#ea5455', title: 'Custom Itineraries',   desc: 'Tailor-made travel plans built around your preferences and budget.'      },
+  { icon: 'fas fa-shield-alt',  color: '#4f75ff', titleKey: 'why_safe',    descKey: 'why_safe_desc'    },
+  { icon: 'fas fa-dollar-sign', color: '#28c76f', titleKey: 'why_price',   descKey: 'why_price_desc'   },
+  { icon: 'fas fa-headset',     color: '#ff9f43', titleKey: 'why_support', descKey: 'why_support_desc' },
+  { icon: 'fas fa-route',       color: '#ea5455', titleKey: 'why_custom',  descKey: 'why_custom_desc'  },
 ];
 
 const FALLBACK_PKGS = [
@@ -39,6 +40,7 @@ const FALLBACK_PKGS = [
 ];
 
 export default function Home() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [packages, setPackages]     = useState([]);
   const [pkgLoading, setPkgLoading] = useState(true);
@@ -82,30 +84,28 @@ export default function Home() {
         <div className={styles.heroOverlay} />
         <div className={styles.heroBg} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">Discover The World</span>
+          <span className="section-label">{t('hero_label')}</span>
           <h1 className={styles.heroTitle}>
-            Explore The World<br/><em>Your Way</em>
+            {t('hero_title1')}<br/><em>{t('hero_title2')}</em>
           </h1>
-          <p className={styles.heroSub}>
-            Unforgettable journeys tailored to your dreams. From tropical beaches to historic cities  adventure awaits.
-          </p>
+          <p className={styles.heroSub}>{t('hero_sub')}</p>
           <form className={styles.searchWidget} onSubmit={handleSearch}>
             <div className={styles.searchField}>
-              <label><i className="fas fa-map-marker-alt" /> Destination</label>
-              <input type="text" placeholder="Where to?" value={searchDest} onChange={e => setSearchDest(e.target.value)} />
+              <label><i className="fas fa-map-marker-alt" /> {t('search_dest')}</label>
+              <input type="text" placeholder={t('search_dest_ph')} value={searchDest} onChange={e => setSearchDest(e.target.value)} />
             </div>
             <div className={styles.searchDivider} />
             <div className={styles.searchField}>
-              <label><i className="fas fa-calendar-alt" /> Travel Date</label>
+              <label><i className="fas fa-calendar-alt" /> {t('search_date')}</label>
               <input type="date" value={searchDate} onChange={e => setSearchDate(e.target.value)} />
             </div>
             <div className={styles.searchDivider} />
             <div className={styles.searchField}>
-              <label><i className="fas fa-users" /> Guests</label>
-              <input type="number" placeholder="1 Guest" min="1" value={searchGuests} onChange={e => setSearchGuests(e.target.value)} />
+              <label><i className="fas fa-users" /> {t('search_guests')}</label>
+              <input type="number" placeholder={t('search_guests_ph')} min="1" value={searchGuests} onChange={e => setSearchGuests(e.target.value)} />
             </div>
             <button type="submit" className={styles.searchBtn}>
-              <i className="fas fa-search" /> Search
+              <i className="fas fa-search" /> {t('search_btn')}
             </button>
           </form>
         </div>
@@ -115,12 +115,12 @@ export default function Home() {
       {/*  STATS  */}
       <section className={styles.statsSection}>
         <div className={`${styles.statsCard} container`}>
-          {STATS.map(({ icon, value, label }) => (
-            <div key={label} className={styles.statItem}>
+          {STATS.map(({ icon, value, key }) => (
+            <div key={key} className={styles.statItem}>
               <div className={styles.statIcon}><i className={icon} /></div>
               <div>
                 <span className={styles.statValue}>{value}</span>
-                <span className={styles.statLabel}>{label}</span>
+                <span className={styles.statLabel}>{t(key)}</span>
               </div>
             </div>
           ))}
@@ -132,10 +132,10 @@ export default function Home() {
         <div className="container">
           <div className={styles.sectionHead}>
             <div>
-              <span className="section-label">Top Picks</span>
-              <h2 className="section-title">Popular Destinations</h2>
+              <span className="section-label">{t('section_popular')}</span>
+              <h2 className="section-title">{t('section_dest_title')}</h2>
             </div>
-            <Link to="/destinations" className="btn btn-outline btn-sm">View All <i className="fas fa-arrow-right" /></Link>
+            <Link to="/destinations" className="btn btn-outline btn-sm">{t('btn_view_all')} <i className="fas fa-arrow-right" /></Link>
           </div>
           <div className={styles.destGrid}>
             {destLoading
@@ -177,10 +177,10 @@ export default function Home() {
         <div className="container">
           <div className={styles.sectionHead}>
             <div>
-              <span className="section-label">Our Offers</span>
-              <h2 className="section-title">Featured Tour Packages</h2>
+              <span className="section-label">{t('section_popular')}</span>
+              <h2 className="section-title">{t('section_packages')}</h2>
             </div>
-            <Link to="/packages" className="btn btn-outline btn-sm">All Packages <i className="fas fa-arrow-right" /></Link>
+            <Link to="/packages" className="btn btn-outline btn-sm">{t('btn_view_all')} <i className="fas fa-arrow-right" /></Link>
           </div>
           {pkgLoading ? (
             <div className={styles.packGrid}>{[1,2,3].map(i => <div key={i} className={styles.packSkeleton} />)}</div>
@@ -201,11 +201,11 @@ export default function Home() {
                     </div>
                     <div className={styles.packFooter}>
                       <div className={styles.priceGroup}>
-                        <span className={styles.priceFrom}>from</span>
+                        <span className={styles.priceFrom}>{t('from_price')}</span>
                         <span className={styles.price}>${pkg.price}</span>
-                        <span className={styles.pricePer}>/person</span>
+                        <span className={styles.pricePer}>{t('per_person')}</span>
                       </div>
-                      <Link to={pkg._id ? `/booking?package=${pkg._id}` : '/packages'} className="btn btn-primary btn-sm">Book Now</Link>
+                      <Link to={pkg._id ? `/booking?package=${pkg._id}` : '/packages'} className="btn btn-primary btn-sm">{t('btn_book_now')}</Link>
                     </div>
                   </div>
                 </div>
@@ -220,18 +220,18 @@ export default function Home() {
         <div className="container">
           <div className={styles.whyInner}>
             <div className={styles.whyLeft}>
-              <span className="section-label">Why ITravelz</span>
-              <h2 className="section-title">We Make Your Travel<br />Dreams Come True</h2>
-              <p className="section-subtitle" style={{marginTop:'16px'}}>With over 8 years of experience crafting bespoke travel experiences, we know what it takes to make every journey extraordinary.</p>
-              <Link to="/packages" className="btn btn-primary" style={{marginTop:'32px', display:'inline-flex'}}>Explore Packages <i className="fas fa-arrow-right" style={{marginLeft:'8px'}} /></Link>
+              <span className="section-label">{t('section_why')}</span>
+              <h2 className="section-title">{t('section_why')}</h2>
+              <p className="section-subtitle" style={{marginTop:'16px'}}>{t('section_why_sub')}</p>
+              <Link to="/packages" className="btn btn-primary" style={{marginTop:'32px', display:'inline-flex'}}>{t('btn_explore')} <i className="fas fa-arrow-right" style={{marginLeft:'8px'}} /></Link>
             </div>
             <div className={styles.whyRight}>
-              {WHY_US.map(({ icon, color, title, desc }) => (
-                <div key={title} className={styles.featureCard}>
+              {WHY_US.map(({ icon, color, titleKey, descKey }) => (
+                <div key={titleKey} className={styles.featureCard}>
                   <div className={styles.featureIcon} style={{'--fi-color': color}}><i className={icon} /></div>
                   <div>
-                    <h4 className={styles.featureTitle}>{title}</h4>
-                    <p className={styles.featureDesc}>{desc}</p>
+                    <h4 className={styles.featureTitle}>{t(titleKey)}</h4>
+                    <p className={styles.featureDesc}>{t(descKey)}</p>
                   </div>
                 </div>
               ))}
@@ -244,8 +244,8 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className={styles.sectionCenter}>
-            <span className="section-label">Testimonials</span>
-            <h2 className="section-title">What Our Travelers Say</h2>
+            <span className="section-label">{t('section_testimonials')}</span>
+            <h2 className="section-title">{t('section_testimonials')}</h2>
           </div>
           <div className={styles.testiGrid}>
             {TESTIMONIALS.map(({ name, location, rating, text, avatar }) => (
@@ -269,15 +269,15 @@ export default function Home() {
       <section className={styles.newsletter}>
         <div className={styles.nlOverlay} />
         <div className={`${styles.nlContent} container`}>
-          <span className="section-label">Newsletter</span>
-          <h2 className={styles.nlTitle}>Get Exclusive Travel Deals</h2>
-          <p className={styles.nlSub}>Subscribe and be the first to receive special offers, destination guides, and travel inspiration.</p>
+          <span className="section-label">{t('section_newsletter')}</span>
+          <h2 className={styles.nlTitle}>{t('section_newsletter')}</h2>
+          <p className={styles.nlSub}>{t('section_newsletter_sub')}</p>
           {subscribed ? (
-            <div className={styles.subSuccess}><i className="fas fa-check-circle" /> You are subscribed. Thank you!</div>
+            <div className={styles.subSuccess}><i className="fas fa-check-circle" /> {t('newsletter_success')}</div>
           ) : (
             <form className={styles.subForm} onSubmit={handleSubscribe}>
-              <input type="email" placeholder="Your email address" value={email} onChange={e => setEmail(e.target.value)} required className={styles.subInput} />
-              <button type="submit" className={`btn btn-primary ${styles.subBtn}`}>Subscribe <i className="fas fa-arrow-right" /></button>
+              <input type="email" placeholder={t('newsletter_ph')} value={email} onChange={e => setEmail(e.target.value)} required className={styles.subInput} />
+              <button type="submit" className={`btn btn-primary ${styles.subBtn}`}>{t('newsletter_btn')} <i className="fas fa-arrow-right" /></button>
             </form>
           )}
         </div>

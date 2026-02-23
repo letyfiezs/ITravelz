@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { packageService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Packages.module.css';
 
-const SORT_OPTIONS = [
-  { value: '',          label: 'Featured'    },
-  { value: 'price_asc', label: 'Price: Low → High' },
-  { value: 'price_desc', label: 'Price: High → Low' },
-  { value: 'rating',     label: 'Top Rated'  },
-];
 
 const Packages = () => {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [packages,  setPackages]  = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -50,9 +46,9 @@ const Packages = () => {
       <div className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">Our Offers</span>
-          <h1 className={styles.heroTitle}>Tour Packages</h1>
-          <p className={styles.heroSub}>Handcrafted journeys for every kind of traveler</p>
+          <span className="section-label">{t('section_popular')}</span>
+          <h1 className={styles.heroTitle}>{t('page_packages')}</h1>
+          <p className={styles.heroSub}>{t('page_packages_sub')}</p>
         </div>
       </div>
 
@@ -63,7 +59,7 @@ const Packages = () => {
             <i className="fas fa-search" />
             <input
               type="text"
-              placeholder="Search by destination or name..."
+              placeholder={t('filter_search_ph')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className={styles.filterInput}
@@ -74,28 +70,28 @@ const Packages = () => {
             value={maxPrice}
             onChange={e => setMaxPrice(e.target.value)}
           >
-            <option value="">Any Budget</option>
-            <option value="500">Under $500</option>
-            <option value="1000">Under $1,000</option>
-            <option value="2000">Under $2,000</option>
-            <option value="5000">Under $5,000</option>
+            <option value="">{t('filter_any_budget')}</option>
+            <option value="500">{t('filter_under')} $500</option>
+            <option value="1000">{t('filter_under')} $1,000</option>
+            <option value="2000">{t('filter_under')} $2,000</option>
+            <option value="5000">{t('filter_under')} $5,000</option>
           </select>
           <select
             className={styles.filterSelect}
             value={sort}
             onChange={e => setSort(e.target.value)}
           >
-            {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {[{value:'',label:t('filter_featured')},{value:'price_asc',label:t('filter_price_low')},{value:'price_desc',label:t('filter_price_high')},{value:'rating',label:t('filter_top_rated')}].map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
           <button type="submit" className="btn btn-primary btn-sm">
-            <i className="fas fa-filter" /> Filter
+            <i className="fas fa-filter" /> {t('filter_btn')}
           </button>
         </form>
 
         {/* Results count */}
         {!loading && !error && (
           <p className={styles.resultCount}>
-            <strong>{packages.length}</strong> package{packages.length !== 1 ? 's' : ''} found
+            <strong>{packages.length}</strong> {t('results_found_pkg')}
           </p>
         )}
 
@@ -116,10 +112,10 @@ const Packages = () => {
         {!loading && !error && packages.length === 0 && (
           <div className={styles.empty}>
             <i className="fas fa-search" />
-            <h3>No packages found</h3>
-            <p>Try adjusting your filters or search term.</p>
+            <h3>{t('no_packages')}</h3>
+            <p>{t('no_packages_sub')}</p>
             <button className="btn btn-outline" onClick={() => { setSearch(''); setMaxPrice(''); setSort(''); }}>
-              Clear Filters
+              {t('clear_filters')}
             </button>
           </div>
         )}
@@ -141,7 +137,7 @@ const Packages = () => {
                       <i className="fas fa-clock" /> {pkg.duration}
                     </span>
                   )}
-                  {pkg.featured && <span className={styles.featBadge}>Featured</span>}
+                  {pkg.featured && <span className={styles.featBadge}>{t('filter_featured')}</span>}
                 </div>
                 <div className={styles.cardBody}>
                   {pkg.destination && (
@@ -161,12 +157,12 @@ const Packages = () => {
                   </div>
                   <div className={styles.footer}>
                     <div className={styles.price}>
-                      <span className={styles.from}>from</span>
+                      <span className={styles.from}>{t('from_price')}</span>
                       <span className={styles.amount}>${pkg.price}</span>
-                      <span className={styles.per}>/person</span>
+                      <span className={styles.per}>{t('per_person')}</span>
                     </div>
                     <Link to={`/booking?package=${pkg._id}`} className="btn btn-primary btn-sm">
-                      Book Now
+                      {t('btn_book_now')}
                     </Link>
                   </div>
                   {pkg.includes && pkg.includes.length > 0 && (
@@ -192,7 +188,7 @@ const Packages = () => {
               <p>Contact our travel experts for a custom itinerary.</p>
             </div>
             <Link to="/contact" className="btn btn-primary">
-              <i className="fas fa-headset" /> Contact Us
+              <i className="fas fa-headset" /> {t('btn_contact_us')}
             </Link>
           </div>
         )}

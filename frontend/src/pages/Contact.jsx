@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { contactService } from '../services/api';
+import { useLanguage } from '../hooks/useContext';
 import styles from './Contact.module.css';
 
 const OFFICES = [
@@ -16,6 +17,7 @@ const FAQS = [
 ];
 
 const Contact = () => {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [msg,    setMsg]    = useState('');
@@ -44,9 +46,9 @@ const Contact = () => {
       <div className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">Get In Touch</span>
-          <h1 className={styles.heroTitle}>Contact Us</h1>
-          <p className={styles.heroSub}>Have a question or ready to plan your dream trip? We'd love to hear from you.</p>
+          <span className="section-label">{t('page_contact')}</span>
+          <h1 className={styles.heroTitle}>{t('page_contact')}</h1>
+          <p className={styles.heroSub}>{t('page_contact_sub')}</p>
         </div>
       </div>
 
@@ -56,8 +58,8 @@ const Contact = () => {
           <div className={styles.grid}>
             {/* Contact form */}
             <div className={styles.formCard}>
-              <h2 className={styles.formTitle}>Send Us a Message</h2>
-              <p className={styles.formSub}>Fill in the form and our team will respond within 24 hours.</p>
+              <h2 className={styles.formTitle}>{t('contact_send')}</h2>
+              <p className={styles.formSub}>{t('page_contact_sub')}</p>
 
               {status === 'success' && (
                 <div className="alert alert-success" style={{marginBottom:'20px'}}>
@@ -73,21 +75,21 @@ const Contact = () => {
               <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.row}>
                   <div className="form-group">
-                    <label>Full Name *</label>
+                    <label>{t('contact_name')} *</label>
                     <input className="form-input" type="text" value={form.name} onChange={set('name')} placeholder="John Doe" required />
                   </div>
                   <div className="form-group">
-                    <label>Email Address *</label>
+                    <label>{t('contact_email')} *</label>
                     <input className="form-input" type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" required />
                   </div>
                 </div>
                 <div className={styles.row}>
                   <div className="form-group">
-                    <label>Phone Number</label>
+                    <label>{t('contact_phone')}</label>
                     <input className="form-input" type="tel" value={form.phone} onChange={set('phone')} placeholder="+1 (555) 000-0000" />
                   </div>
                   <div className="form-group">
-                    <label>Subject *</label>
+                    <label>{t('contact_subject')} *</label>
                     <select className="form-input" value={form.subject} onChange={set('subject')} required>
                       <option value="">Select a subject</option>
                       <option>Tour Package Inquiry</option>
@@ -99,7 +101,7 @@ const Contact = () => {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Message *</label>
+                  <label>{t('contact_message')} *</label>
                   <textarea
                     className="form-input"
                     rows={5}
@@ -116,8 +118,8 @@ const Contact = () => {
                   style={{width:'100%'}}
                 >
                   {status === 'loading'
-                    ? <><span className="spinner" /> Sending...</>
-                    : <><i className="fas fa-paper-plane" /> Send Message</>}
+                    ? <><span className="spinner" /> {t('contact_sending')}</>
+                    : <><i className="fas fa-paper-plane" /> {t('contact_send')}</>}
                 </button>
               </form>
             </div>
