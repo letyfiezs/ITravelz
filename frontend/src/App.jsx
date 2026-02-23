@@ -20,6 +20,7 @@ const Services       = lazy(() => import('./pages/Services'));
 const Destinations   = lazy(() => import('./pages/Destinations'));
 const Contact        = lazy(() => import('./pages/Contact'));
 const GoogleCallback = lazy(() => import('./pages/GoogleCallback'));
+const GoogleComplete = lazy(() => import('./pages/GoogleComplete'));
 
 
 
@@ -42,6 +43,7 @@ const App = () =>  (
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/verify-email/:token"   element={<VerifyEmail />} />
         <Route path="/auth/google/callback"  element={<GoogleCallback />} />
+        <Route path="/google-complete"        element={<GoogleComplete />} />
         <Route path="/packages"              element={<Packages />} />
         <Route path="/services"              element={<Services />} />
         <Route path="/destinations"          element={<Destinations />} />

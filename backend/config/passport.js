@@ -43,10 +43,10 @@ passport.use(
           googleId:     profile.id,
           authProvider: 'google',
           avatar,
-          isEmailVerified: true,  // Google accounts are email-verified
+          isEmailVerified: true,
         });
 
-        return done(null, user);
+        return done(null, user, { isNew: true });
       } catch (err) {
         return done(err, null);
       }

@@ -624,7 +624,7 @@ exports.validateToken = async (req, res) => {
     if (!user) return res.status(401).json({ success: false, message: "User not found" });
     res.json({
       success: true,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, phone: user.phone },
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });

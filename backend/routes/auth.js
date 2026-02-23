@@ -44,24 +44,48 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"], session: false, state: false })
 );
 
-// Step 2: Google redirects back here
+// Step 2: Google redirects back here — custom callback to detect new users
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed`, session: false, state: false }),
-  (req, res) => {
-    const token = generateToken(req.user._id);
-    const user  = {
-      _id:    req.user._id,
-      name:   req.user.name,
-      email:  req.user.email,
-      role:   req.user.role,
-      avatar: req.user.avatar,
-    };
-    const encoded = Buffer.from(JSON.stringify(user)).toString("base64");
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    res.redirect(`${clientUrl}/auth/google/callback?token=${token}&user=${encoded}`);
+  (req, res, next) => {
+    passport.authenticate("google", { session: false, state: false }, (err, user, info) => {
+      if (err || !user) {
+        return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed`);
+      }
+      const token = generateToken(user._id);
+      const userData = {
+        _id:    user._id,
+        name:   user.name,
+        email:  user.email,
+        role:   user.role,
+        avatar: user.avatar,
+        phone:  user.phone,
+      };
+      const encoded = Buffer.from(JSON.stringify(userData)).toString("base64");
+      const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+      if (info?.isNew) {
+        return res.redirect(`${clientUrl}/google-complete?token=${token}&user=${encoded}`);
+      }
+      return res.redirect(`${clientUrl}/auth/google/callback?token=${token}&user=${encoded}`);
+    })(req, res, next);
   }
 );
+
+// Complete Google registration — save phone for new Google users
+router.put("/google/complete", protect, async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const User = require('../models/User');
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { phone },
+      { new: true }
+    );
+    res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, phone: user.phone } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to complete registration' });
+  }
+});
 
 // ── Protected routes ───────────────────────────────────────────────────
 router.get("/validate", protect, validateToken);

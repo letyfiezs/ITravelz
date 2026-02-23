@@ -56,6 +56,9 @@ export const userService = {
   getProfile:    ()     => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
   changePassword:(data) => api.put('/auth/change-password', data),
+  completeGoogleSignup: (phone, token) => api.put('/auth/google/complete', { phone }, {
+    headers: { Authorization: `Bearer ${token}` },
+  }),
 };
 
 export const contactService = {
