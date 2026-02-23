@@ -6,9 +6,20 @@
   margin-bottom: 32px;
 }
 .avatarWrap { position: relative; flex-shrink: 0; width: 90px; height: 90px; }
+.avatarUploadBtn {
+  position: relative;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  display: block;
+}
+.avatarUploadBtn:disabled { cursor: wait; }
 .avatarImg {
   width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
-  border: 3px solid var(--primary);
+  border: 3px solid var(--primary); display: block;
 }
 .avatarFallback {
   width: 90px; height: 90px; border-radius: 50%;
@@ -16,10 +27,16 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 32px; font-weight: 800;
 }
-.avatarPreview {
-  margin-top: 8px; width: 80px; height: 80px; border-radius: 50%;
-  object-fit: cover; border: 2px solid var(--border);
+.avatarOverlay {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(0,0,0,0.42);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 20px;
+  opacity: 0; transition: opacity 0.2s;
 }
+.avatarUploadBtn:hover .avatarOverlay,
+.avatarUploadBtn:focus .avatarOverlay { opacity: 1; }
+.avatarHint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 .name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800; color: var(--text-dark); }
 .email { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 .phoneDisplay { font-size: 13px; color: var(--text-muted); margin-top: 4px; }

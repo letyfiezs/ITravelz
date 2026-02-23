@@ -126,8 +126,12 @@ export default function Navbar() {
                 className={styles.avatar}
                 onClick={() => setDropOpen(p => !p)}
                 aria-expanded={dropOpen}
+                style={user.avatar ? { padding: 0, overflow: 'hidden', background: 'transparent' } : {}}
               >
-                {initials}
+                {user.avatar
+                  ? <img src={user.avatar} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  : initials
+                }
               </button>
               {dropOpen && (
                 <div className={styles.dropdown}>

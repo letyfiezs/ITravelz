@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useContext';
 import { useTheme } from '../hooks/useContext';
 import { userService } from '../services/api';
@@ -7,26 +7,45 @@ import styles from './Profile.module.css';
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', avatar: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [profileStatus, setProfileStatus] = useState('idle');
   const [pwStatus, setPwStatus] = useState('idle');
   const [profileMsg, setProfileMsg] = useState('');
   const [pwMsg, setPwMsg] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (user) setForm({ name: user.name || '', email: user.email || '', phone: user.phone || '', avatar: user.avatar || '' });
+    if (user) setForm({ name: user.name || '', email: user.email || '', phone: user.phone || '' });
   }, [user]);
 
   const setF = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
   const setPw = (k) => (e) => setPwForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const handleAvatarFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const res = await userService.uploadAvatar(fd);
+      updateUser({ avatar: res.data.avatar });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Avatar upload failed');
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleProfile = async (e) => {
     e.preventDefault();
     setProfileStatus('loading');
     try {
-      const res = await userService.updateProfile({ name: form.name, phone: form.phone, avatar: form.avatar });
-      updateUser(res.data.user || res.data.data || { name: form.name, phone: form.phone, avatar: form.avatar });
+      const res = await userService.updateProfile({ name: form.name, phone: form.phone });
+      updateUser(res.data.user || res.data.data || { name: form.name, phone: form.phone });
       setProfileStatus('success');
       setProfileMsg('Profile updated successfully.');
     } catch (err) {
@@ -59,16 +78,39 @@ const Profile = () => {
         {/* ── Header ── */}
         <div className={styles.header}>
           <div className={styles.avatarWrap}>
-            {form.avatar ? (
-              <img src={form.avatar} alt="avatar" className={styles.avatarImg} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-            ) : null}
-            <div className={styles.avatarFallback} style={{ display: form.avatar ? 'none' : 'flex' }}>{initials}</div>
+            {/* Clickable avatar — click to upload */}
+            <button
+              type="button"
+              className={styles.avatarUploadBtn}
+              onClick={() => fileInputRef.current?.click()}
+              title="Change profile picture"
+              disabled={avatarUploading}
+            >
+              {user?.avatar ? (
+                <img src={user.avatar} alt="avatar" className={styles.avatarImg} />
+              ) : (
+                <div className={styles.avatarFallback}>{initials}</div>
+              )}
+              <span className={styles.avatarOverlay}>
+                {avatarUploading
+                  ? <span className="spinner" style={{ width: 20, height: 20, borderWidth: 3, borderColor: '#fff transparent #fff #fff' }} />
+                  : <i className="fas fa-camera" />}
+              </span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: 'none' }}
+              onChange={handleAvatarFile}
+            />
           </div>
           <div>
             <h1 className={styles.name}>{user?.name}</h1>
             <p className={styles.email}>{user?.email}</p>
             {user?.phone && <p className={styles.phoneDisplay}><i className="fas fa-phone" /> {user.phone}</p>}
             {user?.role === 'admin' && <span className="badge badge-primary" style={{ marginTop: 6 }}><i className="fas fa-shield-alt" /> Admin</span>}
+            <p className={styles.avatarHint}><i className="fas fa-camera" /> Click on the photo to change</p>
           </div>
         </div>
 
@@ -89,15 +131,8 @@ const Profile = () => {
                 <input className="form-input" type="email" value={form.email} disabled style={{ opacity: .6 }} />
               </div>
               <div className="form-group">
-                <label><i className="fas fa-phone" style={{ marginRight: 6, color: 'var(--primary)' }} />Phone Number</label>
+                <label>Phone Number</label>
                 <input className="form-input" type="tel" value={form.phone} onChange={setF('phone')} placeholder="+976 9900 0000" />
-              </div>
-              <div className="form-group">
-                <label><i className="fas fa-image" style={{ marginRight: 6, color: 'var(--primary)' }} />Profile Picture URL</label>
-                <input className="form-input" type="url" value={form.avatar} onChange={setF('avatar')} placeholder="https://example.com/photo.jpg" />
-                {form.avatar && (
-                  <img src={form.avatar} alt="preview" className={styles.avatarPreview} onError={(e) => e.target.style.display = 'none'} />
-                )}
               </div>
               <button type="submit" className="btn btn-primary" disabled={profileStatus === 'loading'}>
                 {profileStatus === 'loading' ? <><span className="spinner" /> Saving...</> : 'Save Changes'}

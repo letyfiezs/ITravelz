@@ -56,6 +56,9 @@ export const userService = {
   getProfile:    ()     => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
   changePassword:(data) => api.put('/auth/change-password', data),
+  uploadAvatar:  (formData) => api.post('/auth/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   completeGoogleSignup: (phone, token) => api.put('/auth/google/complete', { phone }, {
     headers: { Authorization: `Bearer ${token}` },
   }),

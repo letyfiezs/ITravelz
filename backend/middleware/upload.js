@@ -20,6 +20,15 @@ const cloudinaryStorage = new CloudinaryStorage({
   },
 });
 
+const cloudinaryAvatarStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:          'itravelz/avatars',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation:  [{ width: 300, height: 300, crop: 'fill', gravity: 'face', quality: 'auto' }],
+  },
+});
+
 // ── Local disk fallback (used when Cloudinary env vars are missing) ──
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -55,5 +64,12 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
 });
 
+const avatarUpload = multer({
+  storage: useCloudinary ? cloudinaryAvatarStorage : diskStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB for avatars
+});
+
 module.exports = upload;
+module.exports.avatarUpload = avatarUpload;
 

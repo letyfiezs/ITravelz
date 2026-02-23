@@ -13,9 +13,11 @@ const {
   getProfile,
   updateProfile,
   changePassword,
-} = require("../controllers/authController");
-const { protect } = require("../middleware/auth");
-
+  uploadAvatar,
+} = require('../controllers/authController');
+const { protect } = require('../middleware/auth');
+const upload = require('../middleware/upload');
+const avatarUpload = upload.avatarUpload;
 const router = express.Router();
 
 const generateToken = (id) =>
@@ -88,9 +90,10 @@ router.put("/google/complete", protect, async (req, res) => {
 });
 
 // ── Protected routes ───────────────────────────────────────────────────
-router.get("/validate", protect, validateToken);
-router.get("/profile", protect, getProfile);
-router.put("/profile", protect, updateProfile);
-router.put("/change-password", protect, changePassword);
+router.get('/validate', protect, validateToken);
+router.get('/profile', protect, getProfile);
+router.put('/profile', protect, updateProfile);
+router.post('/profile/avatar', protect, avatarUpload.single('avatar'), uploadAvatar);
+router.put('/change-password', protect, changePassword);
 
 module.exports = router;

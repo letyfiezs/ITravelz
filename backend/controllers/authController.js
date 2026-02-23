@@ -543,13 +543,58 @@ exports.getProfile = async (req, res) => {
 // Update User Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, address, city, country, avatar } = req.body;
+    const { name, phone, address, city, country } = req.body;
 
     const user = await User.findByIdAndUpdate(
       req.userId,
-      { name, phone, address, city, country, avatar, updatedAt: Date.now() },
+      { name, phone, address, city, country, updatedAt: Date.now() },
       { new: true, runValidators: true },
     );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating profile",
+      error: error.message,
+    });
+  }
+};
+
+// Upload / change profile avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    // Cloudinary gives req.file.path, disk storage gives a local path
+    const avatarUrl = req.file.path || `${process.env.API_URL || ''}/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { avatar: avatarUrl, updatedAt: Date.now() },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    res.json({ success: true, avatar: user.avatar, user });
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    res.status(500).json({ success: false, message: 'Avatar upload failed', error: error.message });
+  }
+};
 
     if (!user) {
       return res
