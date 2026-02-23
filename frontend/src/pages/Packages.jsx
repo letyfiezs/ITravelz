@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { packageService } from '../services/api';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Packages.module.css';
 
 const SORT_OPTIONS = [
@@ -129,10 +130,11 @@ const Packages = () => {
             {packages.map(pkg => (
               <div key={pkg._id} className={styles.card}>
                 <div className={styles.cardImg}>
-                  <img
-                    src={pkg.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=500&q=80'}
+                  <ImageSlideshow
+                    images={pkg.images || []}
+                    fallback={pkg.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=500&q=80'}
                     alt={pkg.name}
-                    loading="lazy"
+                    interval={5000}
                   />
                   {pkg.duration && (
                     <span className={styles.durBadge}>

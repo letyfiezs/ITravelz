@@ -140,6 +140,15 @@ const itinerarySchema = new mongoose.Schema(
         ]
       }
     },
+    image: {
+      type: String,
+      default: null,
+    },
+    images: [
+      {
+        type: String,
+      },
+    ],
     order: {
       type: Number,
       default: 0

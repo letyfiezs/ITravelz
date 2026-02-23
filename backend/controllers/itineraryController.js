@@ -124,6 +124,36 @@ exports.updateItinerary = async (req, res, next) => {
   }
 };
 
+// Upload images for an itinerary (admin)
+exports.uploadItineraryImages = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No images uploaded' });
+    }
+    const itinerary = await Itinerary.findById(req.params.id);
+    if (!itinerary) return res.status(404).json({ success: false, message: 'Itinerary not found' });
+
+    const newPaths = req.files.map((f) => `/uploads/${f.filename}`);
+    const combined = [...(itinerary.images || []), ...newPaths].slice(0, 10);
+    itinerary.images = combined;
+    await itinerary.save();
+
+    res.json({ success: true, message: 'Images uploaded', images: itinerary.images });
+  } catch (err) { next(err); }
+};
+
+// Remove a single image from an itinerary (admin)
+exports.deleteItineraryImage = async (req, res, next) => {
+  try {
+    const { imageUrl } = req.body;
+    const itinerary = await Itinerary.findById(req.params.id);
+    if (!itinerary) return res.status(404).json({ success: false, message: 'Itinerary not found' });
+    itinerary.images = (itinerary.images || []).filter((img) => img !== imageUrl);
+    await itinerary.save();
+    res.json({ success: true, message: 'Image removed', images: itinerary.images });
+  } catch (err) { next(err); }
+};
+
 // Delete itinerary (admin)
 exports.deleteItinerary = async (req, res, next) => {
   try {

@@ -25,13 +25,17 @@ const {
   createPackage,
   updatePackage,
   deletePackage,
-  getAllPackagesAdmin
+  getAllPackagesAdmin,
+  uploadPackageImages,
+  deletePackageImage,
 } = require('../controllers/packageController');
 const {
   createItinerary,
   updateItinerary,
   deleteItinerary,
-  getAllItinerariesAdmin
+  getAllItinerariesAdmin,
+  uploadItineraryImages,
+  deleteItineraryImage,
 } = require('../controllers/itineraryController');
 const {
   getAllDestinationsAdmin,
@@ -75,12 +79,16 @@ router.get('/packages', protectAdmin, getAllPackagesAdmin);
 router.post('/packages', protectAdmin, createPackage);
 router.put('/packages/:id', protectAdmin, updatePackage);
 router.delete('/packages/:id', protectAdmin, deletePackage);
+router.post('/packages/:id/images', protectAdmin, upload.array('images', 10), uploadPackageImages);
+router.delete('/packages/:id/images', protectAdmin, deletePackageImage);
 
 // Itinerary Management Routes
 router.get('/itineraries', protectAdmin, getAllItinerariesAdmin);
 router.post('/itineraries', protectAdmin, createItinerary);
 router.put('/itineraries/:id', protectAdmin, updateItinerary);
 router.delete('/itineraries/:id', protectAdmin, deleteItinerary);
+router.post('/itineraries/:id/images', protectAdmin, upload.array('images', 10), uploadItineraryImages);
+router.delete('/itineraries/:id/images', protectAdmin, deleteItineraryImage);
 
 // Destination Management Routes
 router.get('/destinations', protectAdmin, getAllDestinationsAdmin);

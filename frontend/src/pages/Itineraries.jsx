@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { itineraryService } from '../services/api';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Itineraries.module.css';
 
 const FALLBACK = [
@@ -75,7 +76,12 @@ const Itineraries = () => {
               <div key={itin._id} className={`${styles.card} ${active === itin._id ? styles.cardOpen : ''}`}>
                 {/* Card image */}
                 <div className={styles.cardImg}>
-                  <img src={itin.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=500&q=80'} alt={itin.title} loading="lazy" />
+                  <ImageSlideshow
+                    images={itin.images || []}
+                    fallback={itin.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=500&q=80'}
+                    alt={itin.title}
+                    interval={5000}
+                  />
                   <div className={styles.cardOverlay} />
                   <div className={styles.cardTop}>
                     {itin.difficulty && (

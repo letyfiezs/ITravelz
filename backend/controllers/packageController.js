@@ -141,6 +141,40 @@ exports.deletePackage = async (req, res) => {
   }
 };
 
+// Upload images for a package (admin)
+exports.uploadPackageImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No images uploaded' });
+    }
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) return res.status(404).json({ message: 'Package not found' });
+
+    const newPaths = req.files.map((f) => `/uploads/${f.filename}`);
+    const combined = [...(pkg.images || []), ...newPaths].slice(0, 10);
+    pkg.images = combined;
+    await pkg.save();
+
+    res.json({ message: 'Images uploaded', images: pkg.images });
+  } catch (error) {
+    res.status(500).json({ message: 'Error uploading images', error: error.message });
+  }
+};
+
+// Remove a single image from a package (admin)
+exports.deletePackageImage = async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) return res.status(404).json({ message: 'Package not found' });
+    pkg.images = (pkg.images || []).filter((img) => img !== imageUrl);
+    await pkg.save();
+    res.json({ message: 'Image removed', images: pkg.images });
+  } catch (error) {
+    res.status(500).json({ message: 'Error removing image', error: error.message });
+  }
+};
+
 // Get all packages including inactive/archived (admin only)
 exports.getAllPackagesAdmin = async (req, res) => {
   try {

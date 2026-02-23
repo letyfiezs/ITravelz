@@ -30,6 +30,11 @@ const packageSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  images: [
+    {
+      type: String,
+    },
+  ],
   features: [
     {
       type: String,

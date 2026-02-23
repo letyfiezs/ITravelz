@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'destinations', 'users'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'users'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
 
-const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5 };
+const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', images: [], features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5 };
+const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', price: '', order: 0, isActive: true };
+const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', isActive: true };
 
 /* ─── Modal ─── */
@@ -47,14 +49,26 @@ const Admin = () => {
   const [destMsg, setDestMsg]           = useState('');
 
   /* package modal */
-  const [pkgModal, setPkgModal]   = useState(false);
-  const [pkgForm, setPkgForm]     = useState(EMPTY_PKG);
-  const [pkgEdit, setPkgEdit]     = useState(null);
-  const [pkgSaving, setPkgSaving] = useState(false);
-  const [pkgMsg, setPkgMsg]       = useState('');
+  const [pkgModal, setPkgModal]         = useState(false);
+  const [pkgForm, setPkgForm]           = useState(EMPTY_PKG);
+  const [pkgEdit, setPkgEdit]           = useState(null);
+  const [pkgSaving, setPkgSaving]       = useState(false);
+  const [pkgMsg, setPkgMsg]             = useState('');
+  const [pkgImgFiles, setPkgImgFiles]   = useState([]);
+  const [pkgCurImages, setPkgCurImages] = useState([]);
   /* date/time inputs */
   const [newDate, setNewDate]     = useState('');
   const [newTime, setNewTime]     = useState('');
+
+  /* itinerary modal */
+  const [itineraries, setItineraries]   = useState([]);
+  const [itinModal, setItinModal]       = useState(false);
+  const [itinForm, setItinForm]         = useState(EMPTY_ITIN);
+  const [itinEdit, setItinEdit]         = useState(null);
+  const [itinSaving, setItinSaving]     = useState(false);
+  const [itinMsg, setItinMsg]           = useState('');
+  const [itinImgFiles, setItinImgFiles] = useState([]);
+  const [itinCurImages, setItinCurImages] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -63,13 +77,15 @@ const Admin = () => {
       adminService.getUsers(),
       adminService.getPackages(),
       adminService.getDestinations(),
+      adminService.getItineraries(),
     ])
-      .then(([s, b, u, pk, dest]) => {
+      .then(([s, b, u, pk, dest, itin]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
         setPackages(pk.data.packages || pk.data || []);
         setDestinations(dest.data.destinations || dest.data || []);
+        setItineraries(itin.data.itineraries || itin.data || []);
       })
       .catch(() => setError('Failed to load admin data. Make sure the backend is running.'))
       .finally(() => setLoading(false));
@@ -99,13 +115,15 @@ const Admin = () => {
   const filteredBookings = bFilter === 'all' ? bookings : bookings.filter((b) => b.status === bFilter);
 
   /* ── Package helpers ── */
-  const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
+  const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setPkgCurImages([]); setPkgImgFiles([]); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
   const openPkgEdit   = (p) => {
     setPkgEdit(p._id);
-    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5 });
+    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', images: p.images || [], features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5 });
+    setPkgCurImages(p.images || []);
+    setPkgImgFiles([]);
     setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true);
   };
-  const closePkg = () => { setPkgModal(false); setPkgMsg(''); };
+  const closePkg = () => { setPkgModal(false); setPkgMsg(''); setPkgImgFiles([]); setPkgCurImages([]); };
   const setP = (k) => (e) => setPkgForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const addDate = () => { if (newDate && !pkgForm.availableDates.includes(newDate)) { setPkgForm((p) => ({ ...p, availableDates: [...p.availableDates, newDate].sort() })); setNewDate(''); } };
@@ -115,8 +133,9 @@ const Admin = () => {
 
   const savePkg = async (e) => {
     e.preventDefault(); setPkgSaving(true); setPkgMsg('');
-    const payload = { ...pkgForm, price: parseFloat(pkgForm.price), features: pkgForm.features.split(',').map((s) => s.trim()).filter(Boolean) };
+    const payload = { ...pkgForm, price: parseFloat(pkgForm.price), features: pkgForm.features.split(',').map((s) => s.trim()).filter(Boolean), images: pkgCurImages };
     try {
+      let savedId = pkgEdit;
       if (pkgEdit) {
         const res = await adminService.updatePackage(pkgEdit, payload);
         const updated = res.data.package || res.data;
@@ -125,9 +144,19 @@ const Admin = () => {
       } else {
         const res = await adminService.createPackage(payload);
         const created = res.data.package || res.data;
+        savedId = created._id;
         setPackages((prev) => [created, ...prev]);
         setPkgMsg('✅ Package created!');
         setPkgForm(EMPTY_PKG);
+      }
+      // Upload new image files if any
+      if (pkgImgFiles.length > 0 && savedId) {
+        const fd = new FormData();
+        pkgImgFiles.forEach((f) => fd.append('images', f));
+        const upRes = await adminService.uploadPackageImages(savedId, fd);
+        const updatedImages = upRes.data.images || [];
+        setPackages((prev) => prev.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setPkgImgFiles([]);
       }
       setTimeout(closePkg, 900);
     } catch (err) { setPkgMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
@@ -138,6 +167,82 @@ const Admin = () => {
     try { await adminService.deletePackage(id); setPackages((p) => p.filter((x) => x._id !== id)); }
     catch { alert('Delete failed.'); }
   };
+
+  /* ── Package image helpers ── */
+  const removePkgCurImage = async (imgUrl) => {
+    setPkgCurImages((prev) => prev.filter((x) => x !== imgUrl));
+    if (pkgEdit) {
+      try { await adminService.deletePackageImage(pkgEdit, imgUrl); } catch { /* ignore */ }
+    }
+  };
+  const onPkgFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const total = pkgCurImages.length + pkgImgFiles.length + files.length;
+    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    setPkgImgFiles((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = '';
+  };
+  const removePkgNewFile = (idx) => setPkgImgFiles((prev) => prev.filter((_, i) => i !== idx));
+
+  /* ── Itinerary helpers ── */
+  const openItinCreate = () => { setItinEdit(null); setItinForm(EMPTY_ITIN); setItinCurImages([]); setItinImgFiles([]); setItinMsg(''); setItinModal(true); };
+  const openItinEdit = (it) => {
+    setItinEdit(it._id);
+    setItinForm({ title: it.title, description: it.description, duration: it.duration || '', locations: it.locations || '', difficulty: it.difficulty || 'moderate', price: it.price || '', order: it.order || 0, isActive: it.isActive ?? true });
+    setItinCurImages(it.images || []);
+    setItinImgFiles([]);
+    setItinMsg(''); setItinModal(true);
+  };
+  const closeItin = () => { setItinModal(false); setItinMsg(''); setItinImgFiles([]); setItinCurImages([]); };
+  const setI = (k) => (e) => setItinForm((prev) => ({ ...prev, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const saveItin = async (e) => {
+    e.preventDefault(); setItinSaving(true); setItinMsg('');
+    const payload = { ...itinForm, price: itinForm.price ? parseFloat(itinForm.price) : undefined, order: parseInt(itinForm.order) || 0 };
+    try {
+      let savedId = itinEdit;
+      if (itinEdit) {
+        const res = await adminService.updateItinerary(itinEdit, payload);
+        const updated = res.data.itinerary || res.data;
+        setItineraries((prev) => prev.map((x) => x._id === itinEdit ? { ...updated, images: itinCurImages } : x));
+        setItinMsg('✅ Itinerary updated!');
+      } else {
+        const res = await adminService.createItinerary(payload);
+        const created = res.data.itinerary || res.data;
+        savedId = created._id;
+        setItineraries((prev) => [created, ...prev]);
+        setItinMsg('✅ Itinerary created!');
+        setItinForm(EMPTY_ITIN);
+      }
+      if (itinImgFiles.length > 0 && savedId) {
+        const fd = new FormData();
+        itinImgFiles.forEach((f) => fd.append('images', f));
+        const upRes = await adminService.uploadItineraryImages(savedId, fd);
+        const updatedImages = upRes.data.images || [];
+        setItineraries((prev) => prev.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setItinImgFiles([]);
+      }
+      setTimeout(closeItin, 900);
+    } catch (err) { setItinMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
+    finally { setItinSaving(false); }
+  };
+  const deleteItin = async (id) => {
+    if (!window.confirm('Delete this itinerary?')) return;
+    try { await adminService.deleteItinerary(id); setItineraries((p) => p.filter((x) => x._id !== id)); }
+    catch { alert('Delete failed.'); }
+  };
+  const removeItinCurImage = async (imgUrl) => {
+    setItinCurImages((prev) => prev.filter((x) => x !== imgUrl));
+    if (itinEdit) { try { await adminService.deleteItineraryImage(itinEdit, imgUrl); } catch { /* ignore */ } }
+  };
+  const onItinFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const total = itinCurImages.length + itinImgFiles.length + files.length;
+    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    setItinImgFiles((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = '';
+  };
+  const removeItinNewFile = (idx) => setItinImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   /* ── Destination helpers ── */
   const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestMsg(''); setDestModal(true); };
@@ -194,7 +299,7 @@ const Admin = () => {
           <div className={styles.tabs}>
             {TABS.map((t) => (
               <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
-                <i className={`fas ${t==='overview'?'fa-chart-bar':t==='bookings'?'fa-calendar-check':t==='packages'?'fa-box-open':t==='destinations'?'fa-globe':'fa-users'}`} />
+                <i className={`fas ${t==='overview'?'fa-chart-bar':t==='bookings'?'fa-calendar-check':t==='packages'?'fa-box-open':t==='itineraries'?'fa-route':t==='destinations'?'fa-globe':'fa-users'}`} />
                 {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
@@ -275,8 +380,11 @@ const Admin = () => {
                     {packages.map((p) => (
                       <tr key={p._id}>
                         <td>
-                          {p.image
-                            ? <img src={p.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
+                          {(p.images?.[0] || p.image)
+                            ? <div style={{position:'relative',display:'inline-block'}}>
+                                <img src={p.images?.[0] || p.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
+                                {(p.images||[]).length > 1 && <span style={{position:'absolute',bottom:2,right:2,background:'rgba(0,0,0,0.6)',color:'#fff',fontSize:9,padding:'1px 4px',borderRadius:4}}>{(p.images||[]).length}</span>}
+                              </div>
                             : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-image"/></div>}
                         </td>
                         <td><div style={{fontWeight:600}}>{p.name}</div><div style={{fontSize:12,color:'var(--text-muted)'}}>{(p.features||[]).slice(0,2).join(' · ')}</div></td>
@@ -291,6 +399,44 @@ const Admin = () => {
                         </td>
                         <td><span className={`badge badge-${p.status==='active'?'success':'error'}`}>{p.status}</span></td>
                         <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openPkgEdit(p)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deletePkg(p._id)}><i className="fas fa-trash"/></button></div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── Itineraries ── */}
+          {tab === 'itineraries' && (
+            <div>
+              <div className={styles.tabToolbar}>
+                <span>{itineraries.length} itinerar{itineraries.length!==1?'ies':'y'}</span>
+                <button className="btn btn-primary btn-sm" onClick={openItinCreate}><i className="fas fa-plus"/> Add Itinerary</button>
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead><tr><th>Images</th><th>Title</th><th>Locations</th><th>Duration</th><th>Difficulty</th><th>Price</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {itineraries.length===0&&<tr><td colSpan={9} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No itineraries yet — click "Add Itinerary"</td></tr>}
+                    {itineraries.map((it) => (
+                      <tr key={it._id}>
+                        <td>
+                          {(it.images?.[0] || it.image)
+                            ? <div style={{position:'relative',display:'inline-block'}}>
+                                <img src={it.images?.[0] || it.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
+                                {(it.images||[]).length > 1 && <span style={{position:'absolute',bottom:2,right:2,background:'rgba(0,0,0,0.6)',color:'#fff',fontSize:9,padding:'1px 4px',borderRadius:4}}>{(it.images||[]).length}</span>}
+                              </div>
+                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-route"/></div>}
+                        </td>
+                        <td><div style={{fontWeight:600}}>{it.title}</div></td>
+                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{it.locations||'—'}</td>
+                        <td>{it.duration||'—'}</td>
+                        <td><span className={`badge badge-${it.difficulty==='easy'?'success':it.difficulty==='challenging'?'error':'accent'}`}>{it.difficulty||'moderate'}</span></td>
+                        <td style={{fontWeight:600}}>{it.price?`$${Number(it.price).toLocaleString()}`:'—'}</td>
+                        <td style={{textAlign:'center'}}>{it.order||0}</td>
+                        <td><span className={`badge badge-${it.isActive?'success':'error'}`}>{it.isActive?'Active':'Hidden'}</span></td>
+                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openItinEdit(it)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteItin(it._id)}><i className="fas fa-trash"/></button></div></td>
                       </tr>
                     ))}
                   </tbody>
@@ -410,9 +556,54 @@ const Admin = () => {
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>Image URL</label>
-              <input className="form-input" value={pkgForm.image} onChange={setP('image')} placeholder="https://images.unsplash.com/..."/>
-              {pkgForm.image && <img src={pkgForm.image} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+              <label>
+                Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Утас/компьютерээс upload хийх (хамгийн ихдээ 10)</span>
+              </label>
+
+              {/* Existing saved images */}
+              {pkgCurImages.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {pkgCurImages.map((src, i) => {
+                    const baseUrl = (typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL)
+                      ? import.meta.env.VITE_API_URL.replace('/api','')
+                      : '';
+                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    return (
+                      <div key={i} style={{position:'relative',width:72,height:52}}>
+                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        <button type="button" onClick={()=>removePkgCurImage(src)}
+                          style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Pending new files */}
+              {pkgImgFiles.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {pkgImgFiles.map((f, i) => (
+                    <div key={i} style={{position:'relative',width:72,height:52}}>
+                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>removePkgNewFile(i)}
+                        style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* File picker */}
+              {(pkgCurImages.length + pkgImgFiles.length) < 10 && (
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
+                  <i className="fas fa-cloud-upload-alt"/>
+                  <span>Зураг нэмэх ({pkgCurImages.length + pkgImgFiles.length}/10)</span>
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onPkgFileChange}/>
+                </label>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Description *</label>
@@ -477,6 +668,105 @@ const Admin = () => {
               <button type="button" className="btn btn-outline btn-sm" onClick={closePkg}>Cancel</button>
               <button type="submit" className="btn btn-primary btn-sm" disabled={pkgSaving}>
                 {pkgSaving?<><span className="spinner"/> Saving…</>:pkgEdit?'Save Changes':'Create Package'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Itinerary Create/Edit Modal ── */}
+      {itinModal && (
+        <Modal title={itinEdit?'Edit Itinerary':'Add Itinerary'} onClose={closeItin}>
+          <form onSubmit={saveItin} className={styles.itinForm}>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Title *</label>
+                <input className="form-input" value={itinForm.title} onChange={setI('title')} required placeholder="e.g. Classic Bali 7-Day Tour"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Difficulty</label>
+                <select className="form-input" value={itinForm.difficulty} onChange={setI('difficulty')}>
+                  {DIFFICULTIES.map((d)=><option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Duration *</label>
+                <input className="form-input" value={itinForm.duration} onChange={setI('duration')} required placeholder="e.g. 7 Days"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Locations *</label>
+                <input className="form-input" value={itinForm.locations} onChange={setI('locations')} required placeholder="e.g. 4 Cities"/>
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Price (USD/person)</label>
+                <input className="form-input" type="number" min="0" step="0.01" value={itinForm.price} onChange={setI('price')} placeholder="1299"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Display Order</label>
+                <input className="form-input" type="number" min="0" value={itinForm.order} onChange={setI('order')} placeholder="0"/>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Description *</label>
+              <textarea className="form-input" rows={3} value={itinForm.description} onChange={setI('description')} required placeholder="Describe the itinerary…" style={{resize:'vertical'}}/>
+            </div>
+
+            {/* Images upload */}
+            <div className={styles.formGroup}>
+              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Утас/компьютерээс upload хийх (хамгийн ихдээ 10)</span></label>
+              {itinCurImages.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {itinCurImages.map((src, i) => {
+                    const baseUrl = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
+                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    return (
+                      <div key={i} style={{position:'relative',width:72,height:52}}>
+                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        <button type="button" onClick={()=>removeItinCurImage(src)}
+                          style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {itinImgFiles.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {itinImgFiles.map((f, i) => (
+                    <div key={i} style={{position:'relative',width:72,height:52}}>
+                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>removeItinNewFile(i)}
+                        style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(itinCurImages.length + itinImgFiles.length) < 10 && (
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
+                  <i className="fas fa-cloud-upload-alt"/>
+                  <span>Зураг нэмэх ({itinCurImages.length + itinImgFiles.length}/10)</span>
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onItinFileChange}/>
+                </label>
+              )}
+            </div>
+
+            <label className={styles.checkRow}>
+              <input type="checkbox" checked={itinForm.isActive} onChange={setI('isActive')}/>
+              <span>Visible to public (Active)</span>
+            </label>
+
+            {itinMsg && <p className={styles.formMsg}>{itinMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={closeItin}>Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={itinSaving}>
+                {itinSaving?<><span className="spinner"/> Saving…</>:itinEdit?'Save Changes':'Create Itinerary'}
               </button>
             </div>
           </form>
