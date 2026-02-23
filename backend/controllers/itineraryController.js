@@ -124,6 +124,9 @@ exports.updateItinerary = async (req, res, next) => {
   }
 };
 
+// Helper: extract URL from multer file (Cloudinary or disk)
+const getFileUrl = (f) => f.path || f.secure_url || `/uploads/${f.filename}`;
+
 // Upload images for an itinerary (admin)
 exports.uploadItineraryImages = async (req, res, next) => {
   try {
@@ -133,7 +136,7 @@ exports.uploadItineraryImages = async (req, res, next) => {
     const itinerary = await Itinerary.findById(req.params.id);
     if (!itinerary) return res.status(404).json({ success: false, message: 'Itinerary not found' });
 
-    const newPaths = req.files.map((f) => `/uploads/${f.filename}`);
+    const newPaths = req.files.map(getFileUrl);
     const combined = [...(itinerary.images || []), ...newPaths].slice(0, 10);
     itinerary.images = combined;
     await itinerary.save();

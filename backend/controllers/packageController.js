@@ -141,6 +141,9 @@ exports.deletePackage = async (req, res) => {
   }
 };
 
+// Helper: extract URL from multer file (Cloudinary or disk)
+const getFileUrl = (f) => f.path || f.secure_url || `/uploads/${f.filename}`;
+
 // Upload images for a package (admin)
 exports.uploadPackageImages = async (req, res) => {
   try {
@@ -150,7 +153,7 @@ exports.uploadPackageImages = async (req, res) => {
     const pkg = await Package.findById(req.params.id);
     if (!pkg) return res.status(404).json({ message: 'Package not found' });
 
-    const newPaths = req.files.map((f) => `/uploads/${f.filename}`);
+    const newPaths = req.files.map(getFileUrl);
     const combined = [...(pkg.images || []), ...newPaths].slice(0, 10);
     pkg.images = combined;
     await pkg.save();
