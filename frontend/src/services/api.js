@@ -81,6 +81,10 @@ export const contentService = {
   update:  (id, data) => api.put(`/content/${id}`, data),
 };
 
+export const chatService = {
+  send: (message, history) => api.post('/chat', { message, history }),
+};
+
 export const adminService = {
   getStats:              () => api.get('/admin/stats'),
   getUsers:              () => api.get('/admin/users'),

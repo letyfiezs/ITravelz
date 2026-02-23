@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import PrivateRoute from './components/Routes/PrivateRoute';
+import ChatWidget from './components/ChatWidget/ChatWidget';
 
 const Home          = lazy(() => import('./pages/Home'));
 const Login         = lazy(() => import('./pages/Login'));
@@ -59,6 +60,7 @@ const App = () =>  (
         <Route path="*"               element={<NotFound />} />
       </Route>
     </Routes>
+    <ChatWidget />
   </Suspense>
 );
 
