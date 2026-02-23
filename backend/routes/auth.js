@@ -41,13 +41,13 @@ router.get("/verify-email/:token", verifyEmailByToken);
 // Step 1: redirect to Google
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+  passport.authenticate("google", { scope: ["profile", "email"], session: false, state: false })
 );
 
 // Step 2: Google redirects back here
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed`, session: false }),
+  passport.authenticate("google", { failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed`, session: false, state: false }),
   (req, res) => {
     const token = generateToken(req.user._id);
     const user  = {
