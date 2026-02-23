@@ -20,6 +20,8 @@ const itinerariesRoutes = require('./routes/itineraries');
 const destinationsRoutes = require('./routes/destinations');
 const contactRoutes = require('./routes/contact');
 const chatRoutes    = require('./routes/chat');
+const festivalsRoutes = require('./routes/festivals');
+const aboutRoutes     = require('./routes/about');
 
 const app = express();
 app.set("trust proxy", 1);
@@ -84,6 +86,8 @@ app.use('/api/itineraries', itinerariesRoutes);
 app.use('/api/destinations', destinationsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/chat',    chatRoutes);
+app.use('/api/festivals', festivalsRoutes);
+app.use('/api/about',     aboutRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (req, res) => {

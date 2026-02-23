@@ -1,118 +1,167 @@
-﻿import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { packageService, destinationService } from '../services/api';
+﻿import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { packageService, destinationService, festivalService, aboutService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import styles from './Home.module.css';
 
 const STATS = [
-  { icon: 'fas fa-users',          value: '15K+', key: 'stat_travelers'   },
+  { icon: 'fas fa-users',          value: '15K+', key: 'stat_travelers'    },
   { icon: 'fas fa-map-marker-alt', value: '120+', key: 'stat_destinations' },
   { icon: 'fas fa-trophy',         value: '8+',   key: 'stat_experience'   },
   { icon: 'fas fa-star',           value: '4.9',  key: 'stat_rating'       },
 ];
 
-const DESTINATIONS = [
-  { name: 'Bali',        country: 'Indonesia',     tag: 'Beach',     img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80' },
-  { name: 'Paris',       country: 'France',        tag: 'Culture',   img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80' },
-  { name: 'Santorini',   country: 'Greece',        tag: 'Romantic',  img: 'https://images.unsplash.com/photo-1552832503-32d0d8c166c1?w=600&q=80' },
-  { name: 'Tokyo',       country: 'Japan',         tag: 'Urban',     img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&q=80' },
-  { name: 'Machu Picchu',country: 'Peru',          tag: 'Adventure', img: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=600&q=80' },
-  { name: 'Cape Town',   country: 'South Africa',  tag: 'Nature',    img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=600&q=80' },
-];
-
-const TESTIMONIALS = [
-  { name: 'Sarah Johnson', location: 'New York, USA',  rating: 5, avatar: 'https://randomuser.me/api/portraits/women/44.jpg', text: 'Absolutely incredible experience! ITravelz planned every detail perfectly. Our Bali honeymoon was beyond our wildest dreams.' },
-  { name: 'Marco Rossi',   location: 'Milan, Italy',   rating: 5, avatar: 'https://randomuser.me/api/portraits/men/32.jpg',   text: "The Tokyo itinerary was flawlessly executed. Every hotel, every tour was top-notch. I've already booked my next trip!" },
-  { name: 'Amara Diallo',  location: 'Paris, France',  rating: 5, avatar: 'https://randomuser.me/api/portraits/women/68.jpg', text: 'Professional, responsive, and genuinely passionate about travel. The Santorini package was worth every penny.' },
-];
-
-const WHY_US = [
-  { icon: 'fas fa-shield-alt',  color: '#4f75ff', titleKey: 'why_safe',    descKey: 'why_safe_desc'    },
-  { icon: 'fas fa-dollar-sign', color: '#28c76f', titleKey: 'why_price',   descKey: 'why_price_desc'   },
-  { icon: 'fas fa-headset',     color: '#ff9f43', titleKey: 'why_support', descKey: 'why_support_desc' },
-  { icon: 'fas fa-route',       color: '#ea5455', titleKey: 'why_custom',  descKey: 'why_custom_desc'  },
-];
-
 const FALLBACK_PKGS = [
-  { id: '1', name: 'Bali Paradise Escape', dest: 'Bali, Indonesia',    price: 1299, dur: '7 Days', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500&q=80' },
-  { id: '2', name: 'Paris Romance Tour',   dest: 'Paris, France',      price: 1899, dur: '5 Days', img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=500&q=80' },
-  { id: '3', name: 'Tokyo Explorer',       dest: 'Tokyo, Japan',       price: 2199, dur: '9 Days', img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=500&q=80' },
+  { _id:'p1', name:'Naadam Festival Tour',   destination:'Ulaanbaatar', price:1299, duration:'6 Days', image:'https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=500&q=80' },
+  { _id:'p2', name:'Gobi Desert Expedition', destination:'Gobi Desert', price:1599, duration:'8 Days', image:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=500&q=80' },
+  { _id:'p3', name:'Eagle Festival Journey', destination:'Bayan-Ölgii', price:1899, duration:'7 Days', image:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&q=80' },
+  { _id:'p4', name:'Khövsgöl Lake Retreat',  destination:'Khövsgöl',    price:1099, duration:'5 Days', image:'https://images.unsplash.com/photo-1531804055935-76f44d7caff8?w=500&q=80' },
 ];
 
+const FALLBACK_DESTS = [
+  { _id:'d1', name:'Ulaanbaatar',   country:'Mongolia', category:'Urban',     image:'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=500&q=80' },
+  { _id:'d2', name:'Gobi Desert',   country:'Mongolia', category:'Nature',    image:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=500&q=80' },
+  { _id:'d3', name:'Khövsgöl Lake', country:'Mongolia', category:'Nature',    image:'https://images.unsplash.com/photo-1531804055935-76f44d7caff8?w=500&q=80' },
+  { _id:'d4', name:'Terelj Park',   country:'Mongolia', category:'Adventure', image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80' },
+];
+
+const FALLBACK_FESTIVALS = [
+  { _id:'f1', name:'Naadam Festival', date:'July 11–13', location:'Ulaanbaatar', category:'naadam',  image:'https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=500&q=80' },
+  { _id:'f2', name:'Tsagaan Sar',     date:'Jan / Feb',  location:'Nationwide',  category:'culture', image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80' },
+  { _id:'f3', name:'Eagle Festival',  date:'October',    location:'Bayan-Ölgii', category:'culture', image:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&q=80' },
+  { _id:'f4', name:'Ice Festival',    date:'March',      location:'Khövsgöl',    category:'winter',  image:'https://images.unsplash.com/photo-1547369093-8a7e27cf5fd6?w=500&q=80' },
+];
+
+const FALLBACK_ABOUT = [
+  { _id:'a1', title:'Nomadic Life',        category:'nomad',   image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80',   description:'Nearly a third of Mongolians still live as nomads, herding livestock across vast steppes.' },
+  { _id:'a2', title:'The Gobi Desert',     category:'nature',  image:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=500&q=80',   description:'A land of dramatic sand dunes, dinosaur fossils, and rare snow leopards.' },
+  { _id:'a3', title:'Genghis Khan Legacy', category:'history', image:'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=500&q=80',   description:'Birthplace of the founder of the largest contiguous land empire in history.' },
+  { _id:'a4', title:'Throat Singing',      category:'culture', image:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&q=80',   description:'Khoomei — a unique UNESCO-recognised vocal art where singers produce multiple pitches.' },
+];
+
+/* ─── Scroll Row helper ─────────────────────────────────────── */
+function ScrollRow({ children, label, viewAllTo, t }) {
+  const trackRef = useRef(null);
+  const scroll = (dir) => {
+    const el = trackRef.current;
+    if (el) el.scrollBy({ left: dir * 320, behavior: 'smooth' });
+  };
+  return (
+    <div className={styles.scrollSection}>
+      <div className={`${styles.sectionHead} container`}>
+        <h2 className={styles.sectionTitle}>{label}</h2>
+        {viewAllTo && (
+          <Link to={viewAllTo} className="btn btn-outline btn-sm">
+            {t('btn_view_all')} <i className="fas fa-arrow-right" />
+          </Link>
+        )}
+      </div>
+      <div className={styles.scrollRow}>
+        <button className={`${styles.scrollArrow} ${styles.scrollArrowLeft}`} onClick={() => scroll(-1)} aria-label="Previous">
+          <i className="fas fa-chevron-left" />
+        </button>
+        <div className={styles.scrollTrack} ref={trackRef}>
+          {children}
+        </div>
+        <button className={`${styles.scrollArrow} ${styles.scrollArrowRight}`} onClick={() => scroll(1)} aria-label="Next">
+          <i className="fas fa-chevron-right" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+/* ─── Main component ─────────────────────────────────────────── */
 export default function Home() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
-  const [packages, setPackages]     = useState([]);
-  const [pkgLoading, setPkgLoading] = useState(true);
-  const [dests, setDests]           = useState([]);
-  const [destLoading, setDestLoading] = useState(true);
-  const [searchDest, setSearchDest]       = useState('');
-  const [searchDate, setSearchDate]       = useState('');
-  const [searchGuests, setSearchGuests]   = useState('');
-  const [email, setEmail]       = useState('');
+
+  const [heroSlogan, setHeroSlogan] = useState('');
+  const [heroImage,  setHeroImage]  = useState('');
+  const [heroIntro,  setHeroIntro]  = useState('');
+  const [heroVideo,  setHeroVideo]  = useState('');
+
+  const [packages,  setPackages]  = useState(shuffle(FALLBACK_PKGS));
+  const [dests,     setDests]     = useState(shuffle(FALLBACK_DESTS));
+  const [festivals, setFestivals] = useState(shuffle(FALLBACK_FESTIVALS));
+  const [abouts,    setAbouts]    = useState(shuffle(FALLBACK_ABOUT));
+
+  const [email,      setEmail]      = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
+    // Hero content
+    contentService.getAll({ section: 'hero' })
+      .then(r => {
+        const items = r.data?.data || r.data?.content || r.data || [];
+        const find = (key) => items.find(c => c.key === key);
+        if (find('home_slogan')) setHeroSlogan(find('home_slogan').text || find('home_slogan').title || '');
+        if (find('home_image'))  setHeroImage(find('home_image').image || '');
+        if (find('home_video'))  setHeroVideo(find('home_video').text || '');
+        if (find('home_intro'))  setHeroIntro(find('home_intro').text || '');
+      })
+      .catch(() => {});
+
     packageService.getAll()
-      .then(r => setPackages((r.data?.data || r.data || []).slice(0, 3)))
-      .catch(() => setPackages([]))
-      .finally(() => setPkgLoading(false));
+      .then(r => { const d = r.data?.data || r.data?.packages || r.data || []; setPackages(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_PKGS).slice(0, 6)); })
+      .catch(() => {});
+
     destinationService.getAll()
-      .then(r => setDests((r.data?.destinations || r.data?.data || r.data || []).slice(0, 6)))
-      .catch(() => setDests([]))
-      .finally(() => setDestLoading(false));
+      .then(r => { const d = r.data?.destinations || r.data?.data || r.data || []; setDests(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_DESTS).slice(0, 6)); })
+      .catch(() => {});
+
+    festivalService.getAll()
+      .then(r => { const d = r.data?.data || r.data?.festivals || r.data || []; setFestivals(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_FESTIVALS).slice(0, 6)); })
+      .catch(() => {});
+
+    aboutService.getAll()
+      .then(r => { const d = r.data?.data || r.data?.about || r.data || []; setAbouts(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_ABOUT).slice(0, 6)); })
+      .catch(() => {});
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    navigate('/packages' + (searchDest ? '?dest=' + encodeURIComponent(searchDest) : ''));
-  };
+  const slogan = heroSlogan || t('home_slogan') || 'Discover Mongolia, Explore the World';
+  const intro  = heroIntro  || t('home_intro')  || 'The land of ancient nomads — a place that stays forever in the hearts of travellers.';
+  const bgImg  = heroImage  || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=90';
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    setSubscribed(true);
-    setEmail('');
-  };
-
-  const displayPkgs = packages.length > 0 ? packages : FALLBACK_PKGS;
+  const handleSubscribe = (e) => { e.preventDefault(); setSubscribed(true); setEmail(''); };
 
   return (
     <main className={styles.main}>
 
-      {/*  HERO  */}
+      {/* ── SECTION 1: HERO ─────────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
-        <div className={styles.heroBg} />
+        <div className={styles.heroBg} style={{ backgroundImage: `url("${bgImg}")` }} />
+
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">{t('hero_label')}</span>
-          <h1 className={styles.heroTitle}>
-            {t('hero_title1')}<br/><em>{t('hero_title2')}</em>
-          </h1>
-          <p className={styles.heroSub}>{t('hero_sub')}</p>
-          <form className={styles.searchWidget} onSubmit={handleSearch}>
-            <div className={styles.searchField}>
-              <label><i className="fas fa-map-marker-alt" /> {t('search_dest')}</label>
-              <input type="text" placeholder={t('search_dest_ph')} value={searchDest} onChange={e => setSearchDest(e.target.value)} />
-            </div>
-            <div className={styles.searchDivider} />
-            <div className={styles.searchField}>
-              <label><i className="fas fa-calendar-alt" /> {t('search_date')}</label>
-              <input type="date" value={searchDate} onChange={e => setSearchDate(e.target.value)} />
-            </div>
-            <div className={styles.searchDivider} />
-            <div className={styles.searchField}>
-              <label><i className="fas fa-users" /> {t('search_guests')}</label>
-              <input type="number" placeholder={t('search_guests_ph')} min="1" value={searchGuests} onChange={e => setSearchGuests(e.target.value)} />
-            </div>
-            <button type="submit" className={styles.searchBtn}>
-              <i className="fas fa-search" /> {t('search_btn')}
-            </button>
-          </form>
+          {/* Slogan at top — 2× font size */}
+          <h1 className={styles.heroSlogan}>{slogan}</h1>
+
+          {/* Media in the middle */}
+          <div className={styles.heroMedia}>
+            {heroVideo ? (
+              <video src={heroVideo} className={styles.heroMediaEl} autoPlay muted loop playsInline />
+            ) : (
+              <img src={bgImg} alt={slogan} className={styles.heroMediaEl} />
+            )}
+          </div>
+
+          {/* Intro text below media */}
+          <p className={styles.heroIntro}>{intro}</p>
+
+          <div className={styles.heroCta}>
+            <Link to="/packages" className="btn btn-primary btn-lg">
+              <i className="fas fa-compass" /> {t('btn_explore')}
+            </Link>
+            <Link to="/contact" className="btn btn-outline-light btn-lg">
+              <i className="fas fa-headset" /> {t('btn_contact_us')}
+            </Link>
+          </div>
         </div>
-        <div className={styles.scrollHint}><span /></div>
       </section>
 
-      {/*  STATS  */}
+      {/* Stats */}
       <section className={styles.statsSection}>
         <div className={`${styles.statsCard} container`}>
           {STATS.map(({ icon, value, key }) => (
@@ -127,145 +176,103 @@ export default function Home() {
         </div>
       </section>
 
-      {/*  DESTINATIONS  */}
-      <section className="section">
-        <div className="container">
-          <div className={styles.sectionHead}>
-            <div>
-              <span className="section-label">{t('section_popular')}</span>
-              <h2 className="section-title">{t('section_dest_title')}</h2>
+      {/* ── SECTION 2: TOURS ─────────────────────────────────── */}
+      <ScrollRow label={t('section_packages') || 'Featured Tours'} viewAllTo="/packages" t={t}>
+        {packages.map(pkg => (
+          <div key={pkg._id} className={styles.scrollCard}>
+            <div className={styles.scrollCardImg}>
+              <img src={pkg.images?.[0] || pkg.image || FALLBACK_PKGS[0].image} alt={pkg.name} loading="lazy" />
+              {(pkg.duration || pkg.dur) && (
+                <span className={styles.scrollCardBadge}>
+                  <i className="fas fa-clock" /> {pkg.duration || pkg.dur}
+                </span>
+              )}
             </div>
-            <Link to="/destinations" className="btn btn-outline btn-sm">{t('btn_view_all')} <i className="fas fa-arrow-right" /></Link>
+            <div className={styles.scrollCardBody}>
+              {(pkg.destination || pkg.dest) && (
+                <p className={styles.scrollCardMeta}><i className="fas fa-map-marker-alt" /> {pkg.destination || pkg.dest}</p>
+              )}
+              <h3 className={styles.scrollCardTitle}>{pkg.name}</h3>
+              <div className={styles.scrollCardFooter}>
+                <span className={styles.scrollCardPrice}>
+                  {t('from_price')} <strong>${pkg.price}</strong>
+                </span>
+                <Link to={`/booking?package=${pkg._id}`} className="btn btn-primary btn-sm">{t('btn_book_now')}</Link>
+              </div>
+            </div>
           </div>
-          <div className={styles.destGrid}>
-            {destLoading
-              ? DESTINATIONS.map(({ name, country, img, tag }) => (
-                  <div key={name} className={styles.destCard} style={{ background: 'var(--bg-alt)' }}>
-                    <img src={img} alt={name} loading="lazy" />
-                    <div className={styles.destOverlay} />
-                    <span className={styles.destTag}>{tag}</span>
-                    <div className={styles.destInfo}>
-                      <h3 className={styles.destName}>{name}</h3>
-                      <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>
-                    </div>
-                  </div>
-                ))
-              : (dests.length > 0 ? dests : DESTINATIONS).map((d) => {
-                  const name    = d.name    || d.title || '';
-                  const country = [d.city, d.country].filter(Boolean).join(', ') || d.country || '';
-                  const tag     = d.category || d.tag || '';
-                  const img     = d.image || d.img || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80';
-                  return (
-                    <Link key={d._id || name} to="/destinations" className={styles.destCard}>
-                      <img src={img} alt={name} loading="lazy" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'; }} />
-                      <div className={styles.destOverlay} />
-                      {tag && <span className={styles.destTag}>{tag}</span>}
-                      <div className={styles.destInfo}>
-                        <h3 className={styles.destName}>{name}</h3>
-                        {country && <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>}
-                      </div>
-                    </Link>
-                  );
-                })
-            }
-          </div>
-        </div>
-      </section>
+        ))}
+      </ScrollRow>
 
-      {/*  PACKAGES  */}
-      <section className={`${styles.packSection} section`}>
-        <div className="container">
-          <div className={styles.sectionHead}>
-            <div>
-              <span className="section-label">{t('section_popular')}</span>
-              <h2 className="section-title">{t('section_packages')}</h2>
-            </div>
-            <Link to="/packages" className="btn btn-outline btn-sm">{t('btn_view_all')} <i className="fas fa-arrow-right" /></Link>
-          </div>
-          {pkgLoading ? (
-            <div className={styles.packGrid}>{[1,2,3].map(i => <div key={i} className={styles.packSkeleton} />)}</div>
-          ) : (
-            <div className={styles.packGrid}>
-              {displayPkgs.map(pkg => (
-                <div key={pkg._id || pkg.id} className={styles.packCard}>
-                  <div className={styles.packImg}>
-                    <img src={pkg.image || pkg.img || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=500&q=80'} alt={pkg.name} />
-                    {(pkg.duration || pkg.dur) && <span className={styles.durBadge}><i className="fas fa-clock" /> {pkg.duration || pkg.dur}</span>}
-                  </div>
-                  <div className={styles.packBody}>
-                    {(pkg.destination || pkg.dest) && <p className={styles.packDest}><i className="fas fa-map-marker-alt" /> {pkg.destination || pkg.dest}</p>}
-                    <h3 className={styles.packName}>{pkg.name}</h3>
-                    <div className={styles.packRating}>
-                      {[...Array(5)].map((_, i) => <i key={i} className={`fas fa-star ${i < (pkg.rating||5) ? styles.starred : styles.unstarred}`} />)}
-                      <span className={styles.ratingCount}>({pkg.reviews || 24})</span>
-                    </div>
-                    <div className={styles.packFooter}>
-                      <div className={styles.priceGroup}>
-                        <span className={styles.priceFrom}>{t('from_price')}</span>
-                        <span className={styles.price}>${pkg.price}</span>
-                        <span className={styles.pricePer}>{t('per_person')}</span>
-                      </div>
-                      <Link to={pkg._id ? `/booking?package=${pkg._id}` : '/packages'} className="btn btn-primary btn-sm">{t('btn_book_now')}</Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/*  WHY US  */}
-      <section className={`${styles.whySection} section`}>
-        <div className="container">
-          <div className={styles.whyInner}>
-            <div className={styles.whyLeft}>
-              <span className="section-label">{t('section_why')}</span>
-              <h2 className="section-title">{t('section_why')}</h2>
-              <p className="section-subtitle" style={{marginTop:'16px'}}>{t('section_why_sub')}</p>
-              <Link to="/packages" className="btn btn-primary" style={{marginTop:'32px', display:'inline-flex'}}>{t('btn_explore')} <i className="fas fa-arrow-right" style={{marginLeft:'8px'}} /></Link>
-            </div>
-            <div className={styles.whyRight}>
-              {WHY_US.map(({ icon, color, titleKey, descKey }) => (
-                <div key={titleKey} className={styles.featureCard}>
-                  <div className={styles.featureIcon} style={{'--fi-color': color}}><i className={icon} /></div>
-                  <div>
-                    <h4 className={styles.featureTitle}>{t(titleKey)}</h4>
-                    <p className={styles.featureDesc}>{t(descKey)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/*  TESTIMONIALS  */}
-      <section className="section">
-        <div className="container">
-          <div className={styles.sectionCenter}>
-            <span className="section-label">{t('section_testimonials')}</span>
-            <h2 className="section-title">{t('section_testimonials')}</h2>
-          </div>
-          <div className={styles.testiGrid}>
-            {TESTIMONIALS.map(({ name, location, rating, text, avatar }) => (
-              <div key={name} className={styles.testiCard}>
-                <div className={styles.testiStars}>{[...Array(rating)].map((_,i) => <i key={i} className={`fas fa-star ${styles.starred}`} />)}</div>
-                <p className={styles.testiText}>&ldquo;{text}&rdquo;</p>
-                <div className={styles.testiAuthor}>
-                  <img src={avatar} alt={name} className={styles.testiAvatar} />
-                  <div>
-                    <span className={styles.testiName}>{name}</span>
-                    <span className={styles.testiLoc}><i className="fas fa-map-marker-alt" /> {location}</span>
-                  </div>
+      {/* ── SECTION 3: DESTINATIONS ──────────────────────────── */}
+      <ScrollRow label={t('section_dest_title') || 'Top Destinations'} viewAllTo="/destinations" t={t}>
+        {dests.map(dest => {
+          const name    = dest.name || dest.title || '';
+          const country = [dest.city, dest.country].filter(Boolean).join(', ') || dest.country || '';
+          const img     = dest.image || dest.img || FALLBACK_DESTS[0].image;
+          const tag     = dest.category || dest.tag || '';
+          return (
+            <Link key={dest._id} to="/destinations" className={`${styles.scrollCard} ${styles.destScrollCard}`}>
+              <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
+                <img src={img} alt={name} loading="lazy" />
+                <div className={styles.destOverlay} />
+                {tag && <span className={styles.destTagBadge}>{tag}</span>}
+                <div className={styles.destInfo}>
+                  <h3 className={styles.destName}>{name}</h3>
+                  {country && <p className={styles.destCountry}><i className="fas fa-map-marker-alt" /> {country}</p>}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </Link>
+          );
+        })}
+      </ScrollRow>
 
-      {/*  NEWSLETTER  */}
+      {/* ── SECTION 4: FESTIVALS ─────────────────────────────── */}
+      <ScrollRow label={t('section_festivals') || 'Festivals & Celebrations'} viewAllTo="/festivals" t={t}>
+        {festivals.map(fest => (
+          <div key={fest._id} className={styles.scrollCard}>
+            <div className={styles.scrollCardImg}>
+              <img src={fest.image || FALLBACK_FESTIVALS[0].image} alt={fest.name} loading="lazy" />
+              {fest.category && <span className={styles.scrollCardBadge}>{fest.category}</span>}
+            </div>
+            <div className={styles.scrollCardBody}>
+              <p className={styles.scrollCardMeta}>
+                {fest.date && <><i className="fas fa-calendar-alt" /> {fest.date}</>}
+                {fest.location && <> &bull; <i className="fas fa-map-marker-alt" /> {fest.location}</>}
+              </p>
+              <h3 className={styles.scrollCardTitle}>{fest.name}</h3>
+              <div className={styles.scrollCardFooter}>
+                <Link to="/festivals" className="btn btn-outline btn-sm">{t('btn_learn_more')}</Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </ScrollRow>
+
+      {/* ── SECTION 5: ABOUT MONGOLIA ────────────────────────── */}
+      <ScrollRow label={t('section_about_mongolia') || 'Discover Mongolia'} viewAllTo="/about-mongolia" t={t}>
+        {abouts.map(item => (
+          <div key={item._id} className={styles.scrollCard}>
+            <div className={styles.scrollCardImg}>
+              <img src={item.image || FALLBACK_ABOUT[0].image} alt={item.title} loading="lazy" />
+              {item.category && <span className={styles.scrollCardBadge}>{item.category}</span>}
+            </div>
+            <div className={styles.scrollCardBody}>
+              <h3 className={styles.scrollCardTitle}>{item.title}</h3>
+              {item.description && (
+                <p className={styles.scrollCardDesc}>
+                  {item.description.slice(0, 90)}{item.description.length > 90 ? '…' : ''}
+                </p>
+              )}
+              <div className={styles.scrollCardFooter}>
+                <Link to="/about-mongolia" className="btn btn-outline btn-sm">{t('btn_learn_more')}</Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </ScrollRow>
+
+      {/* Newsletter */}
       <section className={styles.newsletter}>
         <div className={styles.nlOverlay} />
         <div className={`${styles.nlContent} container`}>
@@ -286,3 +293,4 @@ export default function Home() {
     </main>
   );
 }
+

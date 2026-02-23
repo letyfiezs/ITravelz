@@ -65,6 +65,12 @@ const T = {
     loading: 'Уншиж байна...', error_load: 'Өгөгдөл ачаалахад алдаа гарлаа.', retry: 'Дахин оролдох',
     days: 'Өдөр', persons: 'хүн', book_now: 'Одоо захиалах',
     user_profile: 'Профайл', user_bookings: 'Захиалгууд', user_logout: 'Гарах',
+    nav_festivals: 'Наадам & Баяр', nav_about_mongolia: 'Монгол Тухай', nav_shop: 'Дэлгүүр',
+    section_festivals: 'Соёл & Баяр ёслол', section_about_mongolia: 'Монголыг нээ',
+    page_festivals: 'Монголын Баяр Наадам', page_festivals_sub: 'Монгол хүмүүсийн уламжлалт баяр ёслолуудыг мэдэр',
+    page_about_mongolia: 'Монгол Тухай', page_about_mongolia_sub: 'Мөнхийн хөх тэнгэр, нүүдэлчдийн өв уламжлал, зэрлэг байгаль',
+    page_shop: 'ITravelz Дэлгүүр',
+    home_slogan: 'Монголыг мэдэр, Дэлхийг нээ', home_intro: 'Эртний нүүдэлчдийн нутаг — аялагчдын зүрхэнд үлддэг газар.',
   },
 
   /* ─── ENGLISH ───────────────────────────────────────────── */
@@ -122,6 +128,12 @@ const T = {
     loading: 'Loading...', error_load: 'Failed to load data.', retry: 'Retry',
     days: 'Days', persons: 'persons', book_now: 'Book Now',
     user_profile: 'Profile', user_bookings: 'My Bookings', user_logout: 'Sign Out',
+    nav_festivals: 'Festivals', nav_about_mongolia: 'About Mongolia', nav_shop: 'Shop',
+    section_festivals: 'Culture & Celebration', section_about_mongolia: 'Discover Mongolia',
+    page_festivals: 'Festivals of Mongolia', page_festivals_sub: 'Experience the vibrant traditions and timeless celebrations of the Mongolian people',
+    page_about_mongolia: 'About Mongolia', page_about_mongolia_sub: 'Land of eternal blue skies, nomadic heritage, and untamed wilderness',
+    page_shop: 'ITravelz Shop',
+    home_slogan: 'Discover Mongolia, Explore the World', home_intro: 'The land of ancient nomads — a place that stays forever in the hearts of travellers.',
   },
 
   /* ─── GERMAN ────────────────────────────────────────────── */
@@ -179,6 +191,12 @@ const T = {
     loading: 'Lädt...', error_load: 'Fehler beim Laden.', retry: 'Erneut versuchen',
     days: 'Tage', persons: 'Personen', book_now: 'Jetzt buchen',
     user_profile: 'Profil', user_bookings: 'Buchungen', user_logout: 'Abmelden',
+    nav_festivals: 'Festivals', nav_about_mongolia: 'Über die Mongolei', nav_shop: 'Shop',
+    section_festivals: 'Kultur & Feste', section_about_mongolia: 'Die Mongolei entdecken',
+    page_festivals: 'Mongolische Feste', page_festivals_sub: 'Erlebe die lebendigen Traditionen des mongolischen Volkes',
+    page_about_mongolia: 'Über die Mongolei', page_about_mongolia_sub: 'Land des ewigen blauen Himmels, Nomadenerbe und unberührter Wildnis',
+    page_shop: 'ITravelz Shop',
+    home_slogan: 'Die Mongolei entdecken, die Welt erkunden', home_intro: 'Das Land der alten Nomaden — ein Ort, der für immer im Herzen bleibt.',
   },
 
   /* ─── KOREAN ────────────────────────────────────────────── */
@@ -236,6 +254,12 @@ const T = {
     loading: '로딩 중...', error_load: '데이터 로드 실패.', retry: '다시 시도',
     days: '일', persons: '명', book_now: '지금 예약',
     user_profile: '프로필', user_bookings: '예약 내역', user_logout: '로그아웃',
+    nav_festivals: '축제', nav_about_mongolia: '몽골 소개', nav_shop: '쇼핑',
+    section_festivals: '문화 & 축제', section_about_mongolia: '몽골 발견',
+    page_festivals: '몽골의 축제', page_festivals_sub: '몽골 사람들의 생생한 전통과 축제를 경험하세요',
+    page_about_mongolia: '몽골 소개', page_about_mongolia_sub: '영원한 푸른 하늘, 유목 문화유산, 그리고 드넓은 자연',
+    page_shop: 'ITravelz 쇼핑',
+    home_slogan: '몽골을 발견하고 세계를 탐험하세요', home_intro: '고대 유목민의 땅 — 여행자의 마음속에 영원히 남는 곳.',
   },
 
   /* ─── JAPANESE ──────────────────────────────────────────── */
@@ -293,6 +317,12 @@ const T = {
     loading: '読み込み中...', error_load: 'データの読み込みに失敗しました。', retry: '再試行',
     days: '日', persons: '名', book_now: '今すぐ予約',
     user_profile: 'プロフィール', user_bookings: '予約一覧', user_logout: 'サインアウト',
+    nav_festivals: 'フェスティバル', nav_about_mongolia: 'モンゴルについて', nav_shop: 'ショップ',
+    section_festivals: '文化とお祝い', section_about_mongolia: 'モンゴルを発見',
+    page_festivals: 'モンゴルのフェスティバル', page_festivals_sub: 'モンゴルの人々の伝統と祭りを体験しよう',
+    page_about_mongolia: 'モンゴルについて', page_about_mongolia_sub: '永遠の青い空、遊牧民の遺産、そして手つかずの大自然',
+    page_shop: 'ITravelz ショップ',
+    home_slogan: 'モンゴルを発見し、世界を旅しよう', home_intro: '古代遊牧民の地 — 旅人の心に永遠に残る場所。',
   },
 
   /* ─── CHINESE ───────────────────────────────────────────── */
@@ -350,6 +380,12 @@ const T = {
     loading: '加载中...', error_load: '加载数据失败。', retry: '重试',
     days: '天', persons: '人', book_now: '立即预订',
     user_profile: '个人资料', user_bookings: '我的预订', user_logout: '退出',
+    nav_festivals: '节日', nav_about_mongolia: '关于蒙古', nav_shop: '商店',
+    section_festivals: '文化与庆典', section_about_mongolia: '探索蒙古',
+    page_festivals: '蒙古节日', page_festivals_sub: '体验蒙古人民充满活力的传统与庆典',
+    page_about_mongolia: '关于蒙古', page_about_mongolia_sub: '永恒蓝天之地、游牧文化遗产与原始荒野',
+    page_shop: 'ITravelz 商店',
+    home_slogan: '发现蒙古，探索世界', home_intro: '古代游牧民的土地 — 永远留在旅行者心中的地方。',
   },
 };
 

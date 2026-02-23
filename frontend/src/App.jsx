@@ -21,6 +21,9 @@ const Destinations   = lazy(() => import('./pages/Destinations'));
 const Contact        = lazy(() => import('./pages/Contact'));
 const GoogleCallback = lazy(() => import('./pages/GoogleCallback'));
 const GoogleComplete = lazy(() => import('./pages/GoogleComplete'));
+const Festivals      = lazy(() => import('./pages/Festivals'));
+const AboutMongolia  = lazy(() => import('./pages/AboutMongolia'));
+const Shop           = lazy(() => import('./pages/Shop'));
 
 
 
@@ -48,6 +51,9 @@ const App = () =>  (
         <Route path="/services"              element={<Services />} />
         <Route path="/destinations"          element={<Destinations />} />
         <Route path="/contact"               element={<Contact />} />
+        <Route path="/festivals"             element={<Festivals />} />
+        <Route path="/about-mongolia"        element={<AboutMongolia />} />
+        <Route path="/shop"                  element={<Shop />} />
 
         {/* Protected routes */}
         <Route element={<PrivateRoute />}>

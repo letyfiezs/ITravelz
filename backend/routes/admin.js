@@ -19,7 +19,8 @@ const {
   upsertContent,
   updateContent,
   deleteContent,
-  uploadImage
+  uploadImage,
+  getAllContent,
 } = require('../controllers/contentController');
 const {
   createPackage,
@@ -43,6 +44,18 @@ const {
   updateDestination,
   deleteDestination,
 } = require('../controllers/destinationController');
+const {
+  getAllFestivalsAdmin,
+  createFestival,
+  updateFestival,
+  deleteFestival,
+} = require('../controllers/festivalController');
+const {
+  getAllAboutAdmin,
+  createAbout,
+  updateAbout,
+  deleteAbout,
+} = require('../controllers/aboutController');
 const { protectAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -70,6 +83,7 @@ router.put('/services/:id', protectAdmin, updateService);
 router.delete('/services/:id', protectAdmin, deleteService);
 
 // Content Management Routes
+router.get('/content', protectAdmin, getAllContent);
 router.post('/content', protectAdmin, upsertContent);
 router.put('/content/:id', protectAdmin, updateContent);
 router.delete('/content/:id', protectAdmin, deleteContent);
@@ -98,5 +112,17 @@ router.delete('/destinations/:id', protectAdmin, deleteDestination);
 
 // Image Upload
 router.post('/upload', protectAdmin, upload.single('image'), uploadImage);
+
+// Festival Management Routes
+router.get('/festivals', protectAdmin, getAllFestivalsAdmin);
+router.post('/festivals', protectAdmin, createFestival);
+router.put('/festivals/:id', protectAdmin, updateFestival);
+router.delete('/festivals/:id', protectAdmin, deleteFestival);
+
+// About Mongolia Management Routes
+router.get('/about', protectAdmin, getAllAboutAdmin);
+router.post('/about', protectAdmin, createAbout);
+router.put('/about/:id', protectAdmin, updateAbout);
+router.delete('/about/:id', protectAdmin, deleteAbout);
 
 module.exports = router;

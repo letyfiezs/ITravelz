@@ -83,8 +83,18 @@ export const serviceService = {
 };
 
 export const contentService = {
-  getAll:  () => api.get('/content'),
+  getAll:  (params) => api.get('/content', { params }),
   update:  (id, data) => api.put(`/content/${id}`, data),
+};
+
+export const festivalService = {
+  getAll:  (params) => api.get('/festivals', { params }),
+  getById: (id)     => api.get(`/festivals/${id}`),
+};
+
+export const aboutService = {
+  getAll:  (params) => api.get('/about', { params }),
+  getById: (id)     => api.get(`/about/${id}`),
 };
 
 export const chatService = {
@@ -115,6 +125,18 @@ export const adminService = {
   createDestination:     (data) => api.post('/admin/destinations', data),
   updateDestination:     (id, data) => api.put(`/admin/destinations/${id}`, data),
   deleteDestination:     (id) => api.delete(`/admin/destinations/${id}`),
+  getFestivals:          () => api.get('/admin/festivals'),
+  createFestival:        (data) => api.post('/admin/festivals', data),
+  updateFestival:        (id, data) => api.put(`/admin/festivals/${id}`, data),
+  deleteFestival:        (id) => api.delete(`/admin/festivals/${id}`),
+  getAbout:              () => api.get('/admin/about'),
+  createAbout:           (data) => api.post('/admin/about', data),
+  updateAbout:           (id, data) => api.put(`/admin/about/${id}`, data),
+  deleteAbout:           (id) => api.delete(`/admin/about/${id}`),
+  getContent:            () => api.get('/admin/content'),
+  createContent:         (data) => api.post('/admin/content', data),
+  updateContent:         (id, data) => api.put(`/admin/content/${id}`, data),
+  deleteContent:         (id) => api.delete(`/admin/content/${id}`),
 };
 
 export default api;

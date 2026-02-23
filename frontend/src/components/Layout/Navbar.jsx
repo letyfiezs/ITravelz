@@ -5,10 +5,13 @@ import { LANGUAGES } from '../../context/LanguageContext';
 import styles from './Navbar.module.css';
 
 const NAV_KEYS = [
-  { to: '/',              key: 'nav_home'         },
-  { to: '/packages',     key: 'nav_tours'         },
-  { to: '/destinations', key: 'nav_destinations'  },
-  { to: '/contact',      key: 'nav_contact'       },
+  { to: '/',               key: 'nav_home'          },
+  { to: '/packages',       key: 'nav_tours'         },
+  { to: '/destinations',   key: 'nav_destinations'  },
+  { to: '/festivals',      key: 'nav_festivals'     },
+  { to: '/about-mongolia', key: 'nav_about_mongolia' },
+  { to: '/shop',           key: 'nav_shop'          },
+  { to: '/contact',        key: 'nav_contact'       },
 ];
 
 export default function Navbar() {
