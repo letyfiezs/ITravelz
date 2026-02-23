@@ -4,7 +4,11 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const session = require("express-session");
 const path = require("path");
+
+// Passport (must be required after dotenv so env vars are ready)
+const { passport } = require("./config/passport");
 
 // Import routes
 const authRoutes = require("./routes/auth");
@@ -62,6 +66,15 @@ app.use("/api/", limiter);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// Session required for passport OAuth state (not used for JWT auth)
+app.use(session({
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'itravelz-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 10 * 60 * 1000 }, // 10 min
+}));
+app.use(passport.initialize());
 
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

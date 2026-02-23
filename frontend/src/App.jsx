@@ -19,6 +19,7 @@ const Packages       = lazy(() => import('./pages/Packages'));
 const Services       = lazy(() => import('./pages/Services'));
 const Destinations   = lazy(() => import('./pages/Destinations'));
 const Contact        = lazy(() => import('./pages/Contact'));
+const GoogleCallback = lazy(() => import('./pages/GoogleCallback'));
 
 
 
@@ -40,6 +41,7 @@ const App = () =>  (
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/verify-email/:token"   element={<VerifyEmail />} />
+        <Route path="/auth/google/callback"  element={<GoogleCallback />} />
         <Route path="/packages"              element={<Packages />} />
         <Route path="/services"              element={<Services />} />
         <Route path="/destinations"          element={<Destinations />} />

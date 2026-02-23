@@ -65,10 +65,16 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
+  const loginWithToken = (token, userData) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+    setIsAuth(true);
+  };
+
   const updateUser = (updated) => setUser((prev) => ({ ...prev, ...updated }));
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated, login, signup, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, login, signup, logout, updateUser, loginWithToken }}>
       {children}
     </AuthContext.Provider>
   );
