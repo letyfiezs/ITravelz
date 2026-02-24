@@ -1,6 +1,13 @@
 const Destination = require('../models/Destination');
+const path = require('path');
 
-/* ─── Public ─── */
+// Helper: get public URL for an uploaded file
+const getFileUrl = (file) => {
+  if (!file) return '';
+  if (file.path && (file.path.startsWith('http') || file.path.startsWith('//'))) return file.path; // Cloudinary
+  if (file.filename) return `/uploads/${file.filename}`;
+  return file.path || '';
+};
 
 // GET /api/destinations  — active only
 exports.getAllDestinations = async (req, res) => {
@@ -43,13 +50,16 @@ exports.getAllDestinationsAdmin = async (req, res) => {
 exports.createDestination = async (req, res) => {
   try {
     const {
-      name, city, country, category, image, tagline,
-      description, culturalInfo, highlights, bestTime, avgCost, isActive,
+      name, city, country, category, image, images, location, tagline,
+      description, readMore, culturalInfo, highlights, bestTime, avgCost, isActive,
     } = req.body;
 
     const dest = await Destination.create({
       name, city, country, category, image: image || '',
+      images: Array.isArray(images) ? images.slice(0, 10) : [],
+      location: location || '',
       tagline: tagline || '', description: description || '',
+      readMore: readMore || '',
       culturalInfo: culturalInfo || '',
       highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
       bestTime: bestTime || '', avgCost: avgCost || '',
@@ -66,18 +76,19 @@ exports.createDestination = async (req, res) => {
 exports.updateDestination = async (req, res) => {
   try {
     const {
-      name, city, country, category, image, tagline,
-      description, culturalInfo, highlights, bestTime, avgCost, isActive,
+      name, city, country, category, image, images, location, tagline,
+      description, readMore, culturalInfo, highlights, bestTime, avgCost, isActive,
     } = req.body;
 
     const update = {
       name, city, country, category, image,
-      tagline, description, culturalInfo,
+      ...(Array.isArray(images) ? { images: images.slice(0, 10) } : {}),
+      location,
+      tagline, description, readMore, culturalInfo,
       highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
       bestTime, avgCost, isActive,
       updatedAt: Date.now(),
     };
-    // Remove undefined fields
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
 
     const dest = await Destination.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
@@ -96,5 +107,35 @@ exports.deleteDestination = async (req, res) => {
     res.json({ success: true, message: 'Destination deleted' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/admin/destinations/:id/images
+exports.uploadDestinationImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No images uploaded' });
+    const dest = await Destination.findById(req.params.id);
+    if (!dest) return res.status(404).json({ message: 'Destination not found' });
+    const newPaths = req.files.map(getFileUrl);
+    const combined = [...(dest.images || []), ...newPaths].slice(0, 10);
+    dest.images = combined;
+    await dest.save();
+    res.json({ message: 'Images uploaded', images: dest.images });
+  } catch (error) {
+    res.status(500).json({ message: 'Error uploading images', error: error.message });
+  }
+};
+
+// DELETE /api/admin/destinations/:id/images
+exports.deleteDestinationImage = async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    const dest = await Destination.findById(req.params.id);
+    if (!dest) return res.status(404).json({ message: 'Destination not found' });
+    dest.images = (dest.images || []).filter(img => img !== imageUrl);
+    await dest.save();
+    res.json({ message: 'Image removed', images: dest.images });
+  } catch (error) {
+    res.status(500).json({ message: 'Error removing image', error: error.message });
   }
 };

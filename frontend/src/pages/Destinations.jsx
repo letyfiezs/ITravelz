@@ -1,18 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { destinationService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Destinations.module.css';
 
 const CATEGORIES = ['All', 'Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
 
+/* ── Google Maps helpers ── */
+const isGoogleMapsUrl  = (loc) => loc && (loc.includes('google.com/maps') || loc.includes('maps.google') || loc.includes('goo.gl/maps'));
+const isIframeEmbed    = (loc) => loc && loc.trim().startsWith('<iframe');
+const makeEmbedUrl     = (url) => {
+  // Try to convert share URL to embed URL
+  if (url.includes('/maps/embed')) return url;
+  if (url.includes('google.com/maps/place')) {
+    const q = url.replace('https://www.google.com/maps/place/', '').split('/')[0];
+    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+  }
+  return url.replace('/maps?', '/maps/embed?').replace('/maps/', '/maps/embed/');
+};
+
+/* ── Read More Modal ── */
+const ReadMoreModal = ({ dest, onClose }) => {
+  const images = (dest.images && dest.images.length > 0) ? dest.images : (dest.image ? [dest.image] : []);
+  const loc = dest.location || '';
+
+  const handleBackdrop = useCallback((e) => { if (e.target === e.currentTarget) onClose(); }, [onClose]);
+
+  return (
+    <div className={styles.rmBackdrop} onClick={handleBackdrop}>
+      <div className={styles.rmContent} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.rmClose} onClick={onClose}><i className="fas fa-times" /></button>
+
+        {/* Image gallery */}
+        {images.length > 0 && (
+          <div className={styles.rmImgWrap}>
+            <ImageSlideshow images={images} fallback={dest.image} alt={dest.name} interval={5000} className={styles.rmSlideshow} />
+          </div>
+        )}
+
+        <div className={styles.rmBody}>
+          {/* Category + title */}
+          <div className={styles.rmHeader}>
+            <span className={styles.rmBadge}>{dest.category}</span>
+            <h2 className={styles.rmTitle}>{dest.name}</h2>
+            {dest.tagline && <p className={styles.rmTagline}>{dest.tagline}</p>}
+          </div>
+
+          {/* Location */}
+          {loc && (
+            <div className={styles.rmLocation}>
+              <i className="fas fa-map-marker-alt" />
+              {isIframeEmbed(loc) ? (
+                <span>
+                  <span className={styles.rmLocText}>{[dest.city, dest.country].filter(Boolean).join(', ')}</span>
+                </span>
+              ) : isGoogleMapsUrl(loc) ? (
+                <a href={loc} target="_blank" rel="noopener noreferrer" className={styles.rmMapLink}>
+                  <i className="fab fa-google" /> View on Google Maps
+                </a>
+              ) : (
+                <span className={styles.rmLocText}>{loc}</span>
+              )}
+            </div>
+          )}
+
+          {/* Google Maps embed */}
+          {loc && (isGoogleMapsUrl(loc) || isIframeEmbed(loc)) && (
+            <div className={styles.rmMapEmbed}>
+              {isIframeEmbed(loc) ? (
+                <div dangerouslySetInnerHTML={{ __html: loc }} />
+              ) : (
+                <iframe
+                  src={makeEmbedUrl(loc)}
+                  title="Map"
+                  width="100%"
+                  height="250"
+                  style={{ border: 0, borderRadius: 12 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              )}
+            </div>
+          )}
+
+          {/* Description */}
+          {dest.description && (
+            <div className={styles.rmSection}>
+              <p className={styles.rmText}>{dest.description}</p>
+            </div>
+          )}
+
+          {/* Read More */}
+          {dest.readMore && (
+            <div className={styles.rmSection}>
+              <h4 className={styles.rmSectionTitle}><i className="fas fa-book-open" /> Details</h4>
+              <p className={styles.rmText}>{dest.readMore}</p>
+            </div>
+          )}
+
+          {/* Cultural Info */}
+          {dest.culturalInfo && (
+            <div className={styles.rmSection}>
+              <h4 className={styles.rmSectionTitle}><i className="fas fa-landmark" /> Cultural &amp; Historical Info</h4>
+              <p className={styles.rmText}>{dest.culturalInfo}</p>
+            </div>
+          )}
+
+          {/* Highlights */}
+          {(dest.highlights || []).length > 0 && (
+            <div className={styles.rmSection}>
+              <h4 className={styles.rmSectionTitle}><i className="fas fa-star" /> Highlights</h4>
+              <ul className={styles.rmHighlights}>
+                {dest.highlights.map((h, i) => (
+                  <li key={i}><i className="fas fa-check-circle" /> {h}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Meta */}
+          {(dest.bestTime || dest.avgCost) && (
+            <div className={styles.rmMeta}>
+              {dest.bestTime && (
+                <div className={styles.rmMetaItem}>
+                  <i className="fas fa-calendar-alt" />
+                  <div>
+                    <span className={styles.rmMetaLabel}>Best Time to Visit</span>
+                    <span className={styles.rmMetaValue}>{dest.bestTime}</span>
+                  </div>
+                </div>
+              )}
+              {dest.avgCost && (
+                <div className={styles.rmMetaItem}>
+                  <i className="fas fa-wallet" />
+                  <div>
+                    <span className={styles.rmMetaLabel}>Average Cost</span>
+                    <span className={styles.rmMetaValue}>{dest.avgCost}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Component ── */
 const Destinations = () => {
   const { t } = useLanguage();
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [expanded, setExpanded]         = useState(null);
+  const [modalDest, setModalDest]       = useState(null);
 
   useEffect(() => {
     destinationService.getAll()
@@ -21,11 +165,17 @@ const Destinations = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    if (!modalDest) return;
+    const handler = (e) => { if (e.key === 'Escape') setModalDest(null); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [modalDest]);
+
   const filtered = activeCategory === 'All'
     ? destinations
     : destinations.filter((d) => d.category === activeCategory);
-
-  const toggle = (id) => setExpanded((prev) => (prev === id ? null : id));
 
   return (
     <div className={styles.page}>
@@ -78,15 +228,29 @@ const Destinations = () => {
 
           <div className={styles.grid}>
             {filtered.map((d) => {
-              const isOpen = expanded === d._id;
-              return (
-                <div key={d._id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
+              const images = (d.images && d.images.length > 0) ? d.images : (d.image ? [d.image] : []);
+              const locText = d.location && !isGoogleMapsUrl(d.location) && !isIframeEmbed(d.location)
+                ? d.location
+                : [d.city, d.country].filter(Boolean).join(', ');
+              const desc = d.description
+                ? (d.description.length > 110 ? d.description.slice(0, 110) + '…' : d.description)
+                : '';
 
-                  {/* Image */}
+              return (
+                <div key={d._id} className={styles.card}>
+                  {/* Slideshow */}
                   <div className={styles.cardImg}>
-                    {d.image
-                      ? <img src={d.image} alt={d.name} onError={(e) => e.target.style.display='none'} />
-                      : <div className={styles.cardImgPlaceholder}><i className="fas fa-mountain" /></div>}
+                    {images.length > 0 ? (
+                      <ImageSlideshow
+                        images={images}
+                        fallback={d.image}
+                        alt={d.name}
+                        interval={5000}
+                        className={styles.cardSlideshow}
+                      />
+                    ) : (
+                      <div className={styles.cardImgPlaceholder}><i className="fas fa-mountain" /></div>
+                    )}
                     <span className={styles.categoryBadge}>{d.category}</span>
                   </div>
 
@@ -94,60 +258,20 @@ const Destinations = () => {
                   <div className={styles.cardBody}>
                     <div className={styles.cardLocation}>
                       <i className="fas fa-map-marker-alt" />
-                      {[d.city, d.country].filter(Boolean).join(', ') || 'Unknown'}
+                      {locText || 'Unknown'}
+                      {isGoogleMapsUrl(d.location) && (
+                        <a href={d.location} target="_blank" rel="noopener noreferrer" className={styles.cardMapLink} onClick={(e) => e.stopPropagation()}>
+                          <i className="fab fa-google" />
+                        </a>
+                      )}
                     </div>
                     <h3 className={styles.cardName}>{d.name}</h3>
                     {d.tagline && <p className={styles.cardTagline}>{d.tagline}</p>}
-                    <p className={styles.cardDesc}>{d.description}</p>
+                    {desc && <p className={styles.cardDesc}>{desc}</p>}
 
-                    {/* Highlights */}
-                    {(d.highlights || []).length > 0 && (
-                      <ul className={styles.highlights}>
-                        {d.highlights.map((h, i) => (
-                          <li key={i}><i className="fas fa-check" /> {h}</li>
-                        ))}
-                      </ul>
-                    )}
-
-                    {/* Expanded: cultural info + meta */}
-                    {isOpen && (
-                      <div className={styles.expandedZone}>
-                        {d.culturalInfo && (
-                          <div className={styles.culturalBox}>
-                            <h4><i className="fas fa-landmark" /> Cultural &amp; Historical Info</h4>
-                            <p>{d.culturalInfo}</p>
-                          </div>
-                        )}
-                        <div className={styles.metaRow}>
-                          {d.bestTime && (
-                            <div className={styles.metaItem}>
-                              <i className="fas fa-calendar-alt" />
-                              <div>
-                                <span className={styles.metaLabel}>Best Time to Visit</span>
-                                <span className={styles.metaValue}>{d.bestTime}</span>
-                              </div>
-                            </div>
-                          )}
-                          {d.avgCost && (
-                            <div className={styles.metaItem}>
-                              <i className="fas fa-wallet" />
-                              <div>
-                                <span className={styles.metaLabel}>Average Cost</span>
-                                <span className={styles.metaValue}>{d.avgCost}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Footer */}
                     <div className={styles.cardFooter}>
-                      <button
-                        className={styles.learnBtn}
-                        onClick={() => toggle(d._id)}
-                      >
-                      {isOpen ? <><i className="fas fa-chevron-up" /> {t('cancel')}</> : <><i className="fas fa-info-circle" /> {t('btn_learn_more')}</>}
+                      <button className={styles.learnBtn} onClick={() => setModalDest(d)}>
+                        More <i className="fas fa-arrow-right" />
                       </button>
                     </div>
                   </div>
@@ -169,6 +293,9 @@ const Destinations = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Read More Modal ── */}
+      {modalDest && <ReadMoreModal dest={modalDest} onClose={() => setModalDest(null)} />}
 
     </div>
   );

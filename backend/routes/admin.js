@@ -43,6 +43,8 @@ const {
   createDestination,
   updateDestination,
   deleteDestination,
+  uploadDestinationImages,
+  deleteDestinationImage,
 } = require('../controllers/destinationController');
 const {
   getAllFestivalsAdmin,
@@ -109,6 +111,8 @@ router.get('/destinations', protectAdmin, getAllDestinationsAdmin);
 router.post('/destinations', protectAdmin, createDestination);
 router.put('/destinations/:id', protectAdmin, updateDestination);
 router.delete('/destinations/:id', protectAdmin, deleteDestination);
+router.post('/destinations/:id/images', protectAdmin, upload.array('images', 10), uploadDestinationImages);
+router.delete('/destinations/:id/images', protectAdmin, deleteDestinationImage);
 
 // Image Upload
 router.post('/upload', protectAdmin, upload.single('image'), uploadImage);

@@ -10,7 +10,7 @@ const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'R
 const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', images: [], features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5 };
 const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', price: '', order: 0, isActive: true };
 const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
-const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', isActive: true };
+const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true };
 
 /* ─── Modal ─── */
 const Modal = ({ title, onClose, children }) => (
@@ -47,6 +47,8 @@ const Admin = () => {
   const [destEdit, setDestEdit]         = useState(null);
   const [destSaving, setDestSaving]     = useState(false);
   const [destMsg, setDestMsg]           = useState('');
+  const [destImgFiles, setDestImgFiles] = useState([]);
+  const [destCurImages, setDestCurImages] = useState([]);
 
   /* package modal */
   const [pkgModal, setPkgModal]         = useState(false);
@@ -245,26 +247,39 @@ const Admin = () => {
   const removeItinNewFile = (idx) => setItinImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   /* ── Destination helpers ── */
-  const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestMsg(''); setDestModal(true); };
+  const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestCurImages([]); setDestImgFiles([]); setDestMsg(''); setDestModal(true); };
   const openDestEdit = (d) => {
     setDestEdit(d._id);
-    setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', isActive: d.isActive??true });
+    setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', images: d.images||[], location: d.location||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', readMore: d.readMore||'', isActive: d.isActive??true });
+    setDestCurImages(d.images || []); setDestImgFiles([]);
     setDestMsg(''); setDestModal(true);
   };
-  const closeDest = () => { setDestModal(false); setDestMsg(''); };
+  const closeDest = () => { setDestModal(false); setDestMsg(''); setDestImgFiles([]); setDestCurImages([]); };
   const setD = (k) => (e) => setDestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   const saveDest = async (e) => {
     e.preventDefault(); setDestSaving(true); setDestMsg('');
-    const payload = { ...destForm, highlights: destForm.highlights.split('\n').map((s) => s.trim()).filter(Boolean) };
+    const payload = { ...destForm, highlights: destForm.highlights.split('\n').map((s) => s.trim()).filter(Boolean), images: destCurImages };
     try {
+      let savedId = destEdit;
       if (destEdit) {
         const r = await adminService.updateDestination(destEdit, payload);
-        setDestinations((p) => p.map((x) => x._id === destEdit ? (r.data.destination || r.data) : x));
+        const updated = r.data.destination || r.data;
+        setDestinations((p) => p.map((x) => x._id === destEdit ? updated : x));
         setDestMsg('✅ Updated!');
       } else {
         const r = await adminService.createDestination(payload);
-        setDestinations((p) => [r.data.destination || r.data, ...p]);
+        const created = r.data.destination || r.data;
+        savedId = created._id;
+        setDestinations((p) => [created, ...p]);
         setDestMsg('✅ Created!'); setDestForm(EMPTY_DEST);
+      }
+      if (destImgFiles.length > 0 && savedId) {
+        const fd = new FormData();
+        destImgFiles.forEach((f) => fd.append('images', f));
+        const upRes = await adminService.uploadDestinationImages(savedId, fd);
+        const updatedImages = upRes.data.images || [];
+        setDestinations((p) => p.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setDestImgFiles([]);
       }
       setTimeout(closeDest, 900);
     } catch (err) { setDestMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
@@ -275,6 +290,20 @@ const Admin = () => {
     try { await adminService.deleteDestination(id); setDestinations((p) => p.filter((x) => x._id !== id)); }
     catch { alert('Delete failed.'); }
   };
+  /* ── Destination image helpers ── */
+  const removeDestCurImage = async (imgUrl) => {
+    setDestCurImages((prev) => prev.filter((x) => x !== imgUrl));
+    if (destEdit) { try { await adminService.deleteDestinationImage(destEdit, imgUrl); } catch { /* ignore */ } }
+  };
+  const onDestFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const total = destCurImages.length + destImgFiles.length + files.length;
+    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    setDestImgFiles((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = '';
+  };
+  const removeDestNewFile = (idx) => setDestImgFiles((prev) => prev.filter((_, i) => i !== idx));
+
   const toggleDestActive = async (d) => {
     try { const r = await adminService.updateDestination(d._id, { isActive: !d.isActive }); setDestinations((p) => p.map((x) => x._id === d._id ? (r.data.destination || r.data) : x)); }
     catch { alert('Update failed.'); }
@@ -800,9 +829,47 @@ const Admin = () => {
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>Image URL</label>
+              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 images (5-second slideshow)</span></label>
+              {destCurImages.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {destCurImages.map((src, i) => {
+                    const baseUrl = (typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL) ? import.meta.env.VITE_API_URL.replace('/api','') : '';
+                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    return (
+                      <div key={i} style={{position:'relative',width:72,height:52}}>
+                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        <button type="button" onClick={()=>removeDestCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {destImgFiles.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {destImgFiles.map((f, i) => (
+                    <div key={i} style={{position:'relative',width:72,height:52}}>
+                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>removeDestNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(destCurImages.length + destImgFiles.length) < 10 && (
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
+                  <i className="fas fa-cloud-upload-alt"/>
+                  <span>Зураг нэмэх ({destCurImages.length + destImgFiles.length}/10)</span>
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onDestFileChange}/>
+                </label>
+              )}
+            </div>
+            <div className={styles.formGroup}>
+              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
               <input className="form-input" value={destForm.image} onChange={setD('image')} placeholder="https://images.unsplash.com/..."/>
-              {destForm.image && <img src={destForm.image} alt="preview" style={{marginTop:8,width:'100%',height:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+              {destForm.image && <img src={destForm.image} alt="preview" style={{marginTop:8,width:'100%',height:100,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+            </div>
+            <div className={styles.formGroup}>
+              <label>Location <span style={{fontWeight:400,color:'var(--text-muted)'}}>Google Maps link, embed code, or plain text</span></label>
+              <input className="form-input" value={destForm.location} onChange={setD('location')} placeholder="https://maps.google.com/?q=... or Ulaanbaatar, Mongolia"/>
             </div>
             <div className={styles.formGroup}>
               <label>Tagline <span style={{fontWeight:400,color:'var(--text-muted)'}}>Short subtitle shown on card</span></label>
@@ -815,6 +882,10 @@ const Admin = () => {
             <div className={styles.formGroup}>
               <label>Cultural &amp; Historical Info</label>
               <textarea className="form-input" rows={4} value={destForm.culturalInfo} onChange={setD('culturalInfo')} placeholder="Rich cultural history, traditions, landmarks…" style={{resize:'vertical'}}/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Read More <span style={{fontWeight:400,color:'var(--text-muted)'}}>Detailed text shown in the popup modal</span></label>
+              <textarea className="form-input" rows={4} value={destForm.readMore} onChange={setD('readMore')} placeholder="Extended details, stories, tips…" style={{resize:'vertical'}}/>
             </div>
             <div className={styles.formGroup}>
               <label>Highlights <span style={{fontWeight:400,color:'var(--text-muted)'}}>One per line</span></label>

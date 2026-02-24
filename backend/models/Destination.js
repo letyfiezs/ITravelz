@@ -25,6 +25,21 @@ const destinationSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  // Up to 10 gallery images (slideshow)
+  images: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: function(v) { return v.length <= 10; },
+      message: 'Maximum 10 images allowed',
+    },
+  },
+  // Location: plain text OR Google Maps share/embed URL
+  location: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   // Short tagline shown on cards
   tagline: {
     type: String,
@@ -33,6 +48,11 @@ const destinationSchema = new mongoose.Schema({
   },
   // General description
   description: {
+    type: String,
+    default: '',
+  },
+  // Extended description for the Read More modal
+  readMore: {
     type: String,
     default: '',
   },
