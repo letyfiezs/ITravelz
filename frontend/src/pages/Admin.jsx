@@ -130,7 +130,7 @@ const Admin = () => {
   const [itinCurImages, setItinCurImages] = useState([]);
 
   /* home hero */
-  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '' };
+  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '', frontOverlayText: '' };
   const [homeHeroForm, setHomeHeroForm]         = useState(EMPTY_HOME_HERO);
   const [homeHeroItems, setHomeHeroItems]       = useState([]);
   const [homeHeroImgFile, setHomeHeroImgFile]   = useState(null);
@@ -170,6 +170,7 @@ const Admin = () => {
           frontType:    findH('home_front_type')?.text || 'image',
           frontText:    findH('home_front_text')?.text || '',
           frontImageUrl: findH('home_front_image')?.image || findH('home_front_image')?.imageUrl || '',
+          frontOverlayText: findH('home_front_overlay_text')?.text || '',
         });
         setFestivals(fest.data.festivals || fest.data || []);
         setAboutItems(abt.data.items || abt.data || []);
@@ -533,6 +534,7 @@ const Admin = () => {
         upsertHomeKey('home_front_type', { text: homeHeroForm.frontType }),
         upsertHomeKey('home_front_text', { text: homeHeroForm.frontText }),
         upsertHomeKey('home_front_image',{ imageUrl: frontUrl, image: frontUrl }),
+        upsertHomeKey('home_front_overlay_text', { text: homeHeroForm.frontOverlayText }),
       ]);
       // Refresh hero items in state
       setHomeHeroItems((prev) => {
@@ -1105,6 +1107,18 @@ const Admin = () => {
                       {!homeHeroFrontFile && homeHeroForm.frontImageUrl && (
                         <img src={homeHeroForm.frontImageUrl} alt="front preview" style={{marginTop:8,width:'100%',maxHeight:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
                       )}
+                      <div style={{marginTop:12}}>
+                        <label style={{display:'block',marginBottom:4,fontSize:13,color:'var(--text-muted)'}}>
+                          <i className="fas fa-comment-alt" style={{marginRight:6,color:'var(--primary)'}}/>
+                          Зурган дээрх бичлэг (overlay text) <span style={{fontWeight:400}}>— зурагны дэргэд харагдана</span>
+                        </label>
+                        <textarea className="form-input" rows={3} value={homeHeroForm.frontOverlayText} onChange={setHH('frontOverlayText')} placeholder="Жишээ: Welcome to Mongolia! (хоосон бол overlay гарахгүй)" style={{resize:'vertical'}}/>
+                        {homeHeroForm.frontOverlayText && (
+                          <div style={{marginTop:6,padding:'10px 14px',borderRadius:8,background:'rgba(0,0,0,.55)',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',fontSize:13,whiteSpace:'pre-wrap'}}>
+                            {homeHeroForm.frontOverlayText}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

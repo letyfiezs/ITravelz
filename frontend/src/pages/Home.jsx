@@ -81,9 +81,10 @@ export default function Home() {
   const [heroImage,      setHeroImage]      = useState('');
   const [heroIntro,      setHeroIntro]      = useState('');
   const [heroVideo,      setHeroVideo]      = useState('');
-  const [heroFrontType,  setHeroFrontType]  = useState('image');
-  const [heroFrontText,  setHeroFrontText]  = useState('');
-  const [heroFrontImage, setHeroFrontImage] = useState('');
+  const [heroFrontType,        setHeroFrontType]        = useState('image');
+  const [heroFrontText,        setHeroFrontText]        = useState('');
+  const [heroFrontImage,       setHeroFrontImage]       = useState('');
+  const [heroFrontOverlayText, setHeroFrontOverlayText] = useState('');
 
   const [packages,  setPackages]  = useState(shuffle(FALLBACK_PKGS));
   const [dests,     setDests]     = useState(shuffle(FALLBACK_DESTS));
@@ -103,9 +104,10 @@ export default function Home() {
         if (find('home_image'))       setHeroImage(find('home_image').image || find('home_image').imageUrl || '');
         if (find('home_video'))       setHeroVideo(find('home_video').text || '');
         if (find('home_intro'))       setHeroIntro(find('home_intro').text || '');
-        if (find('home_front_type'))  setHeroFrontType(find('home_front_type').text || 'image');
-        if (find('home_front_text'))  setHeroFrontText(find('home_front_text').text || '');
-        if (find('home_front_image')) setHeroFrontImage(find('home_front_image').image || find('home_front_image').imageUrl || '');
+        if (find('home_front_type'))         setHeroFrontType(find('home_front_type').text || 'image');
+        if (find('home_front_text'))         setHeroFrontText(find('home_front_text').text || '');
+        if (find('home_front_image'))        setHeroFrontImage(find('home_front_image').image || find('home_front_image').imageUrl || '');
+        if (find('home_front_overlay_text')) setHeroFrontOverlayText(find('home_front_overlay_text').text || '');
       })
       .catch(() => {});
 
@@ -153,7 +155,14 @@ export default function Home() {
                 <p>{heroFrontText}</p>
               </div>
             ) : (
-              <img src={heroFrontImage || bgImg} alt={slogan} className={styles.heroMediaEl} />
+              <div className={styles.heroMediaImgWrap}>
+                <img src={heroFrontImage || bgImg} alt={slogan} className={styles.heroMediaEl} />
+                {heroFrontOverlayText && (
+                  <div className={styles.heroMediaOverlay}>
+                    <p>{heroFrontOverlayText}</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

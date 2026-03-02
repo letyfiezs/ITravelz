@@ -581,10 +581,33 @@ html[data-theme="dark"] .packSection { background: var(--bg-secondary); }
   aspect-ratio: 16 / 7;
   flex-shrink: 0;
 }
+.heroMediaImgWrap {
+  position: relative;
+  width: 100%; height: 100%;
+}
 .heroMediaEl {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
+}
+.heroMediaOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px;
+  background: linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.25) 60%, transparent 100%);
+}
+.heroMediaOverlay p {
+  margin: 0;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.65;
+  color: #fff;
+  text-align: center;
+  white-space: pre-wrap;
+  text-shadow: 0 2px 12px rgba(0,0,0,.6);
 }
 
 /* Text block shown when admin sets front panel to "text" mode */
