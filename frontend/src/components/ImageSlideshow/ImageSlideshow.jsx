@@ -12,6 +12,7 @@ import styles from './ImageSlideshow.module.css';
  */
 const ImageSlideshow = ({ images = [], fallback, alt = 'Image', interval = 5000, className = '' }) => {
   const [current, setCurrent] = useState(0);
+  const [errors, setErrors]   = useState({});  // track per-index load errors
   const timerRef = useRef(null);
 
   // Normalise: combine images with fallback
@@ -30,7 +31,9 @@ const ImageSlideshow = ({ images = [], fallback, alt = 'Image', interval = 5000,
     ? images.map(resolveUrl).filter(Boolean)
     : fallback ? [resolveUrl(fallback)].filter(Boolean) : [];
 
-  const count = allImages.length;
+  // Filter out images that errored
+  const validImages = allImages.filter((_, i) => !errors[i]);
+  const count = validImages.length;
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -46,7 +49,7 @@ const ImageSlideshow = ({ images = [], fallback, alt = 'Image', interval = 5000,
     startTimer();
     return () => clearInterval(timerRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allImages.join(','), interval]);
+  }, [allImages.join(','), interval, Object.keys(errors).length]);
 
   const goTo = (idx) => {
     setCurrent(idx);
@@ -68,17 +71,20 @@ const ImageSlideshow = ({ images = [], fallback, alt = 'Image', interval = 5000,
 
   return (
     <div className={`${styles.wrapper} ${className}`}>
-      {/* Slides */}
-      {allImages.map((src, i) => (
-        <img
-          key={i}
-          src={src}
-          alt={`${alt} ${i + 1}`}
-          className={`${styles.slide} ${i === current ? styles.slideActive : ''}`}
-          loading="lazy"
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-      ))}
+      {/* Slides — use eager loading so every slide is ready for the transition */}
+      {validImages.map((src, i) => {
+        const origIdx = allImages.indexOf(src);
+        return (
+          <img
+            key={i}
+            src={src}
+            alt={`${alt} ${i + 1}`}
+            className={`${styles.slide} ${i === current ? styles.slideActive : ''}`}
+            loading="eager"
+            onError={() => setErrors((prev) => ({ ...prev, [origIdx]: true }))}
+          />
+        );
+      })}
 
       {/* Arrows (only when multiple) */}
       {count > 1 && (

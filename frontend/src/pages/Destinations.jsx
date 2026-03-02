@@ -11,11 +11,11 @@ const CATEGORIES = ['All', 'Beach', 'Cultural', 'Adventure', 'City', 'Nature', '
 const isGoogleMapsUrl  = (loc) => loc && (loc.includes('google.com/maps') || loc.includes('maps.google') || loc.includes('goo.gl/maps'));
 const isIframeEmbed    = (loc) => loc && loc.trim().startsWith('<iframe');
 const makeEmbedUrl     = (url) => {
-  // Try to convert share URL to embed URL
-  if (url.includes('/maps/embed')) return url;
+  // Already an embed URL
+  if (url.includes('/maps/embed') || url.includes('output=embed')) return url;
   if (url.includes('google.com/maps/place')) {
     const q = url.replace('https://www.google.com/maps/place/', '').split('/')[0];
-    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+    return `https://maps.google.com/maps?q=${encodeURIComponent(decodeURIComponent(q))}&output=embed`;
   }
   return url.replace('/maps?', '/maps/embed?').replace('/maps/', '/maps/embed/');
 };

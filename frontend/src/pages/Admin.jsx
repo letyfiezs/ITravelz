@@ -12,6 +12,25 @@ const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', di
 const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true };
 
+/* ── Google Maps embed URL builder (no API key needed) ── */
+const buildMapEmbedUrl = (query) => {
+  if (!query || !query.trim()) return '';
+  const q = query.trim();
+  // Already an embed URL
+  if (q.includes('/maps/embed')) return q;
+  // Google Maps place URL
+  if (q.includes('google.com/maps/place')) {
+    const part = q.replace(/.*google\.com\/maps\/place\//, '').split('/')[0];
+    return `https://maps.google.com/maps?q=${encodeURIComponent(decodeURIComponent(part))}&output=embed`;
+  }
+  // Any other Google Maps / goo.gl link
+  if (q.includes('google.com/maps') || q.includes('maps.google') || q.includes('goo.gl/maps')) {
+    return q.replace('/maps?', '/maps/embed?').replace(/\/maps\/(?!embed)/, '/maps/embed/');
+  }
+  // Plain text search
+  return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+};
+
 /* ─── Modal ─── */
 const Modal = ({ title, onClose, children }) => (
   <div className={styles.modalBackdrop} onClick={onClose}>
@@ -49,6 +68,9 @@ const Admin = () => {
   const [destMsg, setDestMsg]           = useState('');
   const [destImgFiles, setDestImgFiles] = useState([]);
   const [destCurImages, setDestCurImages] = useState([]);
+  /* destination map picker */
+  const [destMapSearch, setDestMapSearch]   = useState('');
+  const [destMapPreview, setDestMapPreview] = useState('');
 
   /* destinations hero (page header scheduling) */
   const EMPTY_HERO = { title: '', subtitle: '', eyebrow: '', imageUrl: '', validFrom: '', isActive: true };
@@ -261,15 +283,35 @@ const Admin = () => {
   const removeItinNewFile = (idx) => setItinImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   /* ── Destination helpers ── */
-  const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestCurImages([]); setDestImgFiles([]); setDestMsg(''); setDestModal(true); };
+  const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestCurImages([]); setDestImgFiles([]); setDestMsg(''); setDestMapSearch(''); setDestMapPreview(''); setDestModal(true); };
   const openDestEdit = (d) => {
     setDestEdit(d._id);
     setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', images: d.images||[], location: d.location||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', readMore: d.readMore||'', isActive: d.isActive??true });
     setDestCurImages(d.images || []); setDestImgFiles([]);
+    setDestMapSearch(d.location || '');
+    setDestMapPreview(d.location ? buildMapEmbedUrl(d.location) : '');
     setDestMsg(''); setDestModal(true);
   };
-  const closeDest = () => { setDestModal(false); setDestMsg(''); setDestImgFiles([]); setDestCurImages([]); };
+  const closeDest = () => { setDestModal(false); setDestMsg(''); setDestImgFiles([]); setDestCurImages([]); setDestMapSearch(''); setDestMapPreview(''); };
   const setD = (k) => (e) => setDestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  /* map picker helpers */
+  const handleMapSearch = () => {
+    const q = destMapSearch.trim();
+    if (!q) return;
+    setDestMapPreview(buildMapEmbedUrl(q));
+  };
+  const applyMapLocation = () => {
+    const q = destMapSearch.trim();
+    if (!q) return;
+    const embedUrl = buildMapEmbedUrl(q);
+    setDestMapPreview(embedUrl);
+    setDestForm((p) => ({ ...p, location: embedUrl }));
+  };
+  const clearMapLocation = () => {
+    setDestForm((p) => ({ ...p, location: '' }));
+    setDestMapPreview('');
+    setDestMapSearch('');
+  };
   const saveDest = async (e) => {
     e.preventDefault(); setDestSaving(true); setDestMsg('');
     const payload = { ...destForm, highlights: destForm.highlights.split('\n').map((s) => s.trim()).filter(Boolean), images: destCurImages };
@@ -1016,8 +1058,91 @@ const Admin = () => {
               {destForm.image && <img src={destForm.image} alt="preview" style={{marginTop:8,width:'100%',height:100,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
             </div>
             <div className={styles.formGroup}>
-              <label>Location <span style={{fontWeight:400,color:'var(--text-muted)'}}>Google Maps link, embed code, or plain text</span></label>
-              <input className="form-input" value={destForm.location} onChange={setD('location')} placeholder="https://maps.google.com/?q=... or Ulaanbaatar, Mongolia"/>
+              <label>
+                <i className="fas fa-map-marked-alt" style={{marginRight:6,color:'var(--primary)'}}/>
+                Location — Google Maps Picker
+                <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Газар хайж, харж, сонгоно уу</span>
+              </label>
+
+              {/* Search row */}
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <input
+                  className="form-input"
+                  value={destMapSearch}
+                  onChange={(e)=>setDestMapSearch(e.target.value)}
+                  onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); handleMapSearch(); } }}
+                  placeholder="Газар хайх... e.g. Улаанбаатар, Монгол"
+                  style={{flex:1}}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleMapSearch}
+                  style={{whiteSpace:'nowrap'}}
+                >
+                  <i className="fas fa-search"/> Хайх
+                </button>
+              </div>
+
+              {/* Live map preview — like the Google Maps app */}
+              {destMapPreview && (
+                <div style={{borderRadius:12,overflow:'hidden',border:'2px solid var(--primary)',marginBottom:10,position:'relative',boxShadow:'0 4px 16px rgba(0,0,0,0.15)'}}>
+                  <iframe
+                    src={destMapPreview}
+                    title="Map Preview"
+                    width="100%"
+                    height="300"
+                    style={{border:0,display:'block'}}
+                    allowFullScreen=""
+                    loading="eager"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <div style={{position:'absolute',bottom:12,left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
+                    <button
+                      type="button"
+                      onClick={applyMapLocation}
+                      style={{pointerEvents:'auto',background:'var(--primary)',color:'#fff',border:'none',borderRadius:24,padding:'10px 22px',fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:7,boxShadow:'0 3px 12px rgba(0,0,0,0.35)',letterSpacing:0.3}}
+                    >
+                      <i className="fas fa-map-pin"/> Энэ байршлыг сонгох
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Currently saved location */}
+              {destForm.location && (
+                <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:'var(--text-muted)',marginBottom:8,background:'var(--bg-alt)',borderRadius:8,padding:'6px 10px',flexWrap:'wrap'}}>
+                  <i className="fas fa-check-circle" style={{color:'#10b981',fontSize:14,flexShrink:0}}/>
+                  <span style={{wordBreak:'break-all',flex:1}}>{destForm.location}</span>
+                  <button
+                    type="button"
+                    onClick={clearMapLocation}
+                    style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'2px 10px',fontSize:11,cursor:'pointer',flexShrink:0}}
+                  >
+                    Устгах ×
+                  </button>
+                </div>
+              )}
+
+              {/* Manual paste fallback (collapsed by default) */}
+              <details style={{marginTop:2}}>
+                <summary style={{fontSize:12,color:'var(--text-muted)',cursor:'pointer',userSelect:'none'}}>
+                  <i className="fas fa-code" style={{marginRight:4}}/>
+                  Гараар URL / embed code оруулах
+                </summary>
+                <input
+                  className="form-input"
+                  style={{marginTop:6}}
+                  value={destForm.location}
+                  onChange={(e)=>{
+                    setD('location')(e);
+                    setDestMapSearch(e.target.value);
+                    if (e.target.value) setDestMapPreview(buildMapEmbedUrl(e.target.value));
+                    else setDestMapPreview('');
+                  }}
+                  placeholder="https://maps.google.com/?q=... эсвэл <iframe src=...>"
+                />
+              </details>
             </div>
             <div className={styles.formGroup}>
               <label>Tagline <span style={{fontWeight:400,color:'var(--text-muted)'}}>Short subtitle shown on card</span></label>
