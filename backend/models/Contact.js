@@ -22,6 +22,11 @@ const contactSchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, 'Subject cannot be more than 200 characters']
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     inquiryType: {
       type: String,
       enum: ['question', 'feedback', 'help'],

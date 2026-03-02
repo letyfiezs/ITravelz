@@ -3,11 +3,24 @@ import { contactService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import styles from './Contact.module.css';
 
-const OFFICES = [
-  { city: 'New York', address: '350 5th Avenue, Suite 4100', phone: '+1 (212) 555-0100', hours: 'Mon–Fri 9AM–6PM EST' },
-  { city: 'London',   address: '10 Upper Bank Street, Canary Wharf', phone: '+44 20 7946 0958', hours: 'Mon–Fri 9AM–6PM GMT' },
-  { city: 'Dubai',    address: 'Burj Khalifa District, Tower 1', phone: '+971 4 555 0100', hours: 'Mon–Fri 9AM–6PM GST' },
+// ============================================================
+// 📌 CONTACT INFO — ЭНД ӨӨРЧИЛНӨ ӨӨ
+// ============================================================
+const CONTACT_INFO = {
+  emails:  ['info@itravelz.mn', 'support@itravelz.mn'],
+  phone:   '+976 9900-0000',
+  hours:   'Да–Ба, 9:00–18:00',
+  address: 'Улаанбаатар, Монгол',
+};
+
+const SOCIAL_LINKS = [
+  { icon: 'fab fa-facebook-f',  label: 'Facebook',  color: '#1877f2', href: 'https://facebook.com/itravelz' },
+  { icon: 'fab fa-instagram',   label: 'Instagram', color: '#e1306c', href: 'https://instagram.com/itravelz' },
+  { icon: 'fab fa-twitter',     label: 'Twitter',   color: '#1da1f2', href: 'https://twitter.com/itravelz' },
+  { icon: 'fab fa-youtube',     label: 'YouTube',   color: '#ff0000', href: 'https://youtube.com/@itravelz' },
+  { icon: 'fab fa-tiktok',      label: 'TikTok',    color: '#010101', href: 'https://tiktok.com/@itravelz' },
 ];
+// ============================================================
 
 const FAQS = [
   { q: 'How far in advance should I book?', a: 'We recommend booking at least 4–6 weeks before your travel date for the best availability and pricing.' },
@@ -134,8 +147,9 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4>Email Us</h4>
-                    <a href="mailto:hello@itravelz.com">hello@itravelz.com</a>
-                    <a href="mailto:support@itravelz.com">support@itravelz.com</a>
+                    {CONTACT_INFO.emails.map((em) => (
+                      <a key={em} href={`mailto:${em}`}>{em}</a>
+                    ))}
                   </div>
                 </div>
                 <div className={styles.infoCard}>
@@ -144,8 +158,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4>Call Us</h4>
-                    <a href="tel:+12125550100">+1 (212) 555-0100</a>
-                    <span>Mon–Fri, 9AM – 6PM</span>
+                    <a href={`tel:${CONTACT_INFO.phone.replace(/\s/g,'')}`}>{CONTACT_INFO.phone}</a>
+                    <span>{CONTACT_INFO.hours}</span>
                   </div>
                 </div>
                 <div className={styles.infoCard}>
@@ -164,8 +178,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4>Visit Us</h4>
-                    <span>350 5th Ave, New York</span>
-                    <span>Suite 4100, NY 10118</span>
+                    <span>{CONTACT_INFO.address}</span>
                   </div>
                 </div>
               </div>
@@ -174,14 +187,9 @@ const Contact = () => {
               <div className={styles.socialBox}>
                 <h4>Follow Our Adventures</h4>
                 <div className={styles.socials}>
-                  {[
-                    {icon:'fab fa-facebook-f', label:'Facebook', color:'#1877f2'},
-                    {icon:'fab fa-instagram',  label:'Instagram', color:'#e1306c'},
-                    {icon:'fab fa-twitter',    label:'Twitter',   color:'#1da1f2'},
-                    {icon:'fab fa-youtube',    label:'YouTube',   color:'#ff0000'},
-                    {icon:'fab fa-tiktok',     label:'TikTok',    color:'#000'},
-                  ].map(({icon, label, color}) => (
-                    <a key={label} href="#" className={styles.social} style={{'--sc': color}} aria-label={label} rel="noreferrer">
+                  {SOCIAL_LINKS.map(({ icon, label, color, href }) => (
+                    <a key={label} href={href} className={styles.social} style={{'--sc': color}}
+                       aria-label={label} target="_blank" rel="noopener noreferrer">
                       <i className={icon} />
                     </a>
                   ))}

@@ -39,3 +39,13 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
+
+      # Brevo (Sendinblue) — email provider
+      - key: BREVO_API_KEY
+        sync: false   # Brevo дансны API key
+      - key: FROM_EMAIL
+        sync: false   # Имэйл илгээгч хаяг (e.g. info@itravelz.mn)
+      - key: FROM_NAME
+        sync: false   # Илгээгч нэр (e.g. ITravelz)
+      - key: ADMIN_EMAIL
+        sync: false   # ← Клиентийн мессеж ЭНЭРҮҮ ирнэ (тан имэйл)

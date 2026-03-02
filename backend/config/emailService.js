@@ -222,6 +222,71 @@ const sendBookingDeclinedEmail = async (
   );
 };
 
+/* ===========================
+   CONTACT FORM → ADMIN NOTIFICATION
+   Клиент форм илгээх үед admin-д мэдэгдэл
+=========================== */
+const sendContactNotification = async (contact) => {
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL;
+  if (!adminEmail) {
+    console.warn('⚠️  ADMIN_EMAIL not set — contact notification skipped');
+    return false;
+  }
+
+  const content = `
+    <h2>📬 Шинэ Contact Message</h2>
+    <p>Сайтаас шинэ мессеж ирлээ:</p>
+
+    <div style="background:#f0f4ff;padding:20px;border-radius:8px;border-left:4px solid #3b82f6;margin:20px 0;">
+      <p><strong>Нэр:</strong> ${contact.name}</p>
+      <p><strong>Имэйл:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
+      ${contact.phone ? `<p><strong>Утас:</strong> ${contact.phone}</p>` : ''}
+      <p><strong>Сэдэв:</strong> ${contact.subject}</p>
+    </div>
+
+    <h3>Мессеж:</h3>
+    <div style="background:#fff8e1;padding:20px;border-radius:8px;font-size:15px;line-height:1.7;">
+      ${contact.message.replace(/\n/g, '<br>')}
+    </div>
+
+    <p style="margin-top:24px;font-size:13px;color:#666;">
+      Хариулах: <a href="mailto:${contact.email}">${contact.email}</a>
+    </p>
+  `;
+
+  return await sendEmail(
+    adminEmail,
+    `📬 Шинэ Мессеж: ${contact.subject} — ${contact.name}`,
+    baseTemplate(content)
+  );
+};
+
+/* ===========================
+   CONTACT FORM → USER CONFIRMATION
+   Клиентэд баталгаажуулах мэйл
+=========================== */
+const sendContactConfirmation = async (contact) => {
+  const content = `
+    <h2>Баярлалаа, ${contact.name}! 🙏</h2>
+    <p>Таны мессеж хүлээн авлаа. Бид удахгүй 24 цагийн дотор хариу өгнө.</p>
+
+    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0;">
+      <p><strong>Сэдэв:</strong> ${contact.subject}</p>
+      <p><strong>Мессеж:</strong></p>
+      <p style="color:#555;font-style:italic;">${contact.message.replace(/\n/g, '<br>')}</p>
+    </div>
+
+    <p>Хэрэв та нэн яаралтай бол дараах холбогдолтой байна уу:</p>
+    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || 'info@itravelz.com'}">${process.env.FROM_EMAIL || 'info@itravelz.com'}</a></p>
+  `;
+
+  return await sendEmail(
+    contact.email,
+    `Таны мессежийг хүлээн авлаа — ITravelz`,
+    baseTemplate(content)
+  );
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -229,4 +294,6 @@ module.exports = {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
   sendBookingDeclinedEmail,
+  sendContactNotification,
+  sendContactConfirmation,
 };

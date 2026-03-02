@@ -7,7 +7,7 @@ const emailService = require('../config/emailService');
 // Submit a contact form
 exports.submitContact = async (req, res) => {
   try {
-    const { name, email, subject, inquiryType, message } = req.body;
+    const { name, email, phone, subject, inquiryType, message } = req.body;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -31,6 +31,7 @@ exports.submitContact = async (req, res) => {
     const contact = await Contact.create({
       name,
       email,
+      phone: phone || '',
       subject,
       inquiryType: type,
       message
