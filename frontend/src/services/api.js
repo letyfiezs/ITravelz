@@ -145,6 +145,8 @@ export const adminService = {
   deleteContent:         (id) => api.delete(`/admin/content/${id}`),
   uploadContentImage:    (formData) => api.post('/admin/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadContentVideo:    (formData) => api.post('/admin/upload-video', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  // Auto-translate texts to all supported languages
+  translate:             (texts, sourceLang = 'en') => api.post('/admin/translate', { texts, sourceLang }),
 };
 
 export default api;

@@ -7,7 +7,9 @@ import styles from './Packages.module.css';
 
 
 const Packages = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  // Helper: return translated field or fallback to default
+  const tr = (pkg, key) => pkg.translations?.[language]?.[key] || pkg[key] || '';
   const [searchParams, setSearchParams] = useSearchParams();
   const [packages,  setPackages]  = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -142,12 +144,12 @@ const Packages = () => {
                 <div className={styles.cardBody}>
                   {pkg.destination && (
                     <p className={styles.dest}>
-                      <i className="fas fa-map-marker-alt" /> {pkg.destination}
+                      <i className="fas fa-map-marker-alt" /> {tr(pkg, 'destination') || pkg.destination}
                     </p>
                   )}
-                  <h3 className={styles.name}>{pkg.name}</h3>
+                  <h3 className={styles.name}>{tr(pkg, 'name')}</h3>
                   {pkg.description && (
-                    <p className={styles.desc}>{pkg.description.slice(0, 100)}{pkg.description.length > 100 ? '…' : ''}</p>
+                    <p className={styles.desc}>{tr(pkg, 'description').slice(0, 100)}{tr(pkg, 'description').length > 100 ? '\u2026' : ''}</p>
                   )}
                   <div className={styles.rating}>
                     {[...Array(5)].map((_, i) => (

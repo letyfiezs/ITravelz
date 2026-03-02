@@ -22,6 +22,8 @@ const makeEmbedUrl     = (url) => {
 
 /* ── Read More Modal ── */
 const ReadMoreModal = ({ dest, onClose }) => {
+  const { language } = useLanguage();
+  const tr = (key) => dest.translations?.[language]?.[key] || dest[key] || '';
   const images = (dest.images && dest.images.length > 0) ? dest.images : (dest.image ? [dest.image] : []);
   const loc = dest.location || '';
 
@@ -43,8 +45,8 @@ const ReadMoreModal = ({ dest, onClose }) => {
           {/* Category + title */}
           <div className={styles.rmHeader}>
             <span className={styles.rmBadge}>{dest.category}</span>
-            <h2 className={styles.rmTitle}>{dest.name}</h2>
-            {dest.tagline && <p className={styles.rmTagline}>{dest.tagline}</p>}
+            <h2 className={styles.rmTitle}>{tr('name')}</h2>
+            {dest.tagline && <p className={styles.rmTagline}>{tr('tagline')}</p>}
           </div>
 
           {/* Location */}
@@ -88,7 +90,7 @@ const ReadMoreModal = ({ dest, onClose }) => {
           {/* Description */}
           {dest.description && (
             <div className={styles.rmSection}>
-              <p className={styles.rmText}>{dest.description}</p>
+              <p className={styles.rmText}>{tr('description')}</p>
             </div>
           )}
 
@@ -96,7 +98,7 @@ const ReadMoreModal = ({ dest, onClose }) => {
           {dest.readMore && (
             <div className={styles.rmSection}>
               <h4 className={styles.rmSectionTitle}><i className="fas fa-book-open" /> Details</h4>
-              <p className={styles.rmText}>{dest.readMore}</p>
+              <p className={styles.rmText}>{tr('readMore')}</p>
             </div>
           )}
 
@@ -104,7 +106,7 @@ const ReadMoreModal = ({ dest, onClose }) => {
           {dest.culturalInfo && (
             <div className={styles.rmSection}>
               <h4 className={styles.rmSectionTitle}><i className="fas fa-landmark" /> Cultural &amp; Historical Info</h4>
-              <p className={styles.rmText}>{dest.culturalInfo}</p>
+              <p className={styles.rmText}>{tr('culturalInfo')}</p>
             </div>
           )}
 
@@ -151,7 +153,7 @@ const ReadMoreModal = ({ dest, onClose }) => {
 
 /* ── Main Component ── */
 const Destinations = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
@@ -264,9 +266,10 @@ const Destinations = () => {
               const locText = d.location && !isGoogleMapsUrl(d.location) && !isIframeEmbed(d.location)
                 ? d.location
                 : [d.city, d.country].filter(Boolean).join(', ');
-              const desc = d.description
-                ? (d.description.length > 110 ? d.description.slice(0, 110) + '…' : d.description)
-                : '';
+              const displayName = d.translations?.[language]?.name || d.name;
+              const displayTagline = d.translations?.[language]?.tagline || d.tagline;
+              const rawDesc = d.translations?.[language]?.description || d.description || '';
+              const desc = rawDesc.length > 110 ? rawDesc.slice(0, 110) + '\u2026' : rawDesc;
 
               return (
                 <div key={d._id} className={styles.card}>
@@ -297,8 +300,8 @@ const Destinations = () => {
                         </a>
                       )}
                     </div>
-                    <h3 className={styles.cardName}>{d.name}</h3>
-                    {d.tagline && <p className={styles.cardTagline}>{d.tagline}</p>}
+                    <h3 className={styles.cardName}>{displayName}</h3>
+                    {displayTagline && <p className={styles.cardTagline}>{displayTagline}</p>}
                     {desc && <p className={styles.cardDesc}>{desc}</p>}
 
                     <div className={styles.cardFooter}>

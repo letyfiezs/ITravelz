@@ -7,10 +7,10 @@ const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
 
-const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', images: [], features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5 };
+const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', images: [], features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5, translations: {} };
 const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', price: '', order: 0, isActive: true };
 const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
-const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true };
+const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true, translations: {} };
 const FEST_CATEGORIES = ['naadam', 'culture', 'religious', 'winter', 'food', 'music', 'other'];
 const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true };
 const ABOUT_CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
@@ -72,6 +72,7 @@ const Admin = () => {
   const [destMsg, setDestMsg]           = useState('');
   const [destImgFiles, setDestImgFiles] = useState([]);
   const [destCurImages, setDestCurImages] = useState([]);
+  const [destTranslating, setDestTranslating] = useState(false);
   /* destination map picker */
   const [destMapSearch, setDestMapSearch]   = useState('');
   const [destMapPreview, setDestMapPreview] = useState('');
@@ -115,6 +116,7 @@ const Admin = () => {
   const [pkgMsg, setPkgMsg]             = useState('');
   const [pkgImgFiles, setPkgImgFiles]   = useState([]);
   const [pkgCurImages, setPkgCurImages] = useState([]);
+  const [pkgTranslating, setPkgTranslating] = useState(false);
   /* date/time inputs */
   const [newDate, setNewDate]     = useState('');
   const [newTime, setNewTime]     = useState('');
@@ -208,13 +210,41 @@ const Admin = () => {
   const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setPkgCurImages([]); setPkgImgFiles([]); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
   const openPkgEdit   = (p) => {
     setPkgEdit(p._id);
-    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', images: p.images || [], features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5 });
+    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', images: p.images || [], features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5, translations: p.translations || {} });
     setPkgCurImages(p.images || []);
     setPkgImgFiles([]);
     setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true);
   };
   const closePkg = () => { setPkgModal(false); setPkgMsg(''); setPkgImgFiles([]); setPkgCurImages([]); };
   const setP = (k) => (e) => setPkgForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  const autoTranslatePkg = async () => {
+    if (!pkgForm.name && !pkgForm.description) {
+      setPkgMsg('❌ Name болон Description оруулна уу.');
+      return;
+    }
+    setPkgTranslating(true);
+    setPkgMsg('⏳ Орчуулж байна...');
+    try {
+      const features = pkgForm.features
+        ? pkgForm.features.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+      const texts = {};
+      if (pkgForm.name)        texts.name        = pkgForm.name;
+      if (pkgForm.description) texts.description = pkgForm.description;
+      if (pkgForm.destination) texts.destination = pkgForm.destination;
+      if (features.length)     texts.features    = features;
+      const res = await adminService.translate(texts, 'mn');
+      if (res.data.success) {
+        setPkgForm((p) => ({ ...p, translations: res.data.translations }));
+        setPkgMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+      }
+    } catch (err) {
+      setPkgMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setPkgTranslating(false);
+    }
+  };
 
   const addDate = () => { if (newDate && !pkgForm.availableDates.includes(newDate)) { setPkgForm((p) => ({ ...p, availableDates: [...p.availableDates, newDate].sort() })); setNewDate(''); } };
   const removeDate = (d) => setPkgForm((p) => ({ ...p, availableDates: p.availableDates.filter((x) => x !== d) }));
@@ -338,7 +368,7 @@ const Admin = () => {
   const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestCurImages([]); setDestImgFiles([]); setDestMsg(''); setDestMapSearch(''); setDestMapPreview(''); setDestModal(true); };
   const openDestEdit = (d) => {
     setDestEdit(d._id);
-    setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', images: d.images||[], location: d.location||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', readMore: d.readMore||'', isActive: d.isActive??true });
+    setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', images: d.images||[], location: d.location||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', readMore: d.readMore||'', isActive: d.isActive??true, translations: d.translations || {} });
     setDestCurImages(d.images || []); setDestImgFiles([]);
     setDestMapSearch(d.location || '');
     setDestMapPreview(d.location ? buildMapEmbedUrl(d.location) : '');
@@ -346,6 +376,32 @@ const Admin = () => {
   };
   const closeDest = () => { setDestModal(false); setDestMsg(''); setDestImgFiles([]); setDestCurImages([]); setDestMapSearch(''); setDestMapPreview(''); };
   const setD = (k) => (e) => setDestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const autoTranslateDest = async () => {
+    if (!destForm.name && !destForm.description) {
+      setDestMsg('❌ Name болон Description оруулна уу.');
+      return;
+    }
+    setDestTranslating(true);
+    setDestMsg('⏳ Орчуулж байна...');
+    try {
+      const texts = {};
+      if (destForm.name)        texts.name        = destForm.name;
+      if (destForm.tagline)     texts.tagline     = destForm.tagline;
+      if (destForm.description) texts.description = destForm.description;
+      if (destForm.readMore)    texts.readMore    = destForm.readMore;
+      if (destForm.culturalInfo) texts.culturalInfo = destForm.culturalInfo;
+      const res = await adminService.translate(texts, 'mn');
+      if (res.data.success) {
+        setDestForm((p) => ({ ...p, translations: res.data.translations }));
+        setDestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+      }
+    } catch (err) {
+      setDestMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setDestTranslating(false);
+    }
+  };
   /* map picker helpers */
   const handleMapSearch = () => {
     const q = destMapSearch.trim();
@@ -1309,6 +1365,38 @@ const Admin = () => {
               <label>Description *</label>
               <textarea className="form-input" rows={3} value={pkgForm.description} onChange={setP('description')} required placeholder="Describe the package…" style={{resize:'vertical'}}/>
             </div>
+
+            {/* ── Auto Translate ── */}
+            <div className={styles.formGroup}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                <label style={{margin:0}}>
+                  <i className="fas fa-language" style={{marginRight:6,color:'var(--primary)'}}/>
+                  Автомат Орчуулга
+                  <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={autoTranslatePkg}
+                  disabled={pkgTranslating}
+                  style={{flexShrink:0}}
+                >
+                  {pkgTranslating
+                    ? <><span className="spinner"/> Орчуулж байна…</>
+                    : <><i className="fas fa-globe"/> Орчуулах</>}
+                </button>
+              </div>
+              {pkgForm.translations && Object.keys(pkgForm.translations).length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {Object.entries(pkgForm.translations).map(([lang, t]) => t?.name && (
+                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>
+                      {lang.toUpperCase()} ✓
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className={styles.formGroup}>
               <label>Features <span style={{fontWeight:400,color:'var(--text-muted)'}}>(comma separated)</span></label>
               <input className="form-input" value={pkgForm.features} onChange={setP('features')} placeholder="Airport transfer, Hotel, Guide, Meals"/>
@@ -1641,6 +1729,38 @@ const Admin = () => {
               <label>Read More <span style={{fontWeight:400,color:'var(--text-muted)'}}>Detailed text shown in the popup modal</span></label>
               <textarea className="form-input" rows={4} value={destForm.readMore} onChange={setD('readMore')} placeholder="Extended details, stories, tips…" style={{resize:'vertical'}}/>
             </div>
+
+            {/* ── Auto Translate ── */}
+            <div className={styles.formGroup}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                <label style={{margin:0}}>
+                  <i className="fas fa-language" style={{marginRight:6,color:'var(--primary)'}}/>
+                  Автомат Орчуулга
+                  <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={autoTranslateDest}
+                  disabled={destTranslating}
+                  style={{flexShrink:0}}
+                >
+                  {destTranslating
+                    ? <><span className="spinner"/> Орчуулж байна…</>
+                    : <><i className="fas fa-globe"/> Орчуулах</>}
+                </button>
+              </div>
+              {destForm.translations && Object.keys(destForm.translations).length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {Object.entries(destForm.translations).map(([lang, t]) => t?.name && (
+                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>
+                      {lang.toUpperCase()} ✓
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className={styles.formGroup}>
               <label>Highlights <span style={{fontWeight:400,color:'var(--text-muted)'}}>One per line</span></label>
               <textarea className="form-input" rows={4} value={destForm.highlights} onChange={setD('highlights')} placeholder={"Sunset views from Oia\nVolcanic beaches\nWorld-class dining"} style={{resize:'vertical'}}/>

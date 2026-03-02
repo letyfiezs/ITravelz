@@ -76,6 +76,12 @@ const destinationSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  // Multilingual translations — stored as a flexible object
+  // { mn: { name, tagline, description, readMore, culturalInfo }, en: {...}, ... }
+  translations: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   isActive: {
     type: Boolean,
     default: true,

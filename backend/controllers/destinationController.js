@@ -52,6 +52,7 @@ exports.createDestination = async (req, res) => {
     const {
       name, city, country, category, image, images, location, tagline,
       description, readMore, culturalInfo, highlights, bestTime, avgCost, isActive,
+      translations,
     } = req.body;
 
     const dest = await Destination.create({
@@ -64,6 +65,7 @@ exports.createDestination = async (req, res) => {
       highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
       bestTime: bestTime || '', avgCost: avgCost || '',
       isActive: isActive !== undefined ? isActive : true,
+      translations: translations || {},
     });
 
     res.status(201).json({ success: true, message: 'Destination created', destination: dest });
@@ -78,6 +80,7 @@ exports.updateDestination = async (req, res) => {
     const {
       name, city, country, category, image, images, location, tagline,
       description, readMore, culturalInfo, highlights, bestTime, avgCost, isActive,
+      translations,
     } = req.body;
 
     const update = {
@@ -88,6 +91,7 @@ exports.updateDestination = async (req, res) => {
       highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
       bestTime, avgCost, isActive,
       updatedAt: Date.now(),
+      ...(translations ? { translations } : {}),
     };
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
 
