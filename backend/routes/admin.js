@@ -59,6 +59,8 @@ const {
   createAbout,
   updateAbout,
   deleteAbout,
+  uploadAboutImages,
+  deleteAboutImage,
 } = require('../controllers/aboutController');
 const { protectAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -132,5 +134,7 @@ router.get('/about', protectAdmin, getAllAboutAdmin);
 router.post('/about', protectAdmin, createAbout);
 router.put('/about/:id', protectAdmin, updateAbout);
 router.delete('/about/:id', protectAdmin, deleteAbout);
+router.post('/about/:id/images', protectAdmin, upload.array('images', 10), uploadAboutImages);
+router.delete('/about/:id/images', protectAdmin, deleteAboutImage);
 
 module.exports = router;

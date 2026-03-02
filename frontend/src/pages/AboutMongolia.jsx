@@ -1,59 +1,107 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { aboutService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './AboutMongolia.module.css';
 
 const CAT_ICONS = {
   culture:  'fas fa-palette',
   nature:   'fas fa-mountain',
   history:  'fas fa-landmark',
-  food:     'fas fa-bowl-food',
+  food:     'fas fa-utensils',
   nomad:    'fas fa-campground',
   misc:     'fas fa-compass',
+};
+
+const BASE = (import.meta?.env?.VITE_API_URL || '').replace('/api', '');
+const resolveImages = (item) => {
+  const arr = item.images?.length
+    ? item.images
+    : item.image
+      ? [item.image]
+      : ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80'];
+  return arr.map(src => src.startsWith('http') ? src : `${BASE}${src}`);
 };
 
 const FALLBACK = [
   {
     _id: 'a1', title: 'Nomadic Life', category: 'nomad',
     description: 'Nearly a third of Mongolians still live as nomads, herding livestock across vast steppes and moving their ger (yurt) homes with the seasons.',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
+    readMore: 'Mongolian nomads follow seasonal migration routes passed down for millennia. Their portable felt homes — gers — can be assembled in under an hour. The nomadic lifestyle revolves around the "five snouts": horses, cattle, camels, sheep, and goats. It is a way of life deeply tied to nature, hospitality, and spiritual traditions.',
+    images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80'],
   },
   {
     _id: 'a2', title: 'The Gobi Desert', category: 'nature',
     description: 'The Gobi stretches across southern Mongolia — a land of dramatic sand dunes, dinosaur fossils, and rare snow leopards.',
-    image: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80',
+    readMore: 'The Gobi Desert is one of Asia\'s largest deserts, covering over 1.3 million km². Despite its name, much of the Gobi is not sandy but rocky and cold. It is home to the Flaming Cliffs where Roy Andrews discovered the first dinosaur eggs ever found, Khongoryn Els singing sand dunes, and tough Bactrian camels. Temperatures swing from -40°C in winter to +45°C in summer.',
+    images: ['https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80'],
   },
   {
     _id: 'a3', title: 'Genghis Khan Legacy', category: 'history',
     description: 'Mongolia is the birthplace of Genghis Khan, who founded the largest contiguous land empire in history in the 13th century.',
-    image: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=600&q=80',
+    readMore: 'Born Temüjin around 1162, Genghis Khan unified the nomadic tribes of northeast Asia and launched the Mongol conquests that created an empire spanning from the Pacific Ocean to Eastern Europe. His Yasa code introduced trade protections, religious tolerance, and one of the world\'s first postal systems. Mongolians revere him as the founding father of their nation.',
+    images: ['https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=600&q=80'],
   },
   {
     _id: 'a4', title: 'Traditional Cuisine', category: 'food',
     description: 'Mongolian cuisine revolves around meat and dairy — try tsuivan (stir-fried noodles), khorkhog (stone barbecue), and airag (fermented mare\'s milk).',
-    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+    readMore: 'Mongolian food reflects the nomadic lifestyle — hearty, energy-rich, and based on what the land provides. Buuz are steamed mutton dumplings eaten during Tsagaan Sar. Aaruul (dried curds) are a popular snack. Khorkhog, meat cooked with hot stones inside a sealed container, is a celebratory dish. Airag (fermented mare\'s milk) is mildly alcoholic and offered to guests as a sign of hospitality.',
+    images: ['https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80'],
   },
   {
     _id: 'a5', title: 'Mongolian Throat Singing', category: 'culture',
     description: 'Khoomei (throat singing) is a unique vocal art where singers produce multiple pitches simultaneously — a UNESCO Intangible Cultural Heritage.',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80',
+    readMore: 'Khoomei has been practiced for centuries in western Mongolia and the Tuvan regions. Singers manipulate their vocal tract to produce a drone and a melodic whistle simultaneously, mimicking the sounds of nature. Different styles include sygyt (high whistle), kargyraa (deep rumble), and khoomei (mid-range). It is performed at festivals, ceremonies, and for spiritual purposes.',
+    images: ['https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80'],
   },
   {
     _id: 'a6', title: 'Khövsgöl Lake', category: 'nature',
     description: 'Known as the "Blue Pearl of Mongolia," Khövsgöl holds nearly 70% of Mongolia\'s freshwater and is surrounded by pristine taiga forests.',
-    image: 'https://images.unsplash.com/photo-1531804055935-76f44d7caff8?w=600&q=80',
+    readMore: 'Khövsgöl Lake is 136 km long, up to 262 m deep, and one of the 17 ancient lakes in the world. It is the world\'s 14th largest freshwater lake by volume. The lake remains frozen from January to May. The Tsaatan (reindeer herders) live in the surrounding forests. Activities include horse trekking, fishing, kayaking in summer, and dog sledding and ice fishing in winter.',
+    images: ['https://images.unsplash.com/photo-1531804055935-76f44d7caff8?w=600&q=80'],
   },
 ];
 
 const CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
 
+/* ── Read More Modal ──────────────────────────────────────── */
+function ReadMoreModal({ item, onClose }) {
+  const imgs = resolveImages(item);
+  const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose(); };
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+  return (
+    <div className={styles.rmBackdrop} onClick={handleBackdrop}>
+      <div className={styles.rmContent}>
+        <button className={styles.rmClose} onClick={onClose} aria-label="Close"><i className="fas fa-times"/></button>
+        <div className={styles.rmImgWrap}>
+          <ImageSlideshow images={imgs} alt={item.title} interval={5000} className={styles.rmSlideshow}/>
+          {item.category && (
+            <span className={`${styles.catBadge} ${styles['cat_'+item.category]||''}`}>
+              <i className={CAT_ICONS[item.category]||'fas fa-compass'}/> {item.category}
+            </span>
+          )}
+        </div>
+        <div className={styles.rmBody}>
+          <h2 className={styles.rmTitle}>{item.title}</h2>
+          <p className={styles.rmText}>{item.readMore || item.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AboutMongolia() {
   const { t } = useLanguage();
-  const [items,    setItems]    = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState('');
-  const [search,   setSearch]   = useState('');
-  const [category, setCategory] = useState('');
+  const [items,     setItems]     = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState('');
+  const [search,    setSearch]    = useState('');
+  const [category,  setCategory]  = useState('');
+  const [modalItem, setModalItem] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -142,31 +190,48 @@ export default function AboutMongolia() {
         {/* Grid */}
         {!loading && items.length > 0 && (
           <div className={styles.grid}>
-            {items.map(item => (
-              <div key={item._id} className={`${styles.card} ${styles['cat_' + item.category]}`}>
-                <div className={styles.cardImg}>
-                  <img
-                    src={item.image || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80'}
-                    alt={item.title}
-                    loading="lazy"
-                  />
-                  {item.category && (
-                    <span className={styles.catBadge}>
-                      <i className={CAT_ICONS[item.category] || 'fas fa-compass'} /> {item.category}
-                    </span>
-                  )}
+            {items.map(item => {
+              const imgs = resolveImages(item);
+              return (
+                <div key={item._id} className={`${styles.card} ${styles['cat_' + item.category]}`}>
+                  <div className={styles.cardImg}>
+                    <ImageSlideshow
+                      images={imgs}
+                      alt={item.title}
+                      interval={5000}
+                      className={styles.cardSlideshow}
+                    />
+                    <div className={styles.cardImgOverlay}>
+                      {item.category && (
+                        <span className={styles.catBadge}>
+                          <i className={CAT_ICONS[item.category] || 'fas fa-compass'} /> {item.category}
+                        </span>
+                      )}
+                      <h3 className={styles.cardImgTitle}>{item.title}</h3>
+                    </div>
+                    {imgs.length > 1 && (
+                      <span className={styles.imgCount}><i className="fas fa-images"/> {imgs.length}</span>
+                    )}
+                  </div>
+                  <div className={styles.cardBody}>
+                    <p className={styles.cardDesc}>
+                      {item.description?.slice(0, 120)}{item.description?.length > 120 ? '…' : ''}
+                    </p>
+                    <button
+                      className={styles.readMoreBtn}
+                      onClick={() => setModalItem(item)}
+                    >
+                      Дэлгэрэнгүй <i className="fas fa-arrow-right"/>
+                    </button>
+                  </div>
                 </div>
-                <div className={styles.cardBody}>
-                  <h3 className={styles.cardTitle}>{item.title}</h3>
-                  <p className={styles.cardDesc}>
-                    {item.description?.slice(0, 140)}{item.description?.length > 140 ? '…' : ''}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {modalItem && <ReadMoreModal item={modalItem} onClose={() => setModalItem(null)}/>}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'users'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
@@ -13,6 +13,8 @@ const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true };
 const FEST_CATEGORIES = ['naadam', 'culture', 'religious', 'winter', 'food', 'music', 'other'];
 const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true };
+const ABOUT_CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
+const EMPTY_ABOUT = { title: '', description: '', readMore: '', image: '', images: [], category: 'misc', order: 0, isActive: true };
 
 /* ── Google Maps embed URL builder (no API key needed) ── */
 const buildMapEmbedUrl = (query) => {
@@ -95,6 +97,16 @@ const Admin = () => {
   const [festImgFiles, setFestImgFiles]       = useState([]);
   const [festCurImages, setFestCurImages]     = useState([]);
 
+  /* about mongolia */
+  const [aboutItems, setAboutItems]           = useState([]);
+  const [aboutModal, setAboutModal]           = useState(false);
+  const [aboutForm, setAboutForm]             = useState(EMPTY_ABOUT);
+  const [aboutEdit, setAboutEdit]             = useState(null);
+  const [aboutSaving, setAboutSaving]         = useState(false);
+  const [aboutMsg, setAboutMsg]               = useState('');
+  const [aboutImgFiles, setAboutImgFiles]     = useState([]);
+  const [aboutCurImages, setAboutCurImages]   = useState([]);
+
   /* package modal */
   const [pkgModal, setPkgModal]         = useState(false);
   const [pkgForm, setPkgForm]           = useState(EMPTY_PKG);
@@ -127,8 +139,9 @@ const Admin = () => {
       adminService.getItineraries(),
       adminService.getContent(),
       adminService.getFestivals(),
+      adminService.getAbout(),
     ])
-      .then(([s, b, u, pk, dest, itin, cont, fest]) => {
+      .then(([s, b, u, pk, dest, itin, cont, fest, abt]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
@@ -138,6 +151,7 @@ const Admin = () => {
         const allContent = cont.data.content || cont.data || [];
         setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
         setFestivals(fest.data.festivals || fest.data || []);
+        setAboutItems(abt.data.items || abt.data || []);
       })
       .catch(() => setError('Failed to load admin data. Make sure the backend is running.'))
       .finally(() => setLoading(false));
@@ -511,6 +525,62 @@ const Admin = () => {
     catch { alert('Update failed.'); }
   };
 
+  /* ── About Mongolia helpers ── */
+  const setA = (field) => (e) => setAboutForm((p) => ({ ...p, [field]: field === 'isActive' ? e.target.checked : e.target.value }));
+  const openAboutCreate = () => { setAboutEdit(null); setAboutForm(EMPTY_ABOUT); setAboutCurImages([]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
+  const openAboutEdit = (a) => { setAboutEdit(a._id); setAboutForm({ title: a.title||'', description: a.description||'', readMore: a.readMore||'', image: a.image||'', images: a.images||[], category: a.category||'misc', order: a.order||0, isActive: a.isActive!==false }); setAboutCurImages(a.images||[]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
+  const closeAbout = () => { setAboutModal(false); setAboutMsg(''); };
+  const saveAbout = async (e) => {
+    e.preventDefault();
+    setAboutSaving(true); setAboutMsg('');
+    try {
+      const payload = { ...aboutForm, images: aboutCurImages };
+      let savedId;
+      if (aboutEdit) {
+        const r = await adminService.updateAbout(aboutEdit, payload);
+        setAboutItems((p) => p.map((x) => x._id === aboutEdit ? (r.data.item || r.data) : x));
+        savedId = aboutEdit;
+      } else {
+        const r = await adminService.createAbout(payload);
+        const created = r.data.item || r.data;
+        setAboutItems((p) => [...p, created]);
+        savedId = created._id;
+      }
+      if (aboutImgFiles.length > 0) {
+        const fd = new FormData();
+        aboutImgFiles.forEach((f) => fd.append('images', f));
+        const upRes = await adminService.uploadAboutImages(savedId, fd);
+        const updated = upRes.data.item || upRes.data;
+        setAboutItems((p) => p.map((x) => x._id === savedId ? updated : x));
+        setAboutCurImages(updated.images || []);
+        setAboutImgFiles([]);
+      }
+      setAboutMsg('Saved!');
+      setTimeout(closeAbout, 900);
+    } catch { setAboutMsg('Save failed.'); }
+    finally { setAboutSaving(false); }
+  };
+  const deleteAboutItem = async (id) => {
+    if (!window.confirm('Delete this item?')) return;
+    try { await adminService.deleteAbout(id); setAboutItems((p) => p.filter((x) => x._id !== id)); }
+    catch { alert('Delete failed.'); }
+  };
+  const removeAboutCurImage = async (imgUrl) => {
+    setAboutCurImages((prev) => prev.filter((x) => x !== imgUrl));
+    if (aboutEdit) { try { await adminService.deleteAboutImage(aboutEdit, imgUrl); } catch { /* ignore */ } }
+  };
+  const onAboutFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (aboutCurImages.length + aboutImgFiles.length + files.length > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    setAboutImgFiles((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = '';
+  };
+  const removeAboutNewFile = (idx) => setAboutImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const toggleAboutActive = async (a) => {
+    try { const r = await adminService.updateAbout(a._id, { ...a, isActive: !a.isActive }); setAboutItems((p) => p.map((x) => x._id === a._id ? (r.data.item || r.data) : x)); }
+    catch { alert('Update failed.'); }
+  };
+
   return (
     <div className={styles.page}>
       <div className="container">
@@ -537,6 +607,7 @@ const Admin = () => {
                   t==='itineraries'?'fa-route':
                   t==='destinations'?'fa-globe':
                   t==='festivals'?'fa-drum':
+                  t==='about'?'fa-mountain':
                   'fa-users'
                 }`} />
                 {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
@@ -771,6 +842,39 @@ const Admin = () => {
                         <td style={{fontSize:12,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.tagline||'—'}</td>
                         <td><button onClick={()=>toggleDestActive(d)} className={`${styles.toggleBtn} ${d.isActive?styles.toggleOn:styles.toggleOff}`}>{d.isActive?'Active':'Hidden'}</button></td>
                         <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openDestEdit(d)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteDest(d._id)}><i className="fas fa-trash"/></button></div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── About Mongolia ── */}
+          {tab === 'about' && (
+            <div>
+              <div className={styles.tabToolbar}>
+                <span>{aboutItems.length} item{aboutItems.length!==1?'s':''}</span>
+                <button className="btn btn-primary btn-sm" onClick={openAboutCreate}><i className="fas fa-plus"/> Add Item</button>
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead><tr><th>Image</th><th>Title</th><th>Category</th><th>Order</th><th>Read More</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {aboutItems.length===0&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No items yet — click "Add Item"</td></tr>}
+                    {aboutItems.map((a) => (
+                      <tr key={a._id}>
+                        <td>
+                          {(a.images?.[0]||a.image)
+                            ? <img src={a.images?.[0]||a.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                            : <div style={{width:56,height:40,background:'var(--surface)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-mountain"/></div>}
+                        </td>
+                        <td><div style={{fontWeight:600}}>{a.title}</div>{a.images?.length>1&&<div style={{fontSize:11,color:'var(--text-muted)'}}><i className="fas fa-images"/> {a.images.length} imgs</div>}</td>
+                        <td><span className="badge badge-accent" style={{textTransform:'capitalize'}}>{a.category||'—'}</span></td>
+                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{a.order??0}</td>
+                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{a.readMore ? <span style={{color:'var(--primary)'}}>✓ Yes</span> : '—'}</td>
+                        <td><button onClick={()=>toggleAboutActive(a)} className={`${styles.toggleBtn} ${a.isActive?styles.toggleOn:styles.toggleOff}`}>{a.isActive?'Active':'Hidden'}</button></td>
+                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openAboutEdit(a)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteAboutItem(a._id)}><i className="fas fa-trash"/></button></div></td>
                       </tr>
                     ))}
                   </tbody>
@@ -1405,6 +1509,99 @@ const Admin = () => {
               <button type="button" className="btn btn-outline btn-sm" onClick={closeFest}>Cancel</button>
               <button type="submit" className="btn btn-primary btn-sm" disabled={festSaving}>
                 {festSaving?<><span className="spinner"/> Saving…</>:festEdit?'Save Changes':'Create Festival'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── About Mongolia Create/Edit Modal ── */}
+      {aboutModal && (
+        <Modal title={aboutEdit ? 'Edit About Item' : 'Add About Item'} onClose={closeAbout}>
+          <form onSubmit={saveAbout} className={styles.itinForm}>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Title *</label>
+                <input className="form-input" value={aboutForm.title} onChange={setA('title')} required placeholder="e.g. Nomadic Life"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Category</label>
+                <select className="form-input" value={aboutForm.category} onChange={setA('category')}>
+                  {ABOUT_CATEGORIES.map((c)=><option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Display Order</label>
+                <input className="form-input" type="number" min="0" value={aboutForm.order} onChange={setA('order')} placeholder="0"/>
+              </div>
+            </div>
+
+            {/* Images */}
+            <div className={styles.formGroup}>
+              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 (5s slideshow)</span></label>
+              {aboutCurImages.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {aboutCurImages.map((src, i) => {
+                    const base = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
+                    const resolved = src.startsWith('http') ? src : `${base}${src}`;
+                    return (
+                      <div key={i} style={{position:'relative',width:72,height:52}}>
+                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        <button type="button" onClick={()=>removeAboutCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {aboutImgFiles.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {aboutImgFiles.map((f, i) => (
+                    <div key={i} style={{position:'relative',width:72,height:52}}>
+                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>removeAboutNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(aboutCurImages.length + aboutImgFiles.length) < 10 && (
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
+                  <i className="fas fa-cloud-upload-alt"/>
+                  <span>Зураг нэмэх ({aboutCurImages.length + aboutImgFiles.length}/10)</span>
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onAboutFileChange}/>
+                </label>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
+              <input className="form-input" value={aboutForm.image} onChange={setA('image')} placeholder="https://images.unsplash.com/..."/>
+              {aboutForm.image && <img src={aboutForm.image} alt="preview" style={{marginTop:8,width:'100%',height:90,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Short Description *</label>
+              <textarea className="form-input" rows={3} value={aboutForm.description} onChange={setA('description')} required placeholder="Brief overview shown on the card…" style={{resize:'vertical'}}/>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>
+                <i className="fas fa-book-open" style={{marginRight:6,color:'var(--primary)'}}/>
+                Read More Content <span style={{fontWeight:400,color:'var(--text-muted)'}}>Full text shown when user clicks "Read More"</span>
+              </label>
+              <textarea className="form-input" rows={6} value={aboutForm.readMore} onChange={setA('readMore')} placeholder="Detailed paragraphs, history, facts…" style={{resize:'vertical'}}/>
+            </div>
+
+            <label className={styles.checkRow}>
+              <input type="checkbox" checked={aboutForm.isActive} onChange={setA('isActive')}/>
+              <span>Visible to public (Active)</span>
+            </label>
+            {aboutMsg && <p className={styles.formMsg}>{aboutMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={closeAbout}>Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={aboutSaving}>
+                {aboutSaving?<><span className="spinner"/> Saving…</>:aboutEdit?'Save Changes':'Create Item'}
               </button>
             </div>
           </form>
