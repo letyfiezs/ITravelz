@@ -3,12 +3,16 @@ const mongoose = require('mongoose');
 const ContentSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   title: { type: String },
+  subtitle: { type: String, default: '' },
+  eyebrow: { type: String, default: '' },
   text: { type: String },
   image: { type: String },
   imageUrl: { type: String },
   section: { type: String },
   order: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
+  // Date from which this content becomes active (for date-based scheduling)
+  validFrom: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

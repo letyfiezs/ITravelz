@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { destinationService } from '../services/api';
+import { destinationService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Destinations.module.css';
@@ -157,10 +157,28 @@ const Destinations = () => {
   const [error, setError]               = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [modalDest, setModalDest]       = useState(null);
+  const [heroContent, setHeroContent]   = useState(null);
 
   useEffect(() => {
-    destinationService.getAll()
-      .then((res) => setDestinations(res.data.destinations || res.data || []))
+    // Fetch destinations and hero content in parallel
+    Promise.all([
+      destinationService.getAll(),
+      contentService.getAll({ section: 'destinations_hero' }),
+    ])
+      .then(([destRes, contentRes]) => {
+        setDestinations(destRes.data.destinations || destRes.data || []);
+        // Pick the most relevant hero for today's date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const heroes = contentRes.data.content || contentRes.data || [];
+        const active = heroes.filter((h) => {
+          if (!h.isActive) return false;
+          if (!h.validFrom) return true;
+          return new Date(h.validFrom) <= today;
+        });
+        // Server already sorted validFrom desc, so first is the most recent
+        if (active.length > 0) setHeroContent(active[0]);
+      })
       .catch(() => setError('Failed to load destinations. Please try again.'))
       .finally(() => setLoading(false));
   }, []);
@@ -181,12 +199,26 @@ const Destinations = () => {
     <div className={styles.page}>
 
       {/* ── Hero ── */}
-      <section className={styles.hero}>
+      <section
+        className={styles.hero}
+        style={heroContent?.imageUrl || heroContent?.image ? {
+          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <p className={styles.heroEyebrow}><i className="fas fa-globe-americas" /> {t('btn_explore')}</p>
-          <h1 className={styles.heroTitle}>{t('page_destinations')}</h1>
-          <p className={styles.heroSub}>{t('page_dest_sub')}</p>
+          <p className={styles.heroEyebrow}>
+            <i className="fas fa-globe-americas" />{' '}
+            {heroContent?.eyebrow || t('btn_explore')}
+          </p>
+          <h1 className={styles.heroTitle}>
+            {heroContent?.title || t('page_destinations')}
+          </h1>
+          <p className={styles.heroSub}>
+            {heroContent?.subtitle || heroContent?.text || t('page_dest_sub')}
+          </p>
         </div>
         <div className={styles.heroCurve} />
       </section>

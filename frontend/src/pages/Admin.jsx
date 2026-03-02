@@ -50,6 +50,17 @@ const Admin = () => {
   const [destImgFiles, setDestImgFiles] = useState([]);
   const [destCurImages, setDestCurImages] = useState([]);
 
+  /* destinations hero (page header scheduling) */
+  const EMPTY_HERO = { title: '', subtitle: '', eyebrow: '', imageUrl: '', validFrom: '', isActive: true };
+  const [destHeroList, setDestHeroList]       = useState([]);
+  const [destHeroModal, setDestHeroModal]     = useState(false);
+  const [destHeroForm, setDestHeroForm]       = useState(EMPTY_HERO);
+  const [destHeroEdit, setDestHeroEdit]       = useState(null);
+  const [destHeroSaving, setDestHeroSaving]   = useState(false);
+  const [destHeroMsg, setDestHeroMsg]         = useState('');
+  const [destHeroBgFile, setDestHeroBgFile]   = useState(null);
+  const [destHeroBgUploading, setDestHeroBgUploading] = useState(false);
+
   /* package modal */
   const [pkgModal, setPkgModal]         = useState(false);
   const [pkgForm, setPkgForm]           = useState(EMPTY_PKG);
@@ -80,14 +91,17 @@ const Admin = () => {
       adminService.getPackages(),
       adminService.getDestinations(),
       adminService.getItineraries(),
+      adminService.getContent(),
     ])
-      .then(([s, b, u, pk, dest, itin]) => {
+      .then(([s, b, u, pk, dest, itin, cont]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
         setPackages(pk.data.packages || pk.data || []);
         setDestinations(dest.data.destinations || dest.data || []);
         setItineraries(itin.data.itineraries || itin.data || []);
+        const allContent = cont.data.content || cont.data || [];
+        setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
       })
       .catch(() => setError('Failed to load admin data. Make sure the backend is running.'))
       .finally(() => setLoading(false));
@@ -309,6 +323,78 @@ const Admin = () => {
     catch { alert('Update failed.'); }
   };
 
+  /* ── Destinations Hero helpers ── */
+  const openHeroCreate = () => { setDestHeroEdit(null); setDestHeroForm(EMPTY_HERO); setDestHeroBgFile(null); setDestHeroMsg(''); setDestHeroModal(true); };
+  const openHeroEdit   = (h) => {
+    setDestHeroEdit(h._id);
+    setDestHeroForm({ title: h.title||'', subtitle: h.subtitle||h.text||'', eyebrow: h.eyebrow||'', imageUrl: h.imageUrl||h.image||'', validFrom: h.validFrom ? new Date(h.validFrom).toISOString().slice(0,10) : '', isActive: h.isActive??true });
+    setDestHeroBgFile(null); setDestHeroMsg(''); setDestHeroModal(true);
+  };
+  const closeHero = () => { setDestHeroModal(false); setDestHeroMsg(''); setDestHeroBgFile(null); };
+  const setH = (k) => (e) => setDestHeroForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const uploadHeroBg = async () => {
+    if (!destHeroBgFile) return destHeroForm.imageUrl;
+    setDestHeroBgUploading(true);
+    try {
+      const fd = new FormData(); fd.append('image', destHeroBgFile);
+      const res = await adminService.uploadContentImage(fd);
+      const url = res.data.imageUrl || res.data.path || '';
+      setDestHeroForm((p) => ({ ...p, imageUrl: url }));
+      setDestHeroBgFile(null);
+      return url;
+    } catch { setDestHeroMsg('❌ Image upload failed.'); return destHeroForm.imageUrl; }
+    finally { setDestHeroBgUploading(false); }
+  };
+
+  const saveHero = async (e) => {
+    e.preventDefault(); setDestHeroSaving(true); setDestHeroMsg('');
+    let imageUrl = destHeroForm.imageUrl;
+    if (destHeroBgFile) imageUrl = await uploadHeroBg();
+    const uniqueKey = destHeroEdit
+      ? destHeroList.find((h) => h._id === destHeroEdit)?.key || `destinations_hero_${Date.now()}`
+      : `destinations_hero_${Date.now()}`;
+    const payload = {
+      key: uniqueKey,
+      title: destHeroForm.title,
+      subtitle: destHeroForm.subtitle,
+      eyebrow: destHeroForm.eyebrow,
+      text: destHeroForm.subtitle,
+      imageUrl,
+      section: 'destinations_hero',
+      isActive: destHeroForm.isActive,
+      validFrom: destHeroForm.validFrom || null,
+    };
+    try {
+      if (destHeroEdit) {
+        const r = await adminService.updateContent(destHeroEdit, payload);
+        const updated = r.data.content || r.data;
+        setDestHeroList((p) => p.map((x) => x._id === destHeroEdit ? updated : x));
+        setDestHeroMsg('✅ Hero updated!');
+      } else {
+        const r = await adminService.createContent(payload);
+        const created = r.data.content || r.data;
+        setDestHeroList((p) => [created, ...p]);
+        setDestHeroMsg('✅ Hero created!');
+      }
+      setTimeout(closeHero, 900);
+    } catch (err) { setDestHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
+    finally { setDestHeroSaving(false); }
+  };
+
+  const deleteHero = async (id) => {
+    if (!window.confirm('Delete this hero entry?')) return;
+    try { await adminService.deleteContent(id); setDestHeroList((p) => p.filter((x) => x._id !== id)); }
+    catch { alert('Delete failed.'); }
+  };
+
+  const toggleHeroActive = async (h) => {
+    try {
+      const r = await adminService.updateContent(h._id, { ...h, imageUrl: h.imageUrl || h.image, isActive: !h.isActive });
+      setDestHeroList((p) => p.map((x) => x._id === h._id ? (r.data.content || r.data) : x));
+    } catch { alert('Update failed.'); }
+  };
+
   return (
     <div className={styles.page}>
       <div className="container">
@@ -477,6 +563,68 @@ const Admin = () => {
           {/* ── Destinations ── */}
           {tab === 'destinations' && (
             <div>
+              {/* ── Page Hero / Header Scheduling ── */}
+              <div style={{marginBottom:32,background:'var(--bg-alt)',borderRadius:14,padding:'20px 24px',border:'1px solid var(--border)'}}>
+                <div className={styles.tabToolbar} style={{marginBottom:16}}>
+                  <div>
+                    <h3 style={{fontSize:15,fontWeight:700,margin:0}}>
+                      <i className="fas fa-image" style={{marginRight:8,color:'var(--primary)'}}/>
+                      Destinations Page Header
+                    </h3>
+                    <p style={{fontSize:12,color:'var(--text-muted)',margin:'4px 0 0'}}>
+                      Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг огноогоор удирдах
+                    </p>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={openHeroCreate}>
+                    <i className="fas fa-plus"/> Add Hero Entry
+                  </button>
+                </div>
+                {destHeroList.length === 0 ? (
+                  <p style={{color:'var(--text-muted)',fontSize:13,textAlign:'center',padding:'12px 0'}}>
+                    No hero entries yet — click "Add Hero Entry" to set a custom page header.
+                  </p>
+                ) : (
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead><tr><th>BG Image</th><th>Title</th><th>Subtitle</th><th>Valid From</th><th>Status</th><th>Actions</th></tr></thead>
+                      <tbody>
+                        {destHeroList.map((h) => (
+                          <tr key={h._id}>
+                            <td>
+                              {(h.imageUrl || h.image)
+                                ? <img src={h.imageUrl||h.image} alt="" style={{width:64,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                                : <div style={{width:64,height:40,background:'var(--bg)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:16}}><i className="fas fa-image"/></div>}
+                            </td>
+                            <td style={{fontWeight:600}}>{h.title||'—'}</td>
+                            <td style={{fontSize:12,color:'var(--text-muted)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{h.subtitle||h.text||'—'}</td>
+                            <td style={{fontSize:12}}>
+                              {h.validFrom ? (
+                                <span style={{color:'var(--primary)',fontWeight:600}}>
+                                  <i className="fas fa-calendar-day" style={{marginRight:4}}/>
+                                  {new Date(h.validFrom).toLocaleDateString()}
+                                </span>
+                              ) : <span style={{color:'var(--text-muted)'}}>Always</span>}
+                            </td>
+                            <td>
+                              <button onClick={()=>toggleHeroActive(h)} className={`${styles.toggleBtn} ${h.isActive?styles.toggleOn:styles.toggleOff}`}>
+                                {h.isActive?'Active':'Hidden'}
+                              </button>
+                            </td>
+                            <td>
+                              <div className={styles.actions}>
+                                <button className={styles.btnEdit} onClick={()=>openHeroEdit(h)}><i className="fas fa-pen"/></button>
+                                <button className={styles.btnDel} onClick={()=>deleteHero(h._id)}><i className="fas fa-trash"/></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Destinations List ── */}
               <div className={styles.tabToolbar}>
                 <span>{destinations.length} destination{destinations.length!==1?'s':''}</span>
                 <button className="btn btn-primary btn-sm" onClick={openDestCreate}><i className="fas fa-plus"/> Add Destination</button>
@@ -910,6 +1058,70 @@ const Admin = () => {
               <button type="button" className="btn btn-outline btn-sm" onClick={closeDest}>Cancel</button>
               <button type="submit" className="btn btn-primary btn-sm" disabled={destSaving}>
                 {destSaving?<><span className="spinner"/> Saving…</>:destEdit?'Save Changes':'Create Destination'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Destination Hero Create/Edit Modal ── */}
+      {destHeroModal && (
+        <Modal title={destHeroEdit ? 'Edit Hero Entry' : 'Add Hero Entry'} onClose={closeHero}>
+          <form onSubmit={saveHero} className={styles.itinForm}>
+            <div className={styles.formGroup}>
+              <label>Page Title *</label>
+              <input className="form-input" value={destHeroForm.title} onChange={setH('title')} required placeholder="e.g. Explore Destinations"/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Subtitle / Description</label>
+              <textarea className="form-input" rows={2} value={destHeroForm.subtitle} onChange={setH('subtitle')} placeholder="A short subtitle shown below the title…" style={{resize:'vertical'}}/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Eyebrow Label <span style={{fontWeight:400,color:'var(--text-muted)'}}>Small text above the title</span></label>
+              <input className="form-input" value={destHeroForm.eyebrow} onChange={setH('eyebrow')} placeholder="e.g. Discover The World"/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Background Image</label>
+              {/* File upload for Cloudinary */}
+              <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                <i className="fas fa-cloud-upload-alt"/>
+                <span>{destHeroBgFile ? destHeroBgFile.name : 'Upload background image (Cloudinary)'}</span>
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{ const f=e.target.files[0]; if(f) setDestHeroBgFile(f); e.target.value=''; }}/>
+              </label>
+              {destHeroBgFile && (
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <img src={URL.createObjectURL(destHeroBgFile)} alt="" style={{width:120,height:70,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
+                  <button type="button" onClick={()=>setDestHeroBgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                </div>
+              )}
+              <input className="form-input" value={destHeroForm.imageUrl} onChange={setH('imageUrl')} placeholder="Or paste image URL: https://…"/>
+              {!destHeroBgFile && destHeroForm.imageUrl && (
+                <img src={destHeroForm.imageUrl} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+              )}
+            </div>
+            <div className={styles.formGroup}>
+              <label>
+                Valid From Date{' '}
+                <span style={{fontWeight:400,color:'var(--text-muted)'}}>
+                  This header becomes active from this date onwards. Leave empty = always active.
+                </span>
+              </label>
+              <input className="form-input" type="date" value={destHeroForm.validFrom} onChange={setH('validFrom')}/>
+              {destHeroForm.validFrom && (
+                <p style={{fontSize:12,color:'var(--primary)',marginTop:4}}>
+                  <i className="fas fa-info-circle"/> Active from {new Date(destHeroForm.validFrom).toLocaleDateString()} onwards
+                </p>
+              )}
+            </div>
+            <label className={styles.checkRow}>
+              <input type="checkbox" checked={destHeroForm.isActive} onChange={setH('isActive')}/>
+              <span>Visible (Active)</span>
+            </label>
+            {destHeroMsg && <p className={styles.formMsg}>{destHeroMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={closeHero}>Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={destHeroSaving||destHeroBgUploading}>
+                {(destHeroSaving||destHeroBgUploading) ? <><span className="spinner"/> Saving…</> : destHeroEdit ? 'Save Changes' : 'Create Hero Entry'}
               </button>
             </div>
           </form>

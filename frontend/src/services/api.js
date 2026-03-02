@@ -139,6 +139,7 @@ export const adminService = {
   createContent:         (data) => api.post('/admin/content', data),
   updateContent:         (id, data) => api.put(`/admin/content/${id}`, data),
   deleteContent:         (id) => api.delete(`/admin/content/${id}`),
+  uploadContentImage:    (formData) => api.post('/admin/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 export default api;

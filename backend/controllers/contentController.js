@@ -10,7 +10,7 @@ exports.getAllContent = async (req, res, next) => {
       filter.section = section;
     }
 
-    const content = await Content.find(filter).sort({ section: 1, order: 1 });
+    const content = await Content.find(filter).sort({ section: 1, validFrom: -1, order: 1 });
     res.status(200).json({
       success: true,
       count: content.length,
@@ -40,7 +40,7 @@ exports.getContent = async (req, res, next) => {
 // Admin: Upsert (create or update) content
 exports.upsertContent = async (req, res, next) => {
   try {
-    const { key, title, text, imageUrl, section, order, isActive } = req.body;
+    const { key, title, subtitle, eyebrow, text, imageUrl, section, order, isActive, validFrom } = req.body;
 
     if (!key) {
       return res.status(400).json({
@@ -55,12 +55,15 @@ exports.upsertContent = async (req, res, next) => {
         $set: {
           key,
           title: title || '',
+          subtitle: subtitle || '',
+          eyebrow: eyebrow || '',
           text: text || '',
           image: imageUrl || '',
           imageUrl: imageUrl || '',
           section: section || '',
           order: order || 0,
           isActive: isActive !== undefined ? isActive : true,
+          validFrom: validFrom ? new Date(validFrom) : null,
           updatedAt: Date.now()
         }
       },
@@ -89,10 +92,12 @@ exports.updateContent = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ success: false, message: 'Invalid content ID' });
     }
-    const { title, text, imageUrl, section, order, isActive } = req.body;
+    const { title, subtitle, eyebrow, text, imageUrl, section, order, isActive, validFrom } = req.body;
 
     const updates = {};
     if (title !== undefined) updates.title = title;
+    if (subtitle !== undefined) updates.subtitle = subtitle;
+    if (eyebrow !== undefined) updates.eyebrow = eyebrow;
     if (text !== undefined) updates.text = text;
     if (imageUrl !== undefined) {
       updates.image = imageUrl;
@@ -101,6 +106,7 @@ exports.updateContent = async (req, res, next) => {
     if (section !== undefined) updates.section = section;
     if (order !== undefined) updates.order = order;
     if (isActive !== undefined) updates.isActive = isActive;
+    if (validFrom !== undefined) updates.validFrom = validFrom ? new Date(validFrom) : null;
     updates.updatedAt = Date.now();
 
     const content = await Content.findByIdAndUpdate(
@@ -143,14 +149,21 @@ exports.deleteContent = async (req, res, next) => {
   }
 };
 
-// Admin: Upload image
+// Admin: Upload image (supports Cloudinary)
 exports.uploadImage = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    // If Cloudinary is configured, req.file.path is the Cloudinary URL
+    let imageUrl;
+    if (req.file.path && (req.file.path.startsWith('http') || req.file.path.startsWith('//'))) {
+      imageUrl = req.file.path; // Cloudinary URL
+    } else {
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
+
     res.status(200).json({
       success: true,
       message: 'Image uploaded successfully',
