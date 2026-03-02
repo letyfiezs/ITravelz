@@ -108,7 +108,7 @@ export default function AboutMongolia() {
     setError('');
     aboutService.getAll()
       .then(r => {
-        let data = r.data?.data || r.data?.about || r.data || [];
+        let data = r.data?.items || r.data?.data || r.data?.about || r.data || [];
         if (!Array.isArray(data) || data.length === 0) data = FALLBACK;
         if (search)   data = data.filter(a => a.title?.toLowerCase().includes(search.toLowerCase()) || a.description?.toLowerCase().includes(search.toLowerCase()));
         if (category) data = data.filter(a => a.category === category);
