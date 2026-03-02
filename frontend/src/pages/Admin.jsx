@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'home'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
@@ -129,6 +129,16 @@ const Admin = () => {
   const [itinImgFiles, setItinImgFiles] = useState([]);
   const [itinCurImages, setItinCurImages] = useState([]);
 
+  /* home hero */
+  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '' };
+  const [homeHeroForm, setHomeHeroForm]         = useState(EMPTY_HOME_HERO);
+  const [homeHeroItems, setHomeHeroItems]       = useState([]);
+  const [homeHeroImgFile, setHomeHeroImgFile]   = useState(null);
+  const [homeHeroFrontFile, setHomeHeroFrontFile] = useState(null);
+  const [homeHeroSaving, setHomeHeroSaving]     = useState(false);
+  const [homeHeroUploading, setHomeHeroUploading] = useState(false);
+  const [homeHeroMsg, setHomeHeroMsg]           = useState('');
+
   useEffect(() => {
     Promise.all([
       adminService.getStats(),
@@ -150,6 +160,17 @@ const Admin = () => {
         setItineraries(itin.data.itineraries || itin.data || []);
         const allContent = cont.data.content || cont.data || [];
         setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
+        const heroItems = allContent.filter((c) => c.section === 'hero');
+        setHomeHeroItems(heroItems);
+        const findH = (key) => heroItems.find((c) => c.key === key);
+        setHomeHeroForm({
+          slogan:       findH('home_slogan')?.text  || findH('home_slogan')?.title || '',
+          intro:        findH('home_intro')?.text   || '',
+          imageUrl:     findH('home_image')?.image  || findH('home_image')?.imageUrl || '',
+          frontType:    findH('home_front_type')?.text || 'image',
+          frontText:    findH('home_front_text')?.text || '',
+          frontImageUrl: findH('home_front_image')?.image || findH('home_front_image')?.imageUrl || '',
+        });
         setFestivals(fest.data.festivals || fest.data || []);
         setAboutItems(abt.data.items || abt.data || []);
       })
@@ -465,6 +486,71 @@ const Admin = () => {
     } catch { alert('Update failed.'); }
   };
 
+  /* ── Home Hero helpers ── */
+  const setHH = (k) => (e) => setHomeHeroForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const uploadHomeImg = async (file) => {
+    const fd = new FormData(); fd.append('image', file);
+    const res = await adminService.uploadContentImage(fd);
+    return res.data.imageUrl || res.data.path || '';
+  };
+
+  const upsertHomeKey = async (key, payload) => {
+    const existing = homeHeroItems.find((c) => c.key === key);
+    if (existing) {
+      const r = await adminService.updateContent(existing._id, { ...payload, key, section: 'hero', isActive: true });
+      return r.data.content || r.data;
+    } else {
+      const r = await adminService.createContent({ ...payload, key, section: 'hero', isActive: true });
+      return r.data.content || r.data;
+    }
+  };
+
+  const saveHomeHero = async (e) => {
+    e.preventDefault();
+    setHomeHeroSaving(true); setHomeHeroUploading(false); setHomeHeroMsg('');
+    try {
+      let bgUrl = homeHeroForm.imageUrl;
+      let frontUrl = homeHeroForm.frontImageUrl;
+      if (homeHeroImgFile) {
+        setHomeHeroUploading(true);
+        bgUrl = await uploadHomeImg(homeHeroImgFile);
+        setHomeHeroImgFile(null);
+        setHomeHeroForm((p) => ({ ...p, imageUrl: bgUrl }));
+      }
+      if (homeHeroFrontFile) {
+        setHomeHeroUploading(true);
+        frontUrl = await uploadHomeImg(homeHeroFrontFile);
+        setHomeHeroFrontFile(null);
+        setHomeHeroForm((p) => ({ ...p, frontImageUrl: frontUrl }));
+      }
+      setHomeHeroUploading(false);
+
+      const results = await Promise.all([
+        upsertHomeKey('home_slogan',     { title: homeHeroForm.slogan, text: homeHeroForm.slogan }),
+        upsertHomeKey('home_intro',      { text: homeHeroForm.intro }),
+        upsertHomeKey('home_image',      { imageUrl: bgUrl, image: bgUrl }),
+        upsertHomeKey('home_front_type', { text: homeHeroForm.frontType }),
+        upsertHomeKey('home_front_text', { text: homeHeroForm.frontText }),
+        upsertHomeKey('home_front_image',{ imageUrl: frontUrl, image: frontUrl }),
+      ]);
+      // Refresh hero items in state
+      setHomeHeroItems((prev) => {
+        const merged = [...prev];
+        results.forEach((r) => {
+          const idx = merged.findIndex((x) => x._id === r._id);
+          if (idx >= 0) merged[idx] = r; else merged.push(r);
+        });
+        return merged;
+      });
+      setHomeHeroMsg('✅ Home hero saved! Refresh the live site to see changes.');
+    } catch (err) {
+      setHomeHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.'));
+    } finally {
+      setHomeHeroSaving(false); setHomeHeroUploading(false);
+    }
+  };
+
   /* ── Festival helpers ── */
   const openFestCreate = () => { setFestEdit(null); setFestForm(EMPTY_FEST); setFestCurImages([]); setFestImgFiles([]); setFestMsg(''); setFestModal(true); };
   const openFestEdit   = (f) => {
@@ -608,6 +694,7 @@ const Admin = () => {
                   t==='destinations'?'fa-globe':
                   t==='festivals'?'fa-drum':
                   t==='about'?'fa-mountain':
+                  t==='home'?'fa-home':
                   'fa-users'
                 }`} />
                 {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
@@ -928,6 +1015,119 @@ const Admin = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* ── Home Hero (nuur huudas) ── */}
+          {tab === 'home' && (
+            <div>
+              <div className={styles.tabToolbar} style={{marginBottom:24}}>
+                <span style={{fontSize:15,fontWeight:600}}><i className="fas fa-home" style={{marginRight:8,color:'var(--primary)'}}/>Home Page Hero Section</span>
+              </div>
+
+              {/* Live preview strip */}
+              {(homeHeroForm.imageUrl || homeHeroForm.frontImageUrl) && (
+                <div style={{borderRadius:12,overflow:'hidden',marginBottom:24,position:'relative',height:160,background:'#0a1628'}}>
+                  <img
+                    src={homeHeroForm.imageUrl}
+                    alt="bg preview"
+                    style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0.5}}
+                    onError={(e)=>e.target.style.display='none'}
+                  />
+                  <div style={{position:'relative',zIndex:1,padding:'20px 24px'}}>
+                    <p style={{color:'#fff',fontWeight:700,fontSize:18,margin:0}}>{homeHeroForm.slogan||'Slogan preview...'}</p>
+                    <p style={{color:'rgba(255,255,255,.7)',fontSize:12,margin:'4px 0 0'}}>{homeHeroForm.intro||'Intro text preview...'}</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={saveHomeHero} style={{maxWidth:680}}>
+                {/* Slogan */}
+                <div className={styles.formGroup}>
+                  <label><i className="fas fa-heading" style={{marginRight:6,color:'var(--primary)'}}/>Hero Slogan (гарчиг)</label>
+                  <input className="form-input" value={homeHeroForm.slogan} onChange={setHH('slogan')} placeholder="e.g. Discover Mongolia, Explore the World"/>
+                </div>
+
+                {/* Intro */}
+                <div className={styles.formGroup}>
+                  <label><i className="fas fa-align-left" style={{marginRight:6,color:'var(--primary)'}}/>Intro Text (дэд гарчиг)</label>
+                  <textarea className="form-input" rows={2} value={homeHeroForm.intro} onChange={setHH('intro')} placeholder="Short tagline shown below the hero media…" style={{resize:'vertical'}}/>
+                </div>
+
+                {/* Background image */}
+                <div className={styles.formGroup}>
+                  <label><i className="fas fa-image" style={{marginRight:6,color:'var(--primary)'}}/>Background Image (арын зураг)</label>
+                  <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                    <i className="fas fa-cloud-upload-alt"/>
+                    <span>{homeHeroImgFile ? homeHeroImgFile.name : 'Upload background image'}</span>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroImgFile(f);e.target.value='';}}/>
+                  </label>
+                  {homeHeroImgFile && (
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                      <img src={URL.createObjectURL(homeHeroImgFile)} alt="" style={{width:140,height:80,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>setHomeHeroImgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                    </div>
+                  )}
+                  <input className="form-input" value={homeHeroForm.imageUrl} onChange={setHH('imageUrl')} placeholder="Or paste URL: https://…"/>
+                  {!homeHeroImgFile && homeHeroForm.imageUrl && (
+                    <img src={homeHeroForm.imageUrl} alt="bg preview" style={{marginTop:8,width:'100%',maxHeight:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+                  )}
+                </div>
+
+                {/* Front panel type */}
+                <div className={styles.formGroup}>
+                  <label><i className="fas fa-th-large" style={{marginRight:6,color:'var(--primary)'}}/>Front Panel (төвийн блок)</label>
+                  <div style={{display:'flex',gap:12,marginBottom:12}}>
+                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='image'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='image'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
+                      <input type="radio" name="frontType" value="image" checked={homeHeroForm.frontType==='image'} onChange={setHH('frontType')} style={{display:'none'}}/>
+                      <i className="fas fa-image" style={{color:homeHeroForm.frontType==='image'?'var(--primary)':'var(--text-muted)'}}/> Зураг (Image)
+                    </label>
+                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='text'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='text'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
+                      <input type="radio" name="frontType" value="text" checked={homeHeroForm.frontType==='text'} onChange={setHH('frontType')} style={{display:'none'}}/>
+                      <i className="fas fa-font" style={{color:homeHeroForm.frontType==='text'?'var(--primary)':'var(--text-muted)'}}/> Бичлэг (Text)
+                    </label>
+                  </div>
+
+                  {homeHeroForm.frontType === 'image' && (
+                    <div>
+                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                        <i className="fas fa-cloud-upload-alt"/>
+                        <span>{homeHeroFrontFile ? homeHeroFrontFile.name : 'Upload front image (optional, defaults to bg image)'}</span>
+                        <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroFrontFile(f);e.target.value='';}}/>
+                      </label>
+                      {homeHeroFrontFile && (
+                        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                          <img src={URL.createObjectURL(homeHeroFrontFile)} alt="" style={{width:140,height:80,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
+                          <button type="button" onClick={()=>setHomeHeroFrontFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                        </div>
+                      )}
+                      <input className="form-input" value={homeHeroForm.frontImageUrl} onChange={setHH('frontImageUrl')} placeholder="Or paste front image URL: https://…"/>
+                      {!homeHeroFrontFile && homeHeroForm.frontImageUrl && (
+                        <img src={homeHeroForm.frontImageUrl} alt="front preview" style={{marginTop:8,width:'100%',maxHeight:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+                      )}
+                    </div>
+                  )}
+
+                  {homeHeroForm.frontType === 'text' && (
+                    <div className={styles.formGroup} style={{margin:0}}>
+                      <label style={{marginBottom:4,display:'block',fontSize:12,color:'var(--text-muted)'}}>Front block text content <span style={{fontWeight:400}}>(shown instead of image)</span></label>
+                      <textarea className="form-input" rows={5} value={homeHeroForm.frontText} onChange={setHH('frontText')} placeholder="Write featured content, a welcome message, or highlights that appear in the centre panel of the hero…" style={{resize:'vertical'}}/>
+                      {homeHeroForm.frontText && (
+                        <div style={{marginTop:8,padding:'16px 20px',borderRadius:10,background:'rgba(255,255,255,.08)',backdropFilter:'blur(8px)',border:'1px solid rgba(255,255,255,.15)',color:'#fff'}}>
+                          <p style={{margin:0,fontSize:13,lineHeight:1.7,whiteSpace:'pre-wrap'}}>{homeHeroForm.frontText}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {homeHeroMsg && <p className={styles.formMsg} style={{marginTop:8}}>{homeHeroMsg}</p>}
+                <div style={{marginTop:16}}>
+                  <button type="submit" className="btn btn-primary" disabled={homeHeroSaving||homeHeroUploading}>
+                    {(homeHeroSaving||homeHeroUploading)?<><span className="spinner"/> Saving…</>:<><i className="fas fa-save"/> Save Home Hero</>}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 

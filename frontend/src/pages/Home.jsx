@@ -77,10 +77,13 @@ const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 export default function Home() {
   const { t } = useLanguage();
 
-  const [heroSlogan, setHeroSlogan] = useState('');
-  const [heroImage,  setHeroImage]  = useState('');
-  const [heroIntro,  setHeroIntro]  = useState('');
-  const [heroVideo,  setHeroVideo]  = useState('');
+  const [heroSlogan,     setHeroSlogan]     = useState('');
+  const [heroImage,      setHeroImage]      = useState('');
+  const [heroIntro,      setHeroIntro]      = useState('');
+  const [heroVideo,      setHeroVideo]      = useState('');
+  const [heroFrontType,  setHeroFrontType]  = useState('image');
+  const [heroFrontText,  setHeroFrontText]  = useState('');
+  const [heroFrontImage, setHeroFrontImage] = useState('');
 
   const [packages,  setPackages]  = useState(shuffle(FALLBACK_PKGS));
   const [dests,     setDests]     = useState(shuffle(FALLBACK_DESTS));
@@ -97,9 +100,12 @@ export default function Home() {
         const items = r.data?.data || r.data?.content || r.data || [];
         const find = (key) => items.find(c => c.key === key);
         if (find('home_slogan')) setHeroSlogan(find('home_slogan').text || find('home_slogan').title || '');
-        if (find('home_image'))  setHeroImage(find('home_image').image || '');
-        if (find('home_video'))  setHeroVideo(find('home_video').text || '');
-        if (find('home_intro'))  setHeroIntro(find('home_intro').text || '');
+        if (find('home_image'))       setHeroImage(find('home_image').image || find('home_image').imageUrl || '');
+        if (find('home_video'))       setHeroVideo(find('home_video').text || '');
+        if (find('home_intro'))       setHeroIntro(find('home_intro').text || '');
+        if (find('home_front_type'))  setHeroFrontType(find('home_front_type').text || 'image');
+        if (find('home_front_text'))  setHeroFrontText(find('home_front_text').text || '');
+        if (find('home_front_image')) setHeroFrontImage(find('home_front_image').image || find('home_front_image').imageUrl || '');
       })
       .catch(() => {});
 
@@ -142,8 +148,12 @@ export default function Home() {
           <div className={styles.heroMedia}>
             {heroVideo ? (
               <video src={heroVideo} className={styles.heroMediaEl} autoPlay muted loop playsInline />
+            ) : heroFrontType === 'text' && heroFrontText ? (
+              <div className={styles.heroMediaText}>
+                <p>{heroFrontText}</p>
+              </div>
             ) : (
-              <img src={bgImg} alt={slogan} className={styles.heroMediaEl} />
+              <img src={heroFrontImage || bgImg} alt={slogan} className={styles.heroMediaEl} />
             )}
           </div>
 

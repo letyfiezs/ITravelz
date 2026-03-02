@@ -587,6 +587,27 @@ html[data-theme="dark"] .packSection { background: var(--bg-secondary); }
   display: block;
 }
 
+/* Text block shown when admin sets front panel to "text" mode */
+.heroMediaText {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 36px;
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.18);
+}
+.heroMediaText p {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.75;
+  color: rgba(255,255,255,.92);
+  white-space: pre-wrap;
+  text-align: center;
+}
+
 .heroIntro {
   font-size: clamp(1.05rem, 2.5vw, 1.3rem);
   color: rgba(255,255,255,.88);
