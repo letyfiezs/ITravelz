@@ -70,6 +70,40 @@ const avatarUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB for avatars
 });
 
+// ── Cloudinary video storage ───────────────────────────────────
+const cloudinaryVideoStorage = useCloudinary
+  ? new CloudinaryStorage({
+      cloudinary,
+      params: {
+        folder:          'itravelz/videos',
+        resource_type:   'video',
+        allowed_formats: ['mp4', 'webm', 'mov', 'avi'],
+      },
+    })
+  : null;
+
+const diskVideoStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename:    (req, file, cb) => {
+    const u = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, 'video-' + u + require('path').extname(file.originalname));
+  },
+});
+
+const videoFileFilter = (req, file, cb) => {
+  const allowed = /mp4|webm|mov|avi/;
+  const ext = require('path').extname(file.originalname).toLowerCase().replace('.', '');
+  if (allowed.test(ext)) cb(null, true);
+  else cb(new Error('Only video files allowed (mp4, webm, mov, avi)'), false);
+};
+
+const videoUpload = multer({
+  storage: useCloudinary ? cloudinaryVideoStorage : diskVideoStorage,
+  fileFilter: videoFileFilter,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+});
+
 module.exports = upload;
 module.exports.avatarUpload = avatarUpload;
+module.exports.videoUpload  = videoUpload;
 

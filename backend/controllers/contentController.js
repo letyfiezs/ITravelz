@@ -174,3 +174,31 @@ exports.uploadImage = async (req, res, next) => {
     next(err);
   }
 };
+
+// Admin: Upload video (supports Cloudinary)
+exports.uploadVideo = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    let videoUrl;
+    // Cloudinary video: secure_url is on req.file.path or req.file.secure_url
+    if (req.file.path && (req.file.path.startsWith('http') || req.file.path.startsWith('//'))) {
+      videoUrl = req.file.path;
+    } else if (req.file.secure_url) {
+      videoUrl = req.file.secure_url;
+    } else {
+      videoUrl = `/uploads/${req.file.filename}`;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Video uploaded successfully',
+      videoUrl,
+      path: videoUrl
+    });
+  } catch (err) {
+    next(err);
+  }
+};

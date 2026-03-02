@@ -85,6 +85,7 @@ export default function Home() {
   const [heroFrontText,        setHeroFrontText]        = useState('');
   const [heroFrontImage,       setHeroFrontImage]       = useState('');
   const [heroFrontOverlayText, setHeroFrontOverlayText] = useState('');
+  const [heroFrontVideo,       setHeroFrontVideo]       = useState('');
 
   const [packages,  setPackages]  = useState(shuffle(FALLBACK_PKGS));
   const [dests,     setDests]     = useState(shuffle(FALLBACK_DESTS));
@@ -108,6 +109,7 @@ export default function Home() {
         if (find('home_front_text'))         setHeroFrontText(find('home_front_text').text || '');
         if (find('home_front_image'))        setHeroFrontImage(find('home_front_image').image || find('home_front_image').imageUrl || '');
         if (find('home_front_overlay_text')) setHeroFrontOverlayText(find('home_front_overlay_text').text || '');
+        if (find('home_front_video'))        setHeroFrontVideo(find('home_front_video').text || find('home_front_video').image || '');
       })
       .catch(() => {});
 
@@ -150,6 +152,8 @@ export default function Home() {
           <div className={styles.heroMedia}>
             {heroVideo ? (
               <video src={heroVideo} className={styles.heroMediaEl} autoPlay muted loop playsInline />
+            ) : heroFrontType === 'video' && heroFrontVideo ? (
+              <video src={heroFrontVideo} className={styles.heroMediaEl} autoPlay muted loop playsInline />
             ) : heroFrontType === 'text' && heroFrontText ? (
               <div className={styles.heroMediaText}>
                 <p>{heroFrontText}</p>

@@ -20,8 +20,10 @@ const {
   updateContent,
   deleteContent,
   uploadImage,
+  uploadVideo,
   getAllContent,
 } = require('../controllers/contentController');
+
 const {
   createPackage,
   updatePackage,
@@ -64,6 +66,7 @@ const {
 } = require('../controllers/aboutController');
 const { protectAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const videoUpload = upload.videoUpload;
 
 // Auth Routes
 router.post('/login', login);
@@ -120,6 +123,8 @@ router.delete('/destinations/:id/images', protectAdmin, deleteDestinationImage);
 
 // Image Upload
 router.post('/upload', protectAdmin, upload.single('image'), uploadImage);
+// Video Upload
+router.post('/upload-video', protectAdmin, videoUpload.single('video'), uploadVideo);
 
 // Festival Management Routes
 router.get('/festivals', protectAdmin, getAllFestivalsAdmin);

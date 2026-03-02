@@ -130,11 +130,12 @@ const Admin = () => {
   const [itinCurImages, setItinCurImages] = useState([]);
 
   /* home hero */
-  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '', frontOverlayText: '' };
+  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '', frontOverlayText: '', frontVideoUrl: '' };
   const [homeHeroForm, setHomeHeroForm]         = useState(EMPTY_HOME_HERO);
   const [homeHeroItems, setHomeHeroItems]       = useState([]);
   const [homeHeroImgFile, setHomeHeroImgFile]   = useState(null);
   const [homeHeroFrontFile, setHomeHeroFrontFile] = useState(null);
+  const [homeHeroFrontVideoFile, setHomeHeroFrontVideoFile] = useState(null);
   const [homeHeroSaving, setHomeHeroSaving]     = useState(false);
   const [homeHeroUploading, setHomeHeroUploading] = useState(false);
   const [homeHeroMsg, setHomeHeroMsg]           = useState('');
@@ -171,6 +172,7 @@ const Admin = () => {
           frontText:    findH('home_front_text')?.text || '',
           frontImageUrl: findH('home_front_image')?.image || findH('home_front_image')?.imageUrl || '',
           frontOverlayText: findH('home_front_overlay_text')?.text || '',
+          frontVideoUrl: findH('home_front_video')?.text || findH('home_front_video')?.image || '',
         });
         setFestivals(fest.data.festivals || fest.data || []);
         setAboutItems(abt.data.items || abt.data || []);
@@ -496,6 +498,12 @@ const Admin = () => {
     return res.data.imageUrl || res.data.path || '';
   };
 
+  const uploadHomeVideo = async (file) => {
+    const fd = new FormData(); fd.append('video', file);
+    const res = await adminService.uploadContentVideo(fd);
+    return res.data.videoUrl || res.data.path || '';
+  };
+
   const upsertHomeKey = async (key, payload) => {
     const existing = homeHeroItems.find((c) => c.key === key);
     if (existing) {
@@ -513,6 +521,7 @@ const Admin = () => {
     try {
       let bgUrl = homeHeroForm.imageUrl;
       let frontUrl = homeHeroForm.frontImageUrl;
+      let frontVideoUrl = homeHeroForm.frontVideoUrl;
       if (homeHeroImgFile) {
         setHomeHeroUploading(true);
         bgUrl = await uploadHomeImg(homeHeroImgFile);
@@ -525,6 +534,12 @@ const Admin = () => {
         setHomeHeroFrontFile(null);
         setHomeHeroForm((p) => ({ ...p, frontImageUrl: frontUrl }));
       }
+      if (homeHeroFrontVideoFile) {
+        setHomeHeroUploading(true);
+        frontVideoUrl = await uploadHomeVideo(homeHeroFrontVideoFile);
+        setHomeHeroFrontVideoFile(null);
+        setHomeHeroForm((p) => ({ ...p, frontVideoUrl }));
+      }
       setHomeHeroUploading(false);
 
       const results = await Promise.all([
@@ -535,6 +550,7 @@ const Admin = () => {
         upsertHomeKey('home_front_text', { text: homeHeroForm.frontText }),
         upsertHomeKey('home_front_image',{ imageUrl: frontUrl, image: frontUrl }),
         upsertHomeKey('home_front_overlay_text', { text: homeHeroForm.frontOverlayText }),
+        upsertHomeKey('home_front_video', { text: frontVideoUrl, image: frontVideoUrl }),
       ]);
       // Refresh hero items in state
       setHomeHeroItems((prev) => {
@@ -1084,6 +1100,10 @@ const Admin = () => {
                       <input type="radio" name="frontType" value="image" checked={homeHeroForm.frontType==='image'} onChange={setHH('frontType')} style={{display:'none'}}/>
                       <i className="fas fa-image" style={{color:homeHeroForm.frontType==='image'?'var(--primary)':'var(--text-muted)'}}/> Зураг (Image)
                     </label>
+                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='video'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='video'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
+                      <input type="radio" name="frontType" value="video" checked={homeHeroForm.frontType==='video'} onChange={setHH('frontType')} style={{display:'none'}}/>
+                      <i className="fas fa-video" style={{color:homeHeroForm.frontType==='video'?'var(--primary)':'var(--text-muted)'}}/> Видео (Video)
+                    </label>
                     <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='text'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='text'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
                       <input type="radio" name="frontType" value="text" checked={homeHeroForm.frontType==='text'} onChange={setHH('frontType')} style={{display:'none'}}/>
                       <i className="fas fa-font" style={{color:homeHeroForm.frontType==='text'?'var(--primary)':'var(--text-muted)'}}/> Бичлэг (Text)
@@ -1091,8 +1111,7 @@ const Admin = () => {
                   </div>
 
                   {homeHeroForm.frontType === 'image' && (
-                    <div>
-                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                    <div>                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
                         <i className="fas fa-cloud-upload-alt"/>
                         <span>{homeHeroFrontFile ? homeHeroFrontFile.name : 'Upload front image (optional, defaults to bg image)'}</span>
                         <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroFrontFile(f);e.target.value='';}}/>
@@ -1119,6 +1138,30 @@ const Admin = () => {
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {homeHeroForm.frontType === 'video' && (
+                    <div>
+                      <label style={{display:'block',marginBottom:6,fontSize:13,color:'var(--text-muted)'}}>
+                        <i className="fas fa-film" style={{marginRight:6,color:'var(--primary)'}}/>
+                        Видео файл upload (mp4, webm, mov — max 100 MB)
+                      </label>
+                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                        <i className="fas fa-cloud-upload-alt"/>
+                        <span>{homeHeroFrontVideoFile ? homeHeroFrontVideoFile.name : 'Upload video file'}</span>
+                        <input type="file" accept="video/mp4,video/webm,video/quicktime,video/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroFrontVideoFile(f);e.target.value='';}} />
+                      </label>
+                      {homeHeroFrontVideoFile && (
+                        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                          <video src={URL.createObjectURL(homeHeroFrontVideoFile)} style={{width:200,height:90,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}} muted />
+                          <button type="button" onClick={()=>setHomeHeroFrontVideoFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                        </div>
+                      )}
+                      <input className="form-input" value={homeHeroForm.frontVideoUrl} onChange={setHH('frontVideoUrl')} placeholder="Эсвэл видео URL оруулна уу: https://…mp4"/>
+                      {!homeHeroFrontVideoFile && homeHeroForm.frontVideoUrl && (
+                        <video src={homeHeroForm.frontVideoUrl} style={{marginTop:8,width:'100%',maxHeight:160,borderRadius:8,objectFit:'cover'}} controls muted onError={(e)=>e.target.style.display='none'}/>
+                      )}
                     </div>
                   )}
 
