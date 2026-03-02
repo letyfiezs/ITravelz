@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { festivalService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Festivals.module.css';
 
 const CATEGORY_ICONS = {
@@ -13,32 +14,106 @@ const CATEGORY_ICONS = {
   other:      'fas fa-star',
 };
 
+const BASE = (import.meta?.env?.VITE_API_URL || '').replace('/api', '');
+
+function resolveImages(fest) {
+  const arr = fest.images?.length
+    ? fest.images
+    : fest.image
+      ? [fest.image]
+      : ['https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=600&q=80'];
+  return arr.map(src => (src.startsWith('http') ? src : `${BASE}${src}`));
+}
+
 const FALLBACK = [
   {
     _id: 'f1', name: 'Naadam Festival', date: 'July 11–13',
     location: 'Ulaanbaatar', category: 'naadam',
     description: 'The grandest national festival of Mongolia featuring the "Three Games of Men" — wrestling, horse racing, and archery.',
-    image: 'https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=600&q=80'],
   },
   {
     _id: 'f2', name: 'Tsagaan Sar', date: 'January / February',
     location: 'Nationwide', category: 'culture',
     description: 'Mongolian Lunar New Year — a time of family reunion, traditional feasts, and the gifting of fermented mare\'s milk.',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80'],
   },
   {
     _id: 'f3', name: 'Eagle Festival', date: 'October',
     location: 'Bayan-Ölgii', category: 'culture',
     description: 'Kazakh eagle hunters showcase centuries-old traditions of falconry in the breathtaking Altai mountains.',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80'],
   },
   {
     _id: 'f4', name: 'Ice Festival', date: 'March',
     location: 'Khövsgöl Lake', category: 'winter',
     description: 'Celebrate the frozen Khövsgöl lake with ice sculptures, reindeer sledding, and shamanic ceremonies.',
-    image: 'https://images.unsplash.com/photo-1547369093-8a7e27cf5fd6?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1547369093-8a7e27cf5fd6?w=600&q=80'],
   },
 ];
+
+/* ── Detail Modal ─────────────────────────────────────────── */
+function FestivalModal({ fest, onClose }) {
+  const imgs = resolveImages(fest);
+
+  // Close on backdrop click
+  const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div className={styles.rmBackdrop} onClick={handleBackdrop}>
+      <div className={styles.rmContent}>
+        <button className={styles.rmClose} onClick={onClose} aria-label="Close">
+          <i className="fas fa-times" />
+        </button>
+
+        {/* Slideshow */}
+        <div className={styles.rmImgWrap}>
+          <ImageSlideshow images={imgs} alt={fest.name} interval={5000} className={styles.rmSlideshow} />
+          {fest.category && (
+            <span className={styles.catBadge}>
+              <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
+            </span>
+          )}
+        </div>
+
+        <div className={styles.rmBody}>
+          <h2 className={styles.rmTitle}>{fest.name}</h2>
+          <div className={styles.meta}>
+            {fest.date && (
+              <span className={styles.metaItem}>
+                <i className="fas fa-calendar-alt" /> {fest.date}
+              </span>
+            )}
+            {fest.location && (
+              <span className={styles.metaItem}>
+                <i className="fas fa-map-marker-alt" /> {fest.location}
+              </span>
+            )}
+          </div>
+          <p className={styles.rmText}>{fest.description}</p>
+
+          {fest.link && (
+            <a
+              href={fest.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.learnBtn}
+            >
+              <i className="fas fa-external-link-alt" /> Дэлгэрэнгүй мэдээлэл
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Festivals() {
   const { t } = useLanguage();
@@ -47,6 +122,7 @@ export default function Festivals() {
   const [error,     setError]     = useState('');
   const [search,    setSearch]    = useState('');
   const [category,  setCategory]  = useState('');
+  const [modalFest, setModalFest] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -134,45 +210,72 @@ export default function Festivals() {
         {/* Grid */}
         {!loading && festivals.length > 0 && (
           <div className={styles.grid}>
-            {festivals.map(fest => (
-              <div key={fest._id} className={styles.card}>
-                <div className={styles.cardImg}>
-                  <img
-                    src={fest.image || 'https://images.unsplash.com/photo-1596797043736-67b14e7e3360?w=600&q=80'}
-                    alt={fest.name}
-                    loading="lazy"
-                  />
-                  {fest.category && (
-                    <span className={styles.catBadge}>
-                      <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
-                    </span>
-                  )}
-                </div>
-                <div className={styles.cardBody}>
-                  <div className={styles.meta}>
-                    {fest.date && (
-                      <span className={styles.metaItem}>
-                        <i className="fas fa-calendar-alt" /> {fest.date}
-                      </span>
-                    )}
-                    {fest.location && (
-                      <span className={styles.metaItem}>
-                        <i className="fas fa-map-marker-alt" /> {fest.location}
+            {festivals.map(fest => {
+              const imgs = resolveImages(fest);
+              return (
+                <div key={fest._id} className={styles.card}>
+                  <div className={styles.cardImg}>
+                    <ImageSlideshow
+                      images={imgs}
+                      alt={fest.name}
+                      interval={5000}
+                      className={styles.cardSlideshow}
+                    />
+                    {fest.category && (
+                      <span className={styles.catBadge}>
+                        <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
                       </span>
                     )}
                   </div>
-                  <h3 className={styles.cardTitle}>{fest.name}</h3>
-                  {fest.description && (
-                    <p className={styles.cardDesc}>
-                      {fest.description.slice(0, 120)}{fest.description.length > 120 ? '…' : ''}
-                    </p>
-                  )}
+                  <div className={styles.cardBody}>
+                    <div className={styles.meta}>
+                      {fest.date && (
+                        <span className={styles.metaItem}>
+                          <i className="fas fa-calendar-alt" /> {fest.date}
+                        </span>
+                      )}
+                      {fest.location && (
+                        <span className={styles.metaItem}>
+                          <i className="fas fa-map-marker-alt" /> {fest.location}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className={styles.cardTitle}>{fest.name}</h3>
+                    {fest.description && (
+                      <p className={styles.cardDesc}>
+                        {fest.description.slice(0, 110)}{fest.description.length > 110 ? '…' : ''}
+                      </p>
+                    )}
+                    <div className={styles.cardFooter}>
+                      <button
+                        className={styles.detailBtn}
+                        onClick={() => setModalFest(fest)}
+                      >
+                        Дэлгэрэнгүй <i className="fas fa-arrow-right" />
+                      </button>
+                      {fest.link && (
+                        <a
+                          href={fest.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.linkBtn}
+                        >
+                          <i className="fas fa-external-link-alt" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Festival detail modal */}
+      {modalFest && (
+        <FestivalModal fest={modalFest} onClose={() => setModalFest(null)} />
+      )}
     </div>
   );
 }

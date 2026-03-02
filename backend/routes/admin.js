@@ -51,6 +51,8 @@ const {
   createFestival,
   updateFestival,
   deleteFestival,
+  uploadFestivalImages,
+  deleteFestivalImage,
 } = require('../controllers/festivalController');
 const {
   getAllAboutAdmin,
@@ -122,6 +124,8 @@ router.get('/festivals', protectAdmin, getAllFestivalsAdmin);
 router.post('/festivals', protectAdmin, createFestival);
 router.put('/festivals/:id', protectAdmin, updateFestival);
 router.delete('/festivals/:id', protectAdmin, deleteFestival);
+router.post('/festivals/:id/images', protectAdmin, upload.array('images', 10), uploadFestivalImages);
+router.delete('/festivals/:id/images', protectAdmin, deleteFestivalImage);
 
 // About Mongolia Management Routes
 router.get('/about', protectAdmin, getAllAboutAdmin);

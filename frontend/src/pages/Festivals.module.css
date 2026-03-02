@@ -89,6 +89,8 @@
   box-shadow: 0 2px 12px rgba(0,0,0,.08);
   transition: transform .25s, box-shadow .25s;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
 }
 .card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,.14); }
 
@@ -103,6 +105,18 @@
   transition: transform .45s;
 }
 .card:hover .cardImg img { transform: scale(1.06); }
+
+/* ImageSlideshow inside card — fill the .cardImg box */
+.cardSlideshow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cardSlideshow img {
+  transition: transform .45s;
+}
+.card:hover .cardSlideshow img { transform: scale(1.06); }
 
 .catBadge {
   position: absolute;
@@ -119,6 +133,9 @@
 
 .cardBody {
   padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 .meta {
   display: flex;
@@ -142,7 +159,50 @@
   font-size: .9rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-bottom: 14px;
 }
+
+/* ── Card Footer ──────────────────────────────────────────── */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+.detailBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.detailBtn:hover { background: var(--primary-dark,#3b5bdb); transform: translateY(-1px); }
+.detailBtn i { font-size: .75rem; }
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  font-size: .85rem;
+  text-decoration: none;
+  transition: background .2s, border-color .2s;
+}
+.linkBtn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 /* ── Skeleton ─────────────────────────────────────────────── */
 .skeleton {
@@ -162,6 +222,97 @@
 }
 .empty i { font-size: 3rem; display: block; margin-bottom: 16px; }
 .empty h3 { font-size: 1.4rem; margin-bottom: 12px; color: var(--text-secondary); }
+
+/* ── Detail Modal ─────────────────────────────────────────── */
+.rmBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn .2s;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.rmContent {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.35);
+  animation: slideUp .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp { from{transform:translateY(32px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.rmClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  font-size: .9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+}
+.rmClose:hover { background: rgba(0,0,0,.7); }
+
+.rmImgWrap {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+}
+.rmSlideshow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rmBody {
+  padding: 22px 26px 28px;
+}
+.rmTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+}
+.rmText {
+  font-size: .95rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 12px 0 20px;
+}
+.learnBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 600;
+  transition: background .2s, transform .15s;
+}
+.learnBtn:hover { background: var(--primary-dark,#3b5bdb); transform: translateY(-1px); }
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 640px) {

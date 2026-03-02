@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'users'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'users'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
@@ -11,6 +11,8 @@ const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', du
 const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', price: '', order: 0, isActive: true };
 const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true };
+const FEST_CATEGORIES = ['naadam', 'culture', 'religious', 'winter', 'food', 'music', 'other'];
+const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true };
 
 /* ── Google Maps embed URL builder (no API key needed) ── */
 const buildMapEmbedUrl = (query) => {
@@ -83,6 +85,16 @@ const Admin = () => {
   const [destHeroBgFile, setDestHeroBgFile]   = useState(null);
   const [destHeroBgUploading, setDestHeroBgUploading] = useState(false);
 
+  /* festivals */
+  const [festivals, setFestivals]             = useState([]);
+  const [festModal, setFestModal]             = useState(false);
+  const [festForm, setFestForm]               = useState(EMPTY_FEST);
+  const [festEdit, setFestEdit]               = useState(null);
+  const [festSaving, setFestSaving]           = useState(false);
+  const [festMsg, setFestMsg]                 = useState('');
+  const [festImgFiles, setFestImgFiles]       = useState([]);
+  const [festCurImages, setFestCurImages]     = useState([]);
+
   /* package modal */
   const [pkgModal, setPkgModal]         = useState(false);
   const [pkgForm, setPkgForm]           = useState(EMPTY_PKG);
@@ -114,8 +126,9 @@ const Admin = () => {
       adminService.getDestinations(),
       adminService.getItineraries(),
       adminService.getContent(),
+      adminService.getFestivals(),
     ])
-      .then(([s, b, u, pk, dest, itin, cont]) => {
+      .then(([s, b, u, pk, dest, itin, cont, fest]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
@@ -124,6 +137,7 @@ const Admin = () => {
         setItineraries(itin.data.itineraries || itin.data || []);
         const allContent = cont.data.content || cont.data || [];
         setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
+        setFestivals(fest.data.festivals || fest.data || []);
       })
       .catch(() => setError('Failed to load admin data. Make sure the backend is running.'))
       .finally(() => setLoading(false));
@@ -437,7 +451,65 @@ const Admin = () => {
     } catch { alert('Update failed.'); }
   };
 
-  return (
+  /* ── Festival helpers ── */
+  const openFestCreate = () => { setFestEdit(null); setFestForm(EMPTY_FEST); setFestCurImages([]); setFestImgFiles([]); setFestMsg(''); setFestModal(true); };
+  const openFestEdit   = (f) => {
+    setFestEdit(f._id);
+    setFestForm({ name: f.name||'', description: f.description||'', date: f.date||'', location: f.location||'', image: f.image||'', images: f.images||[], category: f.category||'culture', link: f.link||'', isActive: f.isActive??true });
+    setFestCurImages(f.images || []); setFestImgFiles([]); setFestMsg(''); setFestModal(true);
+  };
+  const closeFest = () => { setFestModal(false); setFestMsg(''); setFestImgFiles([]); setFestCurImages([]); };
+  const setF = (k) => (e) => setFestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const saveFest = async (e) => {
+    e.preventDefault(); setFestSaving(true); setFestMsg('');
+    const payload = { ...festForm, images: festCurImages };
+    try {
+      let savedId = festEdit;
+      if (festEdit) {
+        const r = await adminService.updateFestival(festEdit, payload);
+        const updated = r.data.festival || r.data;
+        setFestivals((p) => p.map((x) => x._id === festEdit ? updated : x));
+        setFestMsg('✅ Updated!');
+      } else {
+        const r = await adminService.createFestival(payload);
+        const created = r.data.festival || r.data;
+        savedId = created._id;
+        setFestivals((p) => [created, ...p]);
+        setFestMsg('✅ Created!'); setFestForm(EMPTY_FEST);
+      }
+      if (festImgFiles.length > 0 && savedId) {
+        const fd = new FormData();
+        festImgFiles.forEach((f) => fd.append('images', f));
+        const upRes = await adminService.uploadFestivalImages(savedId, fd);
+        const updatedImages = upRes.data.images || [];
+        setFestivals((p) => p.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setFestImgFiles([]);
+      }
+      setTimeout(closeFest, 900);
+    } catch (err) { setFestMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
+    finally { setFestSaving(false); }
+  };
+  const deleteFest = async (id) => {
+    if (!window.confirm('Delete this festival?')) return;
+    try { await adminService.deleteFestival(id); setFestivals((p) => p.filter((x) => x._id !== id)); }
+    catch { alert('Delete failed.'); }
+  };
+  const removeFestCurImage = async (imgUrl) => {
+    setFestCurImages((prev) => prev.filter((x) => x !== imgUrl));
+    if (festEdit) { try { await adminService.deleteFestivalImage(festEdit, imgUrl); } catch { /* ignore */ } }
+  };
+  const onFestFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (festCurImages.length + festImgFiles.length + files.length > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    setFestImgFiles((prev) => [...prev, ...files].slice(0, 10));
+    e.target.value = '';
+  };
+  const removeFestNewFile = (idx) => setFestImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const toggleFestActive = async (f) => {
+    try { const r = await adminService.updateFestival(f._id, { isActive: !f.isActive }); setFestivals((p) => p.map((x) => x._id === f._id ? (r.data.festival || r.data) : x)); }
+    catch { alert('Update failed.'); }
+  };
     <div className={styles.page}>
       <div className="container">
         <div className={styles.pageHeader}>
@@ -456,7 +528,15 @@ const Admin = () => {
           <div className={styles.tabs}>
             {TABS.map((t) => (
               <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
-                <i className={`fas ${t==='overview'?'fa-chart-bar':t==='bookings'?'fa-calendar-check':t==='packages'?'fa-box-open':t==='itineraries'?'fa-route':t==='destinations'?'fa-globe':'fa-users'}`} />
+                <i className={`fas ${
+                  t==='overview'?'fa-chart-bar':
+                  t==='bookings'?'fa-calendar-check':
+                  t==='packages'?'fa-box-open':
+                  t==='itineraries'?'fa-route':
+                  t==='destinations'?'fa-globe':
+                  t==='festivals'?'fa-drum':
+                  'fa-users'
+                }`} />
                 {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
@@ -704,6 +784,44 @@ const Admin = () => {
                   <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
                   <tbody>{users.map((u)=>(<tr key={u._id}><td>{u.name}</td><td>{u.email}</td><td><span className={`badge ${u.role==='admin'?'badge-primary':'badge-accent'}`}>{u.role}</span></td><td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td></tr>))}</tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── Festivals ── */}
+          {tab === 'festivals' && (
+            <div>
+              <div className={styles.tabToolbar}>
+                <span>{festivals.length} festival{festivals.length!==1?'s':''}</span>
+                <button className="btn btn-primary btn-sm" onClick={openFestCreate}><i className="fas fa-plus"/> Add Festival</button>
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead><tr><th>Image</th><th>Name</th><th>Date</th><th>Location</th><th>Category</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {festivals.length===0&&<tr><td colSpan={8} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No festivals yet — click "Add Festival"</td></tr>}
+                    {festivals.map((f) => (
+                      <tr key={f._id}>
+                        <td>
+                          {(f.images?.[0]||f.image)
+                            ? <img src={f.images?.[0]||f.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-drum"/></div>}
+                        </td>
+                        <td><div style={{fontWeight:600}}>{f.name}</div>{f.images?.length>1&&<div style={{fontSize:11,color:'var(--text-muted)'}}><i className="fas fa-images"/> {f.images.length} imgs</div>}</td>
+                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{f.date||'—'}</td>
+                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{f.location||'—'}</td>
+                        <td><span className="badge badge-accent" style={{textTransform:'capitalize'}}>{f.category||'—'}</span></td>
+                        <td style={{fontSize:12}}>
+                          {f.link
+                            ? <a href={f.link} target="_blank" rel="noopener noreferrer" style={{color:'var(--primary)',textDecoration:'underline',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:'block'}}><i className="fas fa-external-link-alt"/> Link</a>
+                            : <span style={{color:'var(--text-muted)'}}>—</span>}
+                        </td>
+                        <td><button onClick={()=>toggleFestActive(f)} className={`${styles.toggleBtn} ${f.isActive?styles.toggleOn:styles.toggleOff}`}>{f.isActive?'Active':'Hidden'}</button></td>
+                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openFestEdit(f)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteFest(f._id)}><i className="fas fa-trash"/></button></div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -1183,6 +1301,108 @@ const Admin = () => {
               <button type="button" className="btn btn-outline btn-sm" onClick={closeDest}>Cancel</button>
               <button type="submit" className="btn btn-primary btn-sm" disabled={destSaving}>
                 {destSaving?<><span className="spinner"/> Saving…</>:destEdit?'Save Changes':'Create Destination'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Festival Create/Edit Modal ── */}
+      {festModal && (
+        <Modal title={festEdit ? 'Edit Festival' : 'Add Festival'} onClose={closeFest}>
+          <form onSubmit={saveFest} className={styles.itinForm}>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Festival Name *</label>
+                <input className="form-input" value={festForm.name} onChange={setF('name')} required placeholder="e.g. Naadam Festival"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Category</label>
+                <select className="form-input" value={festForm.category} onChange={setF('category')}>
+                  {FEST_CATEGORIES.map((c)=><option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Date</label>
+                <input className="form-input" value={festForm.date} onChange={setF('date')} placeholder="e.g. July 11–13"/>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Location</label>
+                <input className="form-input" value={festForm.location} onChange={setF('location')} placeholder="e.g. Ulaanbaatar"/>
+              </div>
+            </div>
+
+            {/* Images */}
+            <div className={styles.formGroup}>
+              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 (5s slideshow)</span></label>
+              {festCurImages.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {festCurImages.map((src, i) => {
+                    const base = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
+                    const resolved = src.startsWith('http') ? src : `${base}${src}`;
+                    return (
+                      <div key={i} style={{position:'relative',width:72,height:52}}>
+                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        <button type="button" onClick={()=>removeFestCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {festImgFiles.length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                  {festImgFiles.map((f, i) => (
+                    <div key={i} style={{position:'relative',width:72,height:52}}>
+                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
+                      <button type="button" onClick={()=>removeFestNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(festCurImages.length + festImgFiles.length) < 10 && (
+                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
+                  <i className="fas fa-cloud-upload-alt"/>
+                  <span>Зураг нэмэх ({festCurImages.length + festImgFiles.length}/10)</span>
+                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onFestFileChange}/>
+                </label>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
+              <input className="form-input" value={festForm.image} onChange={setF('image')} placeholder="https://images.unsplash.com/..."/>
+              {festForm.image && <img src={festForm.image} alt="preview" style={{marginTop:8,width:'100%',height:90,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>
+                <i className="fas fa-external-link-alt" style={{marginRight:6,color:'var(--primary)'}}/>
+                External Link <span style={{fontWeight:400,color:'var(--text-muted)'}}>Дэлгэрэнгүй мэдээлэл авах холбоос (Wikipedia, нийтлэл гэх мэт)</span>
+              </label>
+              <input className="form-input" value={festForm.link} onChange={setF('link')} placeholder="https://en.wikipedia.org/wiki/Naadam"/>
+              {festForm.link && (
+                <a href={festForm.link} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--primary)',marginTop:4,display:'inline-flex',alignItems:'center',gap:4}}>
+                  <i className="fas fa-external-link-alt"/> Preview link
+                </a>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Description *</label>
+              <textarea className="form-input" rows={4} value={festForm.description} onChange={setF('description')} required placeholder="Describe the festival…" style={{resize:'vertical'}}/>
+            </div>
+
+            <label className={styles.checkRow}>
+              <input type="checkbox" checked={festForm.isActive} onChange={setF('isActive')}/>
+              <span>Visible to public (Active)</span>
+            </label>
+            {festMsg && <p className={styles.formMsg}>{festMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={closeFest}>Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={festSaving}>
+                {festSaving?<><span className="spinner"/> Saving…</>:festEdit?'Save Changes':'Create Festival'}
               </button>
             </div>
           </form>
