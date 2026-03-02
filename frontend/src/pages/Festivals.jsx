@@ -77,7 +77,7 @@ function FestivalModal({ fest, onClose }) {
         <div className={styles.rmImgWrap}>
           <ImageSlideshow images={imgs} alt={fest.name} interval={5000} className={styles.rmSlideshow} />
           {fest.category && (
-            <span className={styles.catBadge}>
+            <span className={`${styles.catBadge} ${styles['cat_' + fest.category] || ''}`}>
               <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
             </span>
           )}
@@ -85,14 +85,14 @@ function FestivalModal({ fest, onClose }) {
 
         <div className={styles.rmBody}>
           <h2 className={styles.rmTitle}>{fest.name}</h2>
-          <div className={styles.meta}>
+          <div className={styles.metaChips}>
             {fest.date && (
-              <span className={styles.metaItem}>
+              <span className={styles.metaChip}>
                 <i className="fas fa-calendar-alt" /> {fest.date}
               </span>
             )}
             {fest.location && (
-              <span className={styles.metaItem}>
+              <span className={styles.metaChip}>
                 <i className="fas fa-map-marker-alt" /> {fest.location}
               </span>
             )}
@@ -221,29 +221,35 @@ export default function Festivals() {
                       interval={5000}
                       className={styles.cardSlideshow}
                     />
-                    {fest.category && (
-                      <span className={styles.catBadge}>
-                        <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
-                      </span>
+                    {/* bottom gradient overlay with title */}
+                    <div className={styles.cardImgOverlay}>
+                      {fest.category && (
+                        <span className={`${styles.catBadge} ${styles['cat_' + fest.category] || ''}`}>
+                          <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
+                        </span>
+                      )}
+                      <h3 className={styles.cardImgTitle}>{fest.name}</h3>
+                    </div>
+                    {imgs.length > 1 && (
+                      <span className={styles.imgCount}><i className="fas fa-images" /> {imgs.length}</span>
                     )}
                   </div>
                   <div className={styles.cardBody}>
-                    <div className={styles.meta}>
+                    <div className={styles.metaChips}>
                       {fest.date && (
-                        <span className={styles.metaItem}>
+                        <span className={styles.metaChip}>
                           <i className="fas fa-calendar-alt" /> {fest.date}
                         </span>
                       )}
                       {fest.location && (
-                        <span className={styles.metaItem}>
+                        <span className={styles.metaChip}>
                           <i className="fas fa-map-marker-alt" /> {fest.location}
                         </span>
                       )}
                     </div>
-                    <h3 className={styles.cardTitle}>{fest.name}</h3>
                     {fest.description && (
                       <p className={styles.cardDesc}>
-                        {fest.description.slice(0, 110)}{fest.description.length > 110 ? '…' : ''}
+                        {fest.description.slice(0, 100)}{fest.description.length > 100 ? '…' : ''}
                       </p>
                     )}
                     <div className={styles.cardFooter}>
