@@ -510,6 +510,8 @@ const Admin = () => {
     try { const r = await adminService.updateFestival(f._id, { isActive: !f.isActive }); setFestivals((p) => p.map((x) => x._id === f._id ? (r.data.festival || r.data) : x)); }
     catch { alert('Update failed.'); }
   };
+
+  return (
     <div className={styles.page}>
       <div className="container">
         <div className={styles.pageHeader}>
