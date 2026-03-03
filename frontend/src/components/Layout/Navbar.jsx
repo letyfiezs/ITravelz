@@ -76,7 +76,7 @@ export default function Navbar() {
             <i className="fas fa-plane-departure" />
           </span>
           <span className={styles.logoText}>
-            I<em>Travelz</em>
+            I<em>Travel</em>
           </span>
         </Link>
 

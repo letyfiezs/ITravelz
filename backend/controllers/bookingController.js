@@ -153,25 +153,9 @@ exports.createBooking = async (req, res) => {
     await booking.save();
     console.log('✅ Booking saved. userId:', booking.userId, 'email:', booking.email);
 
-    // Try to send confirmation email
-    try {
-      const bookingDetails = {
-        bookingId: booking.bookingId,
-        packageName: booking.serviceName,
-        duration: booking.duration || "N/A",
-        price: booking.price ? `$${booking.price}` : "Contact us",
-        travelDate: new Date(booking.bookingDate).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        status: booking.status,
-      };
-
-      await sendBookingConfirmationEmail(finalEmail, finalFullName, bookingDetails);
-    } catch (emailErr) {
-      console.log("Email send failed but booking created:", emailErr.message);
-    }
+    // Do not send confirmation email here — wait until payment is completed.
+    // The frontend or payment webhook should update `paymentStatus` to 'paid',
+    // and the updateBooking handler will send the confirmation email on that change.
 
     res.status(201).json({
       success: true,
@@ -343,6 +327,26 @@ exports.updateBooking = async (req, res) => {
       } catch (emailErr) {
         console.log('Email send failed but booking updated:', emailErr.message);
       }
+    }
+
+    // Send confirmation email when paymentStatus changes to 'paid'
+    try {
+      if (typeof paymentStatus !== 'undefined' && paymentStatus !== oldBooking.paymentStatus && booking.paymentStatus === 'paid') {
+        const bookingDetails = {
+          bookingId: booking.bookingId,
+          packageName: booking.serviceName,
+          duration: booking.duration || 'N/A',
+          travelDate: new Date(booking.bookingDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          bookingTime: booking.bookingTime || '',
+          numberOfPeople: booking.numberOfPeople,
+          status: booking.status,
+        };
+
+        await sendBookingConfirmationEmail(booking.email, booking.fullName, bookingDetails);
+        console.log('✅ Payment confirmed — confirmation email sent to', booking.email);
+      }
+    } catch (emailErr) {
+      console.log('Email send failed after payment update:', emailErr.message);
     }
 
     res.status(200).json({
