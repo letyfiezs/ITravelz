@@ -1,4 +1,4 @@
-require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
+﻿require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
 const axios = require("axios");
 
 const sendEmail = async (to, subject, htmlContent) => {
@@ -22,11 +22,11 @@ const sendEmail = async (to, subject, htmlContent) => {
       },
     );
 
-    console.log("✅ Email sent via Brevo:", subject);
+    console.log("âœ… Email sent via Brevo:", subject);
     return true;
   } catch (error) {
     console.error(
-      "❌ Brevo Email error:",
+      "âŒ Brevo Email error:",
       error.response?.data || error.message,
     );
     return false;
@@ -38,14 +38,14 @@ const baseTemplate = (content) => `
   <div style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:12px;">
     
     <h1 style="color:#3b82f6;text-align:center;margin-bottom:30px;">
-      ✈️ Total Grand Travel
+      âœˆï¸ Total Grand Travel
     </h1>
 
     ${content}
 
     <hr style="margin:30px 0;">
     <p style="font-size:12px;color:#888;text-align:center;">
-      © 2026 Total Grand Travel. All rights reserved.
+      Â© 2026 Total Grand Travel. All rights reserved.
     </p>
 
   </div>
@@ -84,7 +84,7 @@ const sendVerificationEmail = async (email, name, token, link) => {
 =========================== */
 const sendWelcomeEmail = async (email, name) => {
   const content = `
-    <h2>Welcome ${name}! 🌍</h2>
+    <h2>Welcome ${name}! ðŸŒ</h2>
     <p>Your account has been successfully verified.</p>
 
     <ul>
@@ -93,7 +93,7 @@ const sendWelcomeEmail = async (email, name) => {
       <li>Track your bookings</li>
     </ul>
 
-    <p>We’re excited to have you with us!</p>
+    <p>Weâ€™re excited to have you with us!</p>
   `;
 
   return await sendEmail(
@@ -137,7 +137,7 @@ const sendPasswordResetEmail = async (email, name, token, link) => {
 =========================== */
 const sendBookingConfirmationEmail = async (email, name, booking) => {
   const content = `
-    <h2>🎉 Booking Confirmed!</h2>
+    <h2>ðŸŽ‰ Booking Confirmed!</h2>
     <p>Hello ${name},</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;">
@@ -168,7 +168,7 @@ const sendBookingApprovedEmail = async (email, name, booking) => {
   const amount = booking.totalPrice || booking.price || 0;
 
   const content = `
-    <h2>✅ Booking Approved — Payment Required</h2>
+    <h2>âœ… Booking Approved â€” Payment Required</h2>
     <p>Hello ${name},</p>
     <p>Your booking has been <strong style="color:#059669">approved</strong> by our team. To finalize and secure your trip, please complete the payment.</p>
 
@@ -197,17 +197,17 @@ const sendBookingApprovedEmail = async (email, name, booking) => {
 
   return await sendEmail(
     email,
-    `Action Required: Pay to Confirm Booking — ${booking.packageName}`,
+    `Action Required: Pay to Confirm Booking â€” ${booking.packageName}`,
     baseTemplate(content),
   );
 };
 
 /* ===========================
-   PAYMENT SUCCESS → FINAL CONFIRMATION
+   PAYMENT SUCCESS â†’ FINAL CONFIRMATION
 =========================== */
 const sendPaymentSuccessEmail = async (email, name, booking) => {
   const content = `
-    <h2>🎉 Your Trip Is Confirmed!</h2>
+    <h2>ðŸŽ‰ Your Trip Is Confirmed!</h2>
     <p>Hello ${name},</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
@@ -220,13 +220,13 @@ const sendPaymentSuccessEmail = async (email, name, booking) => {
       <p><strong>Payment Status:</strong> Paid</p>
     </div>
 
-    <p>Таны аялал баталгаажлаа. Бид танд дэлгэрэнгүй мэдээлэл болон шаардлагатай бичиг баримтыг илгээх болно.</p>
-    <p>Бидэнд итгэснэд баярлалаа — сайхан аялал хүсье!</p>
+    <p>Ð¢Ð°Ð½Ñ‹ Ð°ÑÐ»Ð°Ð» Ð±Ð°Ñ‚Ð°Ð»Ð³Ð°Ð°Ð¶Ð»Ð°Ð°. Ð‘Ð¸Ð´ Ñ‚Ð°Ð½Ð´ Ð´ÑÐ»Ð³ÑÑ€ÑÐ½Ð³Ò¯Ð¹ Ð¼ÑÐ´ÑÑÐ»ÑÐ» Ð±Ð¾Ð»Ð¾Ð½ ÑˆÐ°Ð°Ñ€Ð´Ð»Ð°Ð³Ð°Ñ‚Ð°Ð¹ Ð±Ð¸Ñ‡Ð¸Ð³ Ð±Ð°Ñ€Ð¸Ð¼Ñ‚Ñ‹Ð³ Ð¸Ð»Ð³ÑÑÑ… Ð±Ð¾Ð»Ð½Ð¾.</p>
+    <p>Ð‘Ð¸Ð´ÑÐ½Ð´ Ð¸Ñ‚Ð³ÑÑÐ½ÑÐ´ Ð±Ð°ÑÑ€Ð»Ð°Ð»Ð°Ð° â€” ÑÐ°Ð¹Ñ…Ð°Ð½ Ð°ÑÐ»Ð°Ð» Ñ…Ò¯ÑÑŒÐµ!</p>
   `;
 
   return await sendEmail(
     email,
-    `Booking Confirmed — ${booking.packageName}`,
+    `Booking Confirmed â€” ${booking.packageName}`,
     baseTemplate(content),
   );
 };
@@ -237,55 +237,26 @@ const sendPaymentSuccessEmail = async (email, name, booking) => {
 const sendAdminPaymentNotification = async (booking, customerName, customerEmail) => {
   const adminEmail = process.env.ADMIN_EMAIL || 'backteck6@gmail.com';
   const content = `
-    <h2>💰 Шинэ Төлбөр Ирлээ!</h2>
-    <p>Хэрэглэгч Stripe-ээр төлбөрөө амжилттай төллөо.</p>
+    <h2>ðŸ’° Ð¨Ð¸Ð½Ñ Ð¢Ó©Ð»Ð±Ó©Ñ€ Ð˜Ñ€Ð»ÑÑ!</h2>
+    <p>Ð¥ÑÑ€ÑÐ³Ð»ÑÐ³Ñ‡ Stripe-ÑÑÑ€ Ñ‚Ó©Ð»Ð±Ó©Ñ€Ó©Ó© Ð°Ð¼Ð¶Ð¸Ð»Ñ‚Ñ‚Ð°Ð¹ Ñ‚Ó©Ð»Ð»Ó©Ð¾.</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
-      <p><strong>Захиалгын дугаар:</strong> ${booking.bookingId}</p>
-      <p><strong>Хэрэглэгчийн нэр:</strong> ${customerName}</p>
-      <p><strong>Имэйл:</strong> <a href="mailto:${customerEmail}">${customerEmail}</a></p>
-      <p><strong>Аялал:</strong> ${booking.packageName}</p>
-      ${booking.travelDate ? `<p><strong>Огноо:</strong> ${booking.travelDate}</p>` : ''}
-      ${booking.numberOfPeople ? `<p><strong>Хүний тоо:</strong> ${booking.numberOfPeople}</p>` : ''}
-      <p><strong>Төлбөрийн хэлбэр:</strong> Stripe Card</p>
-      <p><strong>Stripe ID:</strong> ${booking.transactionId || '—'}</p>
+      <p><strong>Ð—Ð°Ñ…Ð¸Ð°Ð»Ð³Ñ‹Ð½ Ð´ÑƒÐ³Ð°Ð°Ñ€:</strong> ${booking.bookingId}</p>
+      <p><strong>Ð¥ÑÑ€ÑÐ³Ð»ÑÐ³Ñ‡Ð¸Ð¹Ð½ Ð½ÑÑ€:</strong> ${customerName}</p>
+      <p><strong>Ð˜Ð¼ÑÐ¹Ð»:</strong> <a href="mailto:${customerEmail}">${customerEmail}</a></p>
+      <p><strong>ÐÑÐ»Ð°Ð»:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>ÐžÐ³Ð½Ð¾Ð¾:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.numberOfPeople ? `<p><strong>Ð¥Ò¯Ð½Ð¸Ð¹ Ñ‚Ð¾Ð¾:</strong> ${booking.numberOfPeople}</p>` : ''}
+      <p><strong>Ð¢Ó©Ð»Ð±Ó©Ñ€Ð¸Ð¹Ð½ Ñ…ÑÐ»Ð±ÑÑ€:</strong> Stripe Card</p>
+      <p><strong>Stripe ID:</strong> ${booking.transactionId || 'â€”'}</p>
     </div>
 
-    <p style="color:#059669;font-weight:bold;">✅ Захиалга одоо баталгаажсан байна.</p>
+    <p style="color:#059669;font-weight:bold;">âœ… Ð—Ð°Ñ…Ð¸Ð°Ð»Ð³Ð° Ð¾Ð´Ð¾Ð¾ Ð±Ð°Ñ‚Ð°Ð»Ð³Ð°Ð°Ð¶ÑÐ°Ð½ Ð±Ð°Ð¹Ð½Ð°.</p>
   `;
 
   return await sendEmail(
     adminEmail,
-    `💰 Шинэ Төлбөр: ${booking.packageName} — ${customerName}`,
-    baseTemplate(content),
-  );
-};
-
-/* ===========================
-   ADMIN: PAYMENT RECEIVED NOTIFICATION
-=========================== */
-const sendAdminPaymentNotification = async (booking, customerName, customerEmail) => {
-  const adminEmail = process.env.ADMIN_EMAIL || 'backteck6@gmail.com';
-  const content = `
-    <h2>💰 Шинэ Төлбөр Ирлээ!</h2>
-    <p>Хэрэглэгч Stripe-ээр төлбөрөө амжилттай төллөө.</p>
-
-    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
-      <p><strong>Захиалгын дугаар:</strong> ${booking.bookingId}</p>
-      <p><strong>Хэрэглэгчийн нэр:</strong> ${customerName}</p>
-      <p><strong>Имэйл:</strong> <a href="mailto:${customerEmail}">${customerEmail}</a></p>
-      <p><strong>Аялал:</strong> ${booking.packageName}</p>
-      ${booking.travelDate ? `<p><strong>Огноо:</strong> ${booking.travelDate}</p>` : ''}
-      ${booking.numberOfPeople ? `<p><strong>Хүний тоо:</strong> ${booking.numberOfPeople}</p>` : ''}
-      <p><strong>Төлбөрийн хэлбэр:</strong> Stripe Card</p>
-    </div>
-
-    <p style="color:#059669;font-weight:bold;">✅ Захиалга одоо батал гаажсан байна.</p>
-  `;
-
-  return await sendEmail(
-    adminEmail,
-    `💰 Шинэ Төлбөр: ${booking.packageName} — ${customerName}`,
+    `ðŸ’° Ð¨Ð¸Ð½Ñ Ð¢Ó©Ð»Ð±Ó©Ñ€: ${booking.packageName} â€” ${customerName}`,
     baseTemplate(content),
   );
 };
@@ -295,7 +266,7 @@ const sendAdminPaymentNotification = async (booking, customerName, customerEmail
 =========================== */
 const sendBookingDeclinedEmail = async (email, name, booking) => {
   const content = `
-    <h2>❌ Booking Update</h2>
+    <h2>âŒ Booking Update</h2>
     <p>Hello ${name},</p>
 
     <p>We're sorry to inform you that your booking for <strong>${booking.packageName}</strong> could not be approved at this time.</p>
@@ -317,66 +288,66 @@ const sendBookingDeclinedEmail = async (email, name, booking) => {
 };
 
 /* ===========================
-   CONTACT FORM → ADMIN NOTIFICATION
-   Клиент форм илгээх үед admin-д мэдэгдэл
+   CONTACT FORM â†’ ADMIN NOTIFICATION
+   ÐšÐ»Ð¸ÐµÐ½Ñ‚ Ñ„Ð¾Ñ€Ð¼ Ð¸Ð»Ð³ÑÑÑ… Ò¯ÐµÐ´ admin-Ð´ Ð¼ÑÐ´ÑÐ³Ð´ÑÐ»
 =========================== */
 const sendContactNotification = async (contact) => {
   const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL;
   if (!adminEmail) {
-    console.warn("⚠️  ADMIN_EMAIL not set — contact notification skipped");
+    console.warn("âš ï¸  ADMIN_EMAIL not set â€” contact notification skipped");
     return false;
   }
 
   const content = `
-    <h2>📬 Шинэ Contact Message</h2>
-    <p>Сайтаас шинэ мессеж ирлээ:</p>
+    <h2>ðŸ“¬ Ð¨Ð¸Ð½Ñ Contact Message</h2>
+    <p>Ð¡Ð°Ð¹Ñ‚Ð°Ð°Ñ ÑˆÐ¸Ð½Ñ Ð¼ÐµÑÑÐµÐ¶ Ð¸Ñ€Ð»ÑÑ:</p>
 
     <div style="background:#f0f4ff;padding:20px;border-radius:8px;border-left:4px solid #3b82f6;margin:20px 0;">
-      <p><strong>Нэр:</strong> ${contact.name}</p>
-      <p><strong>Имэйл:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
-      ${contact.phone ? `<p><strong>Утас:</strong> ${contact.phone}</p>` : ""}
-      <p><strong>Сэдэв:</strong> ${contact.subject}</p>
+      <p><strong>ÐÑÑ€:</strong> ${contact.name}</p>
+      <p><strong>Ð˜Ð¼ÑÐ¹Ð»:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
+      ${contact.phone ? `<p><strong>Ð£Ñ‚Ð°Ñ:</strong> ${contact.phone}</p>` : ""}
+      <p><strong>Ð¡ÑÐ´ÑÐ²:</strong> ${contact.subject}</p>
     </div>
 
-    <h3>Мессеж:</h3>
+    <h3>ÐœÐµÑÑÐµÐ¶:</h3>
     <div style="background:#fff8e1;padding:20px;border-radius:8px;font-size:15px;line-height:1.7;">
       ${contact.message.replace(/\n/g, "<br>")}
     </div>
 
     <p style="margin-top:24px;font-size:13px;color:#666;">
-      Хариулах: <a href="mailto:${contact.email}">${contact.email}</a>
+      Ð¥Ð°Ñ€Ð¸ÑƒÐ»Ð°Ñ…: <a href="mailto:${contact.email}">${contact.email}</a>
     </p>
   `;
 
   return await sendEmail(
     adminEmail,
-    `📬 Шинэ Мессеж: ${contact.subject} — ${contact.name}`,
+    `ðŸ“¬ Ð¨Ð¸Ð½Ñ ÐœÐµÑÑÐµÐ¶: ${contact.subject} â€” ${contact.name}`,
     baseTemplate(content),
   );
 };
 
 /* ===========================
-   CONTACT FORM → USER CONFIRMATION
-   Клиентэд баталгаажуулах мэйл
+   CONTACT FORM â†’ USER CONFIRMATION
+   ÐšÐ»Ð¸ÐµÐ½Ñ‚ÑÐ´ Ð±Ð°Ñ‚Ð°Ð»Ð³Ð°Ð°Ð¶ÑƒÑƒÐ»Ð°Ñ… Ð¼ÑÐ¹Ð»
 =========================== */
 const sendContactConfirmation = async (contact) => {
   const content = `
-    <h2>Баярлалаа, ${contact.name}! 🙏</h2>
-    <p>Таны мессеж хүлээн авлаа. Бид удахгүй 24 цагийн дотор хариу өгнө.</p>
+    <h2>Ð‘Ð°ÑÑ€Ð»Ð°Ð»Ð°Ð°, ${contact.name}! ðŸ™</h2>
+    <p>Ð¢Ð°Ð½Ñ‹ Ð¼ÐµÑÑÐµÐ¶ Ñ…Ò¯Ð»ÑÑÐ½ Ð°Ð²Ð»Ð°Ð°. Ð‘Ð¸Ð´ ÑƒÐ´Ð°Ñ…Ð³Ò¯Ð¹ 24 Ñ†Ð°Ð³Ð¸Ð¹Ð½ Ð´Ð¾Ñ‚Ð¾Ñ€ Ñ…Ð°Ñ€Ð¸Ñƒ Ó©Ð³Ð½Ó©.</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0;">
-      <p><strong>Сэдэв:</strong> ${contact.subject}</p>
-      <p><strong>Мессеж:</strong></p>
+      <p><strong>Ð¡ÑÐ´ÑÐ²:</strong> ${contact.subject}</p>
+      <p><strong>ÐœÐµÑÑÐµÐ¶:</strong></p>
       <p style="color:#555;font-style:italic;">${contact.message.replace(/\n/g, "<br>")}</p>
     </div>
 
-    <p>Хэрэв та нэн яаралтай бол дараах холбогдолтой байна уу:</p>
-    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || "info@itravelz.com"}">${process.env.FROM_EMAIL || "info@itravelz.com"}</a></p>
+    <p>Ð¥ÑÑ€ÑÐ² Ñ‚Ð° Ð½ÑÐ½ ÑÐ°Ñ€Ð°Ð»Ñ‚Ð°Ð¹ Ð±Ð¾Ð» Ð´Ð°Ñ€Ð°Ð°Ñ… Ñ…Ð¾Ð»Ð±Ð¾Ð³Ð´Ð¾Ð»Ñ‚Ð¾Ð¹ Ð±Ð°Ð¹Ð½Ð° ÑƒÑƒ:</p>
+    <p>ðŸ“§ <a href="mailto:${process.env.FROM_EMAIL || "info@itravelz.com"}">${process.env.FROM_EMAIL || "info@itravelz.com"}</a></p>
   `;
 
   return await sendEmail(
     contact.email,
-    `Таны мессежийг хүлээн авлаа — ITravelz`,
+    `Ð¢Ð°Ð½Ñ‹ Ð¼ÐµÑÑÐµÐ¶Ð¸Ð¹Ð³ Ñ…Ò¯Ð»ÑÑÐ½ Ð°Ð²Ð»Ð°Ð° â€” ITravelz`,
     baseTemplate(content),
   );
 };
