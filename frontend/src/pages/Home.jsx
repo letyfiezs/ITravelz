@@ -275,23 +275,21 @@ export default function Home() {
       {/* ── SECTION 5: ABOUT MONGOLIA ────────────────────────── */}
       <ScrollRow label={t('section_about_mongolia') || 'Discover Mongolia'} viewAllTo="/about-mongolia" t={t}>
         {abouts.map(item => (
-          <div key={item._id} className={styles.scrollCard}>
-            <div className={styles.scrollCardImg}>
+          <Link key={item._id} to="/about-mongolia" className={`${styles.scrollCard} ${styles.destScrollCard}`}>
+            <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
               <img src={item.image || FALLBACK_ABOUT[0].image} alt={item.title} loading="lazy" />
-              {item.category && <span className={styles.scrollCardBadge}>{item.category}</span>}
-            </div>
-            <div className={styles.scrollCardBody}>
-              <h3 className={styles.scrollCardTitle}>{item.title}</h3>
-              {item.description && (
-                <p className={styles.scrollCardDesc}>
-                  {item.description.slice(0, 90)}{item.description.length > 90 ? '…' : ''}
-                </p>
-              )}
-              <div className={styles.scrollCardFooter}>
-                <Link to="/about-mongolia" className="btn btn-outline btn-sm">{t('btn_learn_more')}</Link>
+              <div className={styles.destOverlay} />
+              {item.category && <span className={styles.destTagBadge}>{item.category}</span>}
+              <div className={styles.destInfo}>
+                <h3 className={styles.destName}>{item.title}</h3>
+                {item.description && (
+                  <p className={styles.destCountry}>
+                    {item.description.slice(0, 80)}{item.description.length > 80 ? '…' : ''}
+                  </p>
+                )}
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </ScrollRow>
 
