@@ -45,11 +45,13 @@ export const packageService = {
 };
 
 export const bookingService = {
-  getAll:   (params) => api.get('/bookings/my-bookings', { params }),
-  getById:  (id)     => api.get(`/bookings/${id}`),
-  create:   (data)   => api.post('/bookings', data),
-  update:   (id, data) => api.put(`/bookings/${id}`, data),
-  cancel:   (id)     => api.patch(`/bookings/${id}/cancel`),
+  getAll:     (params) => api.get('/bookings/my-bookings', { params }),
+  getById:    (id)     => api.get(`/bookings/${id}`),
+  getByRef:   (bookingId) => api.get(`/bookings/pay/${encodeURIComponent(bookingId)}`),
+  pay:        (data)   => api.post('/bookings/pay', data),
+  create:     (data)   => api.post('/bookings', data),
+  update:     (id, data) => api.put(`/bookings/${id}`, data),
+  cancel:     (id)     => api.patch(`/bookings/${id}/cancel`),
 };
 
 export const userService = {

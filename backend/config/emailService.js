@@ -167,10 +167,53 @@ const sendBookingApprovedEmail = async (
   name,
   booking
 ) => {
+  const frontend = process.env.FRONTEND_URL || 'https://itravelz.onrender.com';
+  const bookingRef = booking.bookingId || '';
+  const payLink = `${frontend}/payment?bookingId=${encodeURIComponent(bookingRef)}`;
+  const amount = booking.totalPrice || booking.price || 0;
+
   const content = `
-    <h2>✅ Your Booking is Approved!</h2>
+    <h2>✅ Booking Approved — Payment Required</h2>
     <p>Hello ${name},</p>
-    <p>Great news! Your booking has been <strong style="color:#059669">approved</strong>. Get ready for an amazing journey! 🎉</p>
+    <p>Your booking has been <strong style="color:#059669">approved</strong> by our team. To finalize and secure your trip, please complete the payment.</p>
+
+    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
+      ${bookingRef ? `<p><strong>Booking ID:</strong> ${bookingRef}</p>` : ''}
+      <p><strong>Package:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ''}
+      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ''}
+      ${booking.duration && booking.duration !== 'N/A' ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ''}
+      <p><strong>Amount due:</strong> ${amount ? `$${amount}` : 'Contact us'}</p>
+    </div>
+
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${payLink}"
+         style="background:#3b82f6;color:white;padding:12px 25px;text-decoration:none;border-radius:6px;font-weight:bold;">
+        Pay & Confirm Booking
+      </a>
+    </div>
+
+    <p style="font-size:13px;">Or open this link in your browser:</p>
+    <p style="font-size:12px;color:#3b82f6;">${payLink}</p>
+
+    <p>If you prefer a bank transfer or other payment method, reply to this email and our team will assist you.</p>
+  `;
+
+  return await sendEmail(
+    email,
+    `Action Required: Pay to Confirm Booking — ${booking.packageName}`,
+    baseTemplate(content)
+  );
+};
+
+/* ===========================
+   PAYMENT SUCCESS → FINAL CONFIRMATION
+=========================== */
+const sendPaymentSuccessEmail = async (email, name, booking) => {
+  const content = `
+    <h2>🎉 Your Trip Is Confirmed!</h2>
+    <p>Hello ${name},</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
       ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ''}
@@ -179,15 +222,16 @@ const sendBookingApprovedEmail = async (
       ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ''}
       ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ''}
       ${booking.duration && booking.duration !== 'N/A' ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ''}
+      <p><strong>Payment Status:</strong> Paid</p>
     </div>
 
-    <p>Our team will reach out with further details. If you have any questions please reply to this email.</p>
-    <p>We look forward to making your trip unforgettable!</p>
+    <p>Таны аялал баталгаажлаа. Бид танд дэлгэрэнгүй мэдээлэл болон шаардлагатай бичиг баримтыг илгээх болно.</p>
+    <p>Бидэнд итгэснэд баярлалаа — сайхан аялал хүсье!</p>
   `;
 
   return await sendEmail(
     email,
-    `✅ Booking Approved - ${booking.packageName}`,
+    `Booking Confirmed — ${booking.packageName}`,
     baseTemplate(content)
   );
 };
@@ -293,6 +337,7 @@ module.exports = {
   sendPasswordResetEmail,
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
+  sendPaymentSuccessEmail,
   sendBookingDeclinedEmail,
   sendContactNotification,
   sendContactConfirmation,

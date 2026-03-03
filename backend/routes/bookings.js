@@ -4,6 +4,8 @@ const {
   getAllBookings,
   getUserBookings,
   getBookingById,
+  getBookingByRef,
+  payBooking,
   updateBooking,
   cancelBooking,
   deleteBooking,
@@ -14,8 +16,10 @@ const { protect } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Public route for creating bookings
+// Public routes
 router.post("/", createBooking);
+router.get("/pay/:bookingId", getBookingByRef);   // fetch booking info for payment page
+router.post("/pay", payBooking);                   // mark as paid + send final email
 
 // Admin routes - specific routes BEFORE generic /:id
 router.get("/", protect, getAllBookings);

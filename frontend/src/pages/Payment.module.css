@@ -1,0 +1,261 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 16px 60px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* ---- Titles ---- */
+.title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.subtitle {
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 28px;
+  font-size: 0.95rem;
+}
+
+.sectionLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #3b82f6;
+  margin: 0 0 12px;
+}
+
+/* ---- Summary box ---- */
+.summary {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e7eb;
+  font-size: 0.9rem;
+  gap: 12px;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row span {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.row strong {
+  color: #111827;
+  text-align: right;
+}
+
+.totalRow {
+  margin-top: 8px;
+  padding-top: 12px !important;
+  border-top: 2px solid #e5e7eb !important;
+  border-bottom: none !important;
+}
+
+.amount {
+  font-size: 1.2rem;
+  color: #059669 !important;
+}
+
+/* ---- Bank box ---- */
+.bankBox {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.bankNote {
+  font-size: 0.8rem;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 12px 0 0;
+}
+
+/* ---- Form ---- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.optional {
+  font-weight: 400;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.input {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.payError {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.payBtn {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+
+.payBtn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.payBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- Success ---- */
+.successIcon {
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.successTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #059669;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.successMsg {
+  color: #374151;
+  text-align: center;
+  margin: 0 0 6px;
+  line-height: 1.6;
+}
+
+.successSub {
+  color: #6b7280;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+/* ---- Error / loading ---- */
+.errorIcon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.errorMsg {
+  color: #dc2626;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.homeBtn {
+  display: block;
+  margin: 0 auto;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.homeBtn:hover {
+  opacity: 0.88;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 28px 18px;
+  }
+  .title {
+    font-size: 1.4rem;
+  }
+}
