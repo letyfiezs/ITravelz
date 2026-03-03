@@ -153,6 +153,7 @@ export default function Navbar() {
                   >
                     {/* <span className={styles.langFlag}>{lang.flag}</span> */}
                     <span className={styles.langLabel}>{lang.label}</span>
+                    asfd
                     {language === lang.code && <i className="fas fa-check" />}
                   </button>
                 ))}
