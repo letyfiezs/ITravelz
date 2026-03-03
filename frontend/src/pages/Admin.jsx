@@ -16,6 +16,13 @@ const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '
 const ABOUT_CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
 const EMPTY_ABOUT = { title: '', description: '', readMore: '', image: '', images: [], category: 'misc', order: 0, isActive: true, translations: {} };
 
+/* ── Auto-detect source language: Cyrillic-heavy → 'mn', otherwise → 'en' ── */
+const detectSourceLang = (texts) => {
+  const combined = Object.values(texts).flat().join(' ');
+  const cyrillic = (combined.match(/[\u0400-\u04FF]/g) || []).length;
+  return cyrillic > combined.replace(/\s/g, '').length * 0.15 ? 'mn' : 'en';
+};
+
 /* ── Google Maps embed URL builder (no API key needed) ── */
 const buildMapEmbedUrl = (query) => {
   if (!query || !query.trim()) return '';
@@ -236,7 +243,7 @@ const Admin = () => {
       if (pkgForm.description) texts.description = pkgForm.description;
       if (pkgForm.destination) texts.destination = pkgForm.destination;
       if (features.length)     texts.features    = features;
-      const res = await adminService.translate(texts, 'mn');
+      const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setPkgForm((p) => ({ ...p, translations: res.data.translations }));
         setPkgMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
@@ -393,7 +400,7 @@ const Admin = () => {
       if (destForm.description) texts.description = destForm.description;
       if (destForm.readMore)    texts.readMore    = destForm.readMore;
       if (destForm.culturalInfo) texts.culturalInfo = destForm.culturalInfo;
-      const res = await adminService.translate(texts, 'mn');
+      const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setDestForm((p) => ({ ...p, translations: res.data.translations }));
         setDestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
@@ -644,7 +651,7 @@ const Admin = () => {
       const texts = {};
       if (festForm.name)        texts.name        = festForm.name;
       if (festForm.description) texts.description = festForm.description;
-      const res = await adminService.translate(texts, 'mn');
+      const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setFestForm((p) => ({ ...p, translations: res.data.translations }));
         setFestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
@@ -718,7 +725,7 @@ const Admin = () => {
       if (aboutForm.title)       texts.title       = aboutForm.title;
       if (aboutForm.description) texts.description = aboutForm.description;
       if (aboutForm.readMore)    texts.readMore    = aboutForm.readMore;
-      const res = await adminService.translate(texts, 'mn');
+      const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setAboutForm((p) => ({ ...p, translations: res.data.translations }));
         setAboutMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
