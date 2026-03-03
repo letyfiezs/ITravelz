@@ -95,7 +95,7 @@ exports.updateDestination = async (req, res) => {
     };
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
 
-    const dest = await Destination.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+    const dest = await Destination.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true, strict: false });
     if (!dest) return res.status(404).json({ success: false, message: 'Destination not found' });
     res.json({ success: true, message: 'Destination updated', destination: dest });
   } catch (err) {

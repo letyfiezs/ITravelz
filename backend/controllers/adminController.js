@@ -92,7 +92,12 @@ const translateOne = async (text, from, to) => {
   try {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${from}|${to}`;
     const { data } = await axios.get(url, { timeout: 8000 });
-    return data.responseData?.translatedText || text;
+    const translated = data.responseData?.translatedText;
+    // Reject MyMemory quota warnings and known error strings
+    if (!translated) return text;
+    if (translated.includes('MYMEMORY WARNING') || translated.includes('PLEASE REVIEW')) return text;
+    if (data.responseStatus && data.responseStatus !== 200) return text;
+    return translated;
   } catch {
     return text; // fallback to original
   }
