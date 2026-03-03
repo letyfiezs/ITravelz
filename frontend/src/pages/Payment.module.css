@@ -163,7 +163,9 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
   margin-top: 4px;
 }
 
@@ -230,7 +232,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .homeBtn {
@@ -249,6 +253,46 @@
 
 .homeBtn:hover {
   opacity: 0.88;
+}
+
+/* ---- Stripe card element ---- */
+.cardWrapper {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 14px 12px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.stripeNote {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0 0 16px;
+}
+
+/* ---- Back button (Step 2 → Step 1) ---- */
+.backBtn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.backBtn:hover {
+  background: #f9fafb;
+}
+
+/* ---- Success state ---- */
+.successBox {
+  text-align: center;
+  padding: 20px 0;
 }
 
 @media (max-width: 600px) {

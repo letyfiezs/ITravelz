@@ -1,33 +1,32 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
-import PrivateRoute from './components/Routes/PrivateRoute';
-import ChatWidget from './components/ChatWidget/ChatWidget';
-import ScrollToTop from './components/ScrollToTop';
+import React, { Suspense, lazy } from "react";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout/Layout";
+import PrivateRoute from "./components/Routes/PrivateRoute";
+import ChatWidget from "./components/ChatWidget/ChatWidget";
+import ScrollToTop from "./components/ScrollToTop";
 
-const Home          = lazy(() => import('./pages/Home'));
-const Login         = lazy(() => import('./pages/Login'));
-const Signup        = lazy(() => import('./pages/Signup'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
-const VerifyEmail    = lazy(() => import('./pages/VerifyEmail'));
-const Profile        = lazy(() => import('./pages/Profile'));
-const Bookings       = lazy(() => import('./pages/Bookings'));
-const BookingForm    = lazy(() => import('./pages/BookingForm'));
-const Admin          = lazy(() => import('./pages/Admin'));
-const NotFound       = lazy(() => import('./pages/NotFound'));
-const Packages       = lazy(() => import('./pages/Packages'));
-const Services       = lazy(() => import('./pages/Services'));
-const Destinations   = lazy(() => import('./pages/Destinations'));
-const Contact        = lazy(() => import('./pages/Contact'));
-const GoogleCallback = lazy(() => import('./pages/GoogleCallback'));
-const GoogleComplete = lazy(() => import('./pages/GoogleComplete'));
-const Festivals      = lazy(() => import('./pages/Festivals'));
-const AboutMongolia  = lazy(() => import('./pages/AboutMongolia'));
-const Shop           = lazy(() => import('./pages/Shop'));
-const Payment        = lazy(() => import('./pages/Payment'));
-
-
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Bookings = lazy(() => import("./pages/Bookings"));
+const BookingForm = lazy(() => import("./pages/BookingForm"));
+const Admin = lazy(() => import("./pages/Admin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Packages = lazy(() => import("./pages/Packages"));
+const Services = lazy(() => import("./pages/Services"));
+const Destinations = lazy(() => import("./pages/Destinations"));
+const Contact = lazy(() => import("./pages/Contact"));
+const GoogleCallback = lazy(() => import("./pages/GoogleCallback"));
+const GoogleComplete = lazy(() => import("./pages/GoogleComplete"));
+const Festivals = lazy(() => import("./pages/Festivals"));
+const AboutMongolia = lazy(() => import("./pages/AboutMongolia"));
+const Shop = lazy(() => import("./pages/Shop"));
+const Payment = lazy(() => import("./pages/Payment"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 
 const Loader = () => (
   <div className="page-loader">
@@ -36,50 +35,49 @@ const Loader = () => (
   </div>
 );
 
-const App = () =>  (
+const App = () => (
   <Suspense fallback={<Loader />}>
     <ScrollToTop />
     <Routes>
       {/* Public routes with navbar/footer */}
       <Route element={<Layout />}>
-        <Route path="/"               element={<Home />} />
-        <Route path="/login"          element={<Login />} />
-        <Route path="/signup"         element={<Signup />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/verify-email/:token"   element={<VerifyEmail />} />
-        <Route path="/auth/google/callback"  element={<GoogleCallback />} />
-        <Route path="/google-complete"        element={<GoogleComplete />} />
-        <Route path="/packages"              element={<Packages />} />
-        <Route path="/services"              element={<Services />} />
-        <Route path="/destinations"          element={<Destinations />} />
-        <Route path="/contact"               element={<Contact />} />
-        <Route path="/festivals"             element={<Festivals />} />
-        <Route path="/about-mongolia"        element={<AboutMongolia />} />
-        <Route path="/shop"                  element={<Shop />} />
-        <Route path="/payment"               element={<Payment />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
+        <Route path="/google-complete" element={<GoogleComplete />} />
+        <Route path="/packages" element={<Packages />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/destinations" element={<Destinations />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/festivals" element={<Festivals />} />
+        <Route path="/about-mongolia" element={<AboutMongolia />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
 
         {/* Protected routes */}
         <Route element={<PrivateRoute />}>
-          <Route path="/profile"      element={<Profile />} />
-          <Route path="/bookings"     element={<Bookings />} />
-          <Route path="/booking"      element={<BookingForm />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/booking" element={<BookingForm />} />
         </Route>
 
         {/* Admin */}
         <Route element={<PrivateRoute adminOnly />}>
-          <Route path="/admin"        element={<Admin />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
 
-        <Route path="*"               element={<NotFound />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
     <ChatWidget />
   </Suspense>
 );
 
-
 export default App;
 
 console.log("ENV:", import.meta.env.VITE_API_URL);
-

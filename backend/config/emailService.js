@@ -19,13 +19,16 @@ const sendEmail = async (to, subject, htmlContent) => {
           "api-key": process.env.BREVO_API_KEY,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     console.log("✅ Email sent via Brevo:", subject);
     return true;
   } catch (error) {
-    console.error("❌ Brevo Email error:", error.response?.data || error.message);
+    console.error(
+      "❌ Brevo Email error:",
+      error.response?.data || error.message,
+    );
     return false;
   }
 };
@@ -72,7 +75,7 @@ const sendVerificationEmail = async (email, name, token, link) => {
   return await sendEmail(
     email,
     "Email Verification - Total Grand Travel",
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -96,7 +99,7 @@ const sendWelcomeEmail = async (email, name) => {
   return await sendEmail(
     email,
     "Welcome to Total Grand Travel!",
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -125,18 +128,14 @@ const sendPasswordResetEmail = async (email, name, token, link) => {
   return await sendEmail(
     email,
     "Password Reset - Total Grand Travel",
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
 /* ===========================
    BOOKING CONFIRMATION
 =========================== */
-const sendBookingConfirmationEmail = async (
-  email,
-  name,
-  booking
-) => {
+const sendBookingConfirmationEmail = async (email, name, booking) => {
   const content = `
     <h2>🎉 Booking Confirmed!</h2>
     <p>Hello ${name},</p>
@@ -155,20 +154,16 @@ const sendBookingConfirmationEmail = async (
   return await sendEmail(
     email,
     `Booking Confirmation - ${booking.packageName}`,
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
 /* ===========================
    BOOKING APPROVED
 =========================== */
-const sendBookingApprovedEmail = async (
-  email,
-  name,
-  booking
-) => {
-  const frontend = process.env.FRONTEND_URL || 'https://itravelz.onrender.com';
-  const bookingRef = booking.bookingId || '';
+const sendBookingApprovedEmail = async (email, name, booking) => {
+  const frontend = process.env.FRONTEND_URL || "https://itravelz.onrender.com";
+  const bookingRef = booking.bookingId || "";
   const payLink = `${frontend}/payment?bookingId=${encodeURIComponent(bookingRef)}`;
   const amount = booking.totalPrice || booking.price || 0;
 
@@ -178,13 +173,13 @@ const sendBookingApprovedEmail = async (
     <p>Your booking has been <strong style="color:#059669">approved</strong> by our team. To finalize and secure your trip, please complete the payment.</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
-      ${bookingRef ? `<p><strong>Booking ID:</strong> ${bookingRef}</p>` : ''}
+      ${bookingRef ? `<p><strong>Booking ID:</strong> ${bookingRef}</p>` : ""}
       <p><strong>Package:</strong> ${booking.packageName}</p>
-      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ''}
-      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ''}
-      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ''}
-      ${booking.duration && booking.duration !== 'N/A' ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ''}
-      <p><strong>Amount due:</strong> ${amount ? `$${amount}` : 'Contact us'}</p>
+      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ""}
+      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ""}
+      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ""}
+      ${booking.duration && booking.duration !== "N/A" ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ""}
+      <p><strong>Amount due:</strong> ${amount ? `$${amount}` : "Contact us"}</p>
     </div>
 
     <div style="text-align:center;margin:24px 0;">
@@ -203,7 +198,7 @@ const sendBookingApprovedEmail = async (
   return await sendEmail(
     email,
     `Action Required: Pay to Confirm Booking — ${booking.packageName}`,
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -216,12 +211,12 @@ const sendPaymentSuccessEmail = async (email, name, booking) => {
     <p>Hello ${name},</p>
 
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
-      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ''}
+      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ""}
       <p><strong>Package:</strong> ${booking.packageName}</p>
-      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ''}
-      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ''}
-      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ''}
-      ${booking.duration && booking.duration !== 'N/A' ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ''}
+      ${booking.travelDate ? `<p><strong>Travel Date:</strong> ${booking.travelDate}</p>` : ""}
+      ${booking.bookingTime ? `<p><strong>Departure Time:</strong> ${booking.bookingTime}</p>` : ""}
+      ${booking.numberOfPeople ? `<p><strong>Guests:</strong> ${booking.numberOfPeople}</p>` : ""}
+      ${booking.duration && booking.duration !== "N/A" ? `<p><strong>Duration:</strong> ${booking.duration}</p>` : ""}
       <p><strong>Payment Status:</strong> Paid</p>
     </div>
 
@@ -232,18 +227,73 @@ const sendPaymentSuccessEmail = async (email, name, booking) => {
   return await sendEmail(
     email,
     `Booking Confirmed — ${booking.packageName}`,
-    baseTemplate(content)
+    baseTemplate(content),
+  );
+};
+
+/* ===========================
+   ADMIN: PAYMENT RECEIVED NOTIFICATION
+=========================== */
+const sendAdminPaymentNotification = async (booking, customerName, customerEmail) => {
+  const adminEmail = process.env.ADMIN_EMAIL || 'backteck6@gmail.com';
+  const content = `
+    <h2>💰 Шинэ Төлбөр Ирлээ!</h2>
+    <p>Хэрэглэгч Stripe-ээр төлбөрөө амжилттай төллөо.</p>
+
+    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
+      <p><strong>Захиалгын дугаар:</strong> ${booking.bookingId}</p>
+      <p><strong>Хэрэглэгчийн нэр:</strong> ${customerName}</p>
+      <p><strong>Имэйл:</strong> <a href="mailto:${customerEmail}">${customerEmail}</a></p>
+      <p><strong>Аялал:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>Огноо:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.numberOfPeople ? `<p><strong>Хүний тоо:</strong> ${booking.numberOfPeople}</p>` : ''}
+      <p><strong>Төлбөрийн хэлбэр:</strong> Stripe Card</p>
+      <p><strong>Stripe ID:</strong> ${booking.transactionId || '—'}</p>
+    </div>
+
+    <p style="color:#059669;font-weight:bold;">✅ Захиалга одоо баталгаажсан байна.</p>
+  `;
+
+  return await sendEmail(
+    adminEmail,
+    `💰 Шинэ Төлбөр: ${booking.packageName} — ${customerName}`,
+    baseTemplate(content),
+  );
+};
+
+/* ===========================
+   ADMIN: PAYMENT RECEIVED NOTIFICATION
+=========================== */
+const sendAdminPaymentNotification = async (booking, customerName, customerEmail) => {
+  const adminEmail = process.env.ADMIN_EMAIL || 'backteck6@gmail.com';
+  const content = `
+    <h2>💰 Шинэ Төлбөр Ирлээ!</h2>
+    <p>Хэрэглэгч Stripe-ээр төлбөрөө амжилттай төллөө.</p>
+
+    <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0">
+      <p><strong>Захиалгын дугаар:</strong> ${booking.bookingId}</p>
+      <p><strong>Хэрэглэгчийн нэр:</strong> ${customerName}</p>
+      <p><strong>Имэйл:</strong> <a href="mailto:${customerEmail}">${customerEmail}</a></p>
+      <p><strong>Аялал:</strong> ${booking.packageName}</p>
+      ${booking.travelDate ? `<p><strong>Огноо:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.numberOfPeople ? `<p><strong>Хүний тоо:</strong> ${booking.numberOfPeople}</p>` : ''}
+      <p><strong>Төлбөрийн хэлбэр:</strong> Stripe Card</p>
+    </div>
+
+    <p style="color:#059669;font-weight:bold;">✅ Захиалга одоо батал гаажсан байна.</p>
+  `;
+
+  return await sendEmail(
+    adminEmail,
+    `💰 Шинэ Төлбөр: ${booking.packageName} — ${customerName}`,
+    baseTemplate(content),
   );
 };
 
 /* ===========================
    BOOKING DECLINED
 =========================== */
-const sendBookingDeclinedEmail = async (
-  email,
-  name,
-  booking
-) => {
+const sendBookingDeclinedEmail = async (email, name, booking) => {
   const content = `
     <h2>❌ Booking Update</h2>
     <p>Hello ${name},</p>
@@ -251,9 +301,9 @@ const sendBookingDeclinedEmail = async (
     <p>We're sorry to inform you that your booking for <strong>${booking.packageName}</strong> could not be approved at this time.</p>
 
     <div style="background:#fff5f5;padding:20px;border-radius:8px;border-left:4px solid #ef4444;margin:20px 0">
-      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ''}
+      ${booking.bookingId ? `<p><strong>Booking ID:</strong> ${booking.bookingId}</p>` : ""}
       <p><strong>Package:</strong> ${booking.packageName}</p>
-      ${booking.travelDate ? `<p><strong>Requested Date:</strong> ${booking.travelDate}</p>` : ''}
+      ${booking.travelDate ? `<p><strong>Requested Date:</strong> ${booking.travelDate}</p>` : ""}
     </div>
 
     <p>Please contact our support team for assistance or to re-schedule your trip. We apologize for the inconvenience.</p>
@@ -262,7 +312,7 @@ const sendBookingDeclinedEmail = async (
   return await sendEmail(
     email,
     `Booking Update - ${booking.packageName}`,
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -273,7 +323,7 @@ const sendBookingDeclinedEmail = async (
 const sendContactNotification = async (contact) => {
   const adminEmail = process.env.ADMIN_EMAIL || process.env.FROM_EMAIL;
   if (!adminEmail) {
-    console.warn('⚠️  ADMIN_EMAIL not set — contact notification skipped');
+    console.warn("⚠️  ADMIN_EMAIL not set — contact notification skipped");
     return false;
   }
 
@@ -284,13 +334,13 @@ const sendContactNotification = async (contact) => {
     <div style="background:#f0f4ff;padding:20px;border-radius:8px;border-left:4px solid #3b82f6;margin:20px 0;">
       <p><strong>Нэр:</strong> ${contact.name}</p>
       <p><strong>Имэйл:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
-      ${contact.phone ? `<p><strong>Утас:</strong> ${contact.phone}</p>` : ''}
+      ${contact.phone ? `<p><strong>Утас:</strong> ${contact.phone}</p>` : ""}
       <p><strong>Сэдэв:</strong> ${contact.subject}</p>
     </div>
 
     <h3>Мессеж:</h3>
     <div style="background:#fff8e1;padding:20px;border-radius:8px;font-size:15px;line-height:1.7;">
-      ${contact.message.replace(/\n/g, '<br>')}
+      ${contact.message.replace(/\n/g, "<br>")}
     </div>
 
     <p style="margin-top:24px;font-size:13px;color:#666;">
@@ -301,7 +351,7 @@ const sendContactNotification = async (contact) => {
   return await sendEmail(
     adminEmail,
     `📬 Шинэ Мессеж: ${contact.subject} — ${contact.name}`,
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -317,17 +367,17 @@ const sendContactConfirmation = async (contact) => {
     <div style="background:#f0fdf4;padding:20px;border-radius:8px;border-left:4px solid #10b981;margin:20px 0;">
       <p><strong>Сэдэв:</strong> ${contact.subject}</p>
       <p><strong>Мессеж:</strong></p>
-      <p style="color:#555;font-style:italic;">${contact.message.replace(/\n/g, '<br>')}</p>
+      <p style="color:#555;font-style:italic;">${contact.message.replace(/\n/g, "<br>")}</p>
     </div>
 
     <p>Хэрэв та нэн яаралтай бол дараах холбогдолтой байна уу:</p>
-    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || 'info@itravelz.com'}">${process.env.FROM_EMAIL || 'info@itravelz.com'}</a></p>
+    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || "info@itravelz.com"}">${process.env.FROM_EMAIL || "info@itravelz.com"}</a></p>
   `;
 
   return await sendEmail(
     contact.email,
     `Таны мессежийг хүлээн авлаа — ITravelz`,
-    baseTemplate(content)
+    baseTemplate(content),
   );
 };
 
@@ -338,6 +388,7 @@ module.exports = {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
   sendPaymentSuccessEmail,
+  sendAdminPaymentNotification,
   sendBookingDeclinedEmail,
   sendContactNotification,
   sendContactConfirmation,
