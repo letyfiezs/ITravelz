@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import PrivateRoute from './components/Routes/PrivateRoute';
 import ChatWidget from './components/ChatWidget/ChatWidget';
+import ScrollToTop from './components/ScrollToTop';
 
 const Home          = lazy(() => import('./pages/Home'));
 const Login         = lazy(() => import('./pages/Login'));
@@ -36,6 +37,7 @@ const Loader = () => (
 
 const App = () =>  (
   <Suspense fallback={<Loader />}>
+    <ScrollToTop />
     <Routes>
       {/* Public routes with navbar/footer */}
       <Route element={<Layout />}>

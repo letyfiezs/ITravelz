@@ -114,19 +114,19 @@ export default function Home() {
       .catch(() => {});
 
     packageService.getAll()
-      .then(r => { const d = r.data?.data || r.data?.packages || r.data || []; setPackages(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_PKGS).slice(0, 6)); })
+      .then(r => { const d = r.data?.data || r.data?.packages || r.data || []; setPackages(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_PKGS).slice(0, 8)); })
       .catch(() => {});
 
     destinationService.getAll()
-      .then(r => { const d = r.data?.destinations || r.data?.data || r.data || []; setDests(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_DESTS).slice(0, 6)); })
+      .then(r => { const d = r.data?.destinations || r.data?.data || r.data || []; setDests(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_DESTS).slice(0, 8)); })
       .catch(() => {});
 
     festivalService.getAll()
-      .then(r => { const d = r.data?.data || r.data?.festivals || r.data || []; setFestivals(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_FESTIVALS).slice(0, 6)); })
+      .then(r => { const d = r.data?.data || r.data?.festivals || r.data || []; setFestivals(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_FESTIVALS).slice(0, 8)); })
       .catch(() => {});
 
     aboutService.getAll()
-      .then(r => { const d = r.data?.data || r.data?.about || r.data || []; setAbouts(shuffle(Array.isArray(d) && d.length >= 3 ? d : FALLBACK_ABOUT).slice(0, 6)); })
+      .then(r => { const d = r.data?.data || r.data?.about || r.data || []; setAbouts(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_ABOUT).slice(0, 8)); })
       .catch(() => {});
   }, []);
 

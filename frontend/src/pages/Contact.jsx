@@ -7,18 +7,18 @@ import styles from './Contact.module.css';
 // 📌 CONTACT INFO — ЭНД ӨӨРЧИЛНӨ ӨӨ
 // ============================================================
 const CONTACT_INFO = {
-  emails:  ['info@itravelz.mn', 'support@itravelz.mn'],
-  phone:   '+976 9900-0000',
-  hours:   'Да–Ба, 9:00–18:00',
-  address: 'Улаанбаатар, Монгол',
+  emails:  ['grandtravelmongolia@gmail.com'],
+  phone:   '+976 77088055',
+  hours:   'Everyday 24/7',
+  address: 'Chingeltei district, 20th khoroo, Khuvisgalchid Street, Sky Hotel building room 105, Ulaanbaatar city, Mongolia',
 };
 
 const SOCIAL_LINKS = [
-  { icon: 'fab fa-facebook-f',  label: 'Facebook',  color: '#1877f2', href: 'https://facebook.com/itravelz' },
-  { icon: 'fab fa-instagram',   label: 'Instagram', color: '#e1306c', href: 'https://instagram.com/itravelz' },
-  { icon: 'fab fa-twitter',     label: 'Twitter',   color: '#1da1f2', href: 'https://twitter.com/itravelz' },
-  { icon: 'fab fa-youtube',     label: 'YouTube',   color: '#ff0000', href: 'https://youtube.com/@itravelz' },
-  { icon: 'fab fa-tiktok',      label: 'TikTok',    color: '#010101', href: 'https://tiktok.com/@itravelz' },
+  { icon: 'fab fa-facebook-f',  label: 'Facebook',  color: '#1877f2', href: 'https://www.facebook.com/profile.php?id=100068557103724 ' },
+  //{ icon: 'fab fa-instagram',   label: 'Instagram', color: '#e1306c', href: 'https://instagram.com/itravelz' },
+  // { icon: 'fab fa-twitter',     label: 'Twitter',   color: '#1da1f2', href: 'https://twitter.com/itravelz' },
+  // { icon: 'fab fa-youtube',     label: 'YouTube',   color: '#ff0000', href: 'https://youtube.com/@itravelz' },
+  // { icon: 'fab fa-tiktok',      label: 'TikTok',    color: '#010101', href: 'https://tiktok.com/@itravelz' },
 ];
 // ============================================================
 
