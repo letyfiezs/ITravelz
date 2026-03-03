@@ -12,9 +12,9 @@ const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', di
 const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
 const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true, translations: {} };
 const FEST_CATEGORIES = ['naadam', 'culture', 'religious', 'winter', 'food', 'music', 'other'];
-const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true };
+const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true, translations: {} };
 const ABOUT_CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
-const EMPTY_ABOUT = { title: '', description: '', readMore: '', image: '', images: [], category: 'misc', order: 0, isActive: true };
+const EMPTY_ABOUT = { title: '', description: '', readMore: '', image: '', images: [], category: 'misc', order: 0, isActive: true, translations: {} };
 
 /* ── Google Maps embed URL builder (no API key needed) ── */
 const buildMapEmbedUrl = (query) => {
@@ -97,6 +97,7 @@ const Admin = () => {
   const [festMsg, setFestMsg]                 = useState('');
   const [festImgFiles, setFestImgFiles]       = useState([]);
   const [festCurImages, setFestCurImages]     = useState([]);
+  const [festTranslating, setFestTranslating] = useState(false);
 
   /* about mongolia */
   const [aboutItems, setAboutItems]           = useState([]);
@@ -107,6 +108,7 @@ const Admin = () => {
   const [aboutMsg, setAboutMsg]               = useState('');
   const [aboutImgFiles, setAboutImgFiles]     = useState([]);
   const [aboutCurImages, setAboutCurImages]   = useState([]);
+  const [aboutTranslating, setAboutTranslating] = useState(false);
 
   /* package modal */
   const [pkgModal, setPkgModal]         = useState(false);
@@ -629,11 +631,28 @@ const Admin = () => {
   const openFestCreate = () => { setFestEdit(null); setFestForm(EMPTY_FEST); setFestCurImages([]); setFestImgFiles([]); setFestMsg(''); setFestModal(true); };
   const openFestEdit   = (f) => {
     setFestEdit(f._id);
-    setFestForm({ name: f.name||'', description: f.description||'', date: f.date||'', location: f.location||'', image: f.image||'', images: f.images||[], category: f.category||'culture', link: f.link||'', isActive: f.isActive??true });
+    setFestForm({ name: f.name||'', description: f.description||'', date: f.date||'', location: f.location||'', image: f.image||'', images: f.images||[], category: f.category||'culture', link: f.link||'', isActive: f.isActive??true, translations: f.translations||{} });
     setFestCurImages(f.images || []); setFestImgFiles([]); setFestMsg(''); setFestModal(true);
   };
   const closeFest = () => { setFestModal(false); setFestMsg(''); setFestImgFiles([]); setFestCurImages([]); };
   const setF = (k) => (e) => setFestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const autoTranslateFest = async () => {
+    if (!festForm.name && !festForm.description) { setFestMsg('❌ Name болон Description оруулна уу.'); return; }
+    setFestTranslating(true); setFestMsg('⏳ Орчуулж байна...');
+    try {
+      const texts = {};
+      if (festForm.name)        texts.name        = festForm.name;
+      if (festForm.description) texts.description = festForm.description;
+      const res = await adminService.translate(texts, 'mn');
+      if (res.data.success) {
+        setFestForm((p) => ({ ...p, translations: res.data.translations }));
+        setFestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+      }
+    } catch (err) {
+      setFestMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+    } finally { setFestTranslating(false); }
+  };
 
   const saveFest = async (e) => {
     e.preventDefault(); setFestSaving(true); setFestMsg('');
@@ -688,8 +707,26 @@ const Admin = () => {
   /* ── About Mongolia helpers ── */
   const setA = (field) => (e) => setAboutForm((p) => ({ ...p, [field]: field === 'isActive' ? e.target.checked : e.target.value }));
   const openAboutCreate = () => { setAboutEdit(null); setAboutForm(EMPTY_ABOUT); setAboutCurImages([]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
-  const openAboutEdit = (a) => { setAboutEdit(a._id); setAboutForm({ title: a.title||'', description: a.description||'', readMore: a.readMore||'', image: a.image||'', images: a.images||[], category: a.category||'misc', order: a.order||0, isActive: a.isActive!==false }); setAboutCurImages(a.images||[]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
+  const openAboutEdit = (a) => { setAboutEdit(a._id); setAboutForm({ title: a.title||'', description: a.description||'', readMore: a.readMore||'', image: a.image||'', images: a.images||[], category: a.category||'misc', order: a.order||0, isActive: a.isActive!==false, translations: a.translations||{} }); setAboutCurImages(a.images||[]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
   const closeAbout = () => { setAboutModal(false); setAboutMsg(''); };
+
+  const autoTranslateAbout = async () => {
+    if (!aboutForm.title && !aboutForm.description) { setAboutMsg('❌ Title болон Description оруулна уу.'); return; }
+    setAboutTranslating(true); setAboutMsg('⏳ Орчуулж байна...');
+    try {
+      const texts = {};
+      if (aboutForm.title)       texts.title       = aboutForm.title;
+      if (aboutForm.description) texts.description = aboutForm.description;
+      if (aboutForm.readMore)    texts.readMore    = aboutForm.readMore;
+      const res = await adminService.translate(texts, 'mn');
+      if (res.data.success) {
+        setAboutForm((p) => ({ ...p, translations: res.data.translations }));
+        setAboutMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+      }
+    } catch (err) {
+      setAboutMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+    } finally { setAboutTranslating(false); }
+  };
   const saveAbout = async (e) => {
     e.preventDefault();
     setAboutSaving(true); setAboutMsg('');
@@ -1877,6 +1914,22 @@ const Admin = () => {
               <textarea className="form-input" rows={4} value={festForm.description} onChange={setF('description')} required placeholder="Describe the festival…" style={{resize:'vertical'}}/>
             </div>
 
+            <div className={styles.formGroup}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                <label style={{margin:0}}>Орчуулга <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span></label>
+                <button type="button" className="btn btn-primary btn-sm" onClick={autoTranslateFest} disabled={festTranslating} style={{flexShrink:0}}>
+                  {festTranslating?<><span className="spinner"/> Орчуулж байна…</>:<><i className="fas fa-globe"/> Орчуулах</>}
+                </button>
+              </div>
+              {festForm.translations && Object.keys(festForm.translations).length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {Object.entries(festForm.translations).map(([lang, tr]) => tr?.name && (
+                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>{lang.toUpperCase()} ✓</span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <label className={styles.checkRow}>
               <input type="checkbox" checked={festForm.isActive} onChange={setF('isActive')}/>
               <span>Visible to public (Active)</span>
@@ -1968,6 +2021,22 @@ const Admin = () => {
                 Read More Content <span style={{fontWeight:400,color:'var(--text-muted)'}}>Full text shown when user clicks "Read More"</span>
               </label>
               <textarea className="form-input" rows={6} value={aboutForm.readMore} onChange={setA('readMore')} placeholder="Detailed paragraphs, history, facts…" style={{resize:'vertical'}}/>
+            </div>
+
+            <div className={styles.formGroup}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                <label style={{margin:0}}>Орчуулга <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span></label>
+                <button type="button" className="btn btn-primary btn-sm" onClick={autoTranslateAbout} disabled={aboutTranslating} style={{flexShrink:0}}>
+                  {aboutTranslating?<><span className="spinner"/> Орчуулж байна…</>:<><i className="fas fa-globe"/> Орчуулах</>}
+                </button>
+              </div>
+              {aboutForm.translations && Object.keys(aboutForm.translations).length > 0 && (
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {Object.entries(aboutForm.translations).map(([lang, tr]) => tr?.title && (
+                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>{lang.toUpperCase()} ✓</span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <label className={styles.checkRow}>

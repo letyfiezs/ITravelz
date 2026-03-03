@@ -53,7 +53,8 @@ const FALLBACK = [
 ];
 
 /* ── Detail Modal ─────────────────────────────────────────── */
-function FestivalModal({ fest, onClose, t }) {
+function FestivalModal({ fest, onClose, t, language }) {
+  const tr = (key) => fest.translations?.[language]?.[key] || fest[key] || '';
   const imgs = resolveImages(fest);
 
   // Close on backdrop click
@@ -84,7 +85,7 @@ function FestivalModal({ fest, onClose, t }) {
         </div>
 
         <div className={styles.rmBody}>
-          <h2 className={styles.rmTitle}>{fest.name}</h2>
+          <h2 className={styles.rmTitle}>{tr('name')}</h2>
           <div className={styles.metaChips}>
             {fest.date && (
               <span className={styles.metaChip}>
@@ -97,7 +98,7 @@ function FestivalModal({ fest, onClose, t }) {
               </span>
             )}
           </div>
-          <p className={styles.rmText}>{fest.description}</p>
+          <p className={styles.rmText}>{tr('description')}</p>
 
           {fest.link && (
             <a
@@ -116,7 +117,9 @@ function FestivalModal({ fest, onClose, t }) {
 }
 
 export default function Festivals() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  // Helper: return translated field for a festival item
+  const tr = (fest, key) => fest.translations?.[language]?.[key] || fest[key] || '';
   const [festivals, setFestivals] = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState('');
@@ -228,7 +231,7 @@ export default function Festivals() {
                           <i className={CATEGORY_ICONS[fest.category] || 'fas fa-star'} /> {fest.category}
                         </span>
                       )}
-                      <h3 className={styles.cardImgTitle}>{fest.name}</h3>
+                      <h3 className={styles.cardImgTitle}>{tr(fest, 'name')}</h3>
                     </div>
                     {imgs.length > 1 && (
                       <span className={styles.imgCount}><i className="fas fa-images" /> {imgs.length}</span>
@@ -247,9 +250,9 @@ export default function Festivals() {
                         </span>
                       )}
                     </div>
-                    {fest.description && (
+                    {tr(fest, 'description') && (
                       <p className={styles.cardDesc}>
-                        {fest.description.slice(0, 100)}{fest.description.length > 100 ? '…' : ''}
+                        {tr(fest, 'description').slice(0, 100)}{tr(fest, 'description').length > 100 ? '…' : ''}
                       </p>
                     )}
                     <div className={styles.cardFooter}>
@@ -280,7 +283,7 @@ export default function Festivals() {
 
       {/* Festival detail modal */}
       {modalFest && (
-        <FestivalModal fest={modalFest} onClose={() => setModalFest(null)} t={t} />
+        <FestivalModal fest={modalFest} onClose={() => setModalFest(null)} t={t} language={language} />
       )}
     </div>
   );

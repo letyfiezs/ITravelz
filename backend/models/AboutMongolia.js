@@ -9,6 +9,8 @@ const AboutMongolaSchema = new mongoose.Schema({
   category:    { type: String, enum: ['culture', 'nature', 'history', 'food', 'nomad', 'misc'], default: 'misc' },
   order:       { type: Number, default: 0 },
   isActive:    { type: Boolean, default: true },
+  // Multilingual translations — { mn: { title, description, readMore }, en: {...}, ... }
+  translations: { type: mongoose.Schema.Types.Mixed, default: {} },
   createdAt:   { type: Date, default: Date.now },
   updatedAt:   { type: Date, default: Date.now },
 });

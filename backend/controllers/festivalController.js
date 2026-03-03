@@ -43,7 +43,7 @@ exports.getAllFestivalsAdmin = async (req, res) => {
 
 exports.createFestival = async (req, res) => {
   try {
-    const { name, description, date, location, image, images, category, link, isActive } = req.body;
+    const { name, description, date, location, image, images, category, link, isActive, translations } = req.body;
     const festival = await Festival.create({
       name, description, date, location,
       image: image || '',
@@ -51,6 +51,7 @@ exports.createFestival = async (req, res) => {
       category,
       link: link || '',
       isActive,
+      translations: translations || {},
     });
     res.status(201).json({ success: true, message: 'Festival created', festival });
   } catch (err) {
@@ -60,13 +61,14 @@ exports.createFestival = async (req, res) => {
 
 exports.updateFestival = async (req, res) => {
   try {
-    const { name, description, date, location, image, images, category, link, isActive } = req.body;
+    const { name, description, date, location, image, images, category, link, isActive, translations } = req.body;
     const update = {
       name, description, date, location, image, category,
       link: link || '',
       isActive,
       updatedAt: Date.now(),
     };
+    if (translations !== undefined) update.translations = translations;
     if (Array.isArray(images)) update.images = images.slice(0, 10);
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
     const festival = await Festival.findByIdAndUpdate(

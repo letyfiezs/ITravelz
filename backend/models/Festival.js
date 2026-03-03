@@ -19,6 +19,8 @@ const FestivalSchema = new mongoose.Schema({
   // External link for more information
   link:        { type: String, default: '' },
   isActive:    { type: Boolean, default: true },
+  // Multilingual translations — { mn: { name, description }, en: {...}, ... }
+  translations: { type: mongoose.Schema.Types.Mixed, default: {} },
   createdAt:   { type: Date, default: Date.now },
   updatedAt:   { type: Date, default: Date.now },
 });

@@ -86,8 +86,8 @@ function ReadMoreModal({ item, onClose }) {
           )}
         </div>
         <div className={styles.rmBody}>
-          <h2 className={styles.rmTitle}>{item.title}</h2>
-          <p className={styles.rmText}>{item.readMore || item.description}</p>
+          <h2 className={styles.rmTitle}>{tr('title')}</h2>
+          <p className={styles.rmText}>{tr('readMore') || tr('description')}</p>
         </div>
       </div>
     </div>
@@ -95,7 +95,9 @@ function ReadMoreModal({ item, onClose }) {
 }
 
 export default function AboutMongolia() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  // Helper: return translated field
+  const tr = (item, key) => item.translations?.[language]?.[key] || item[key] || '';
   const [items,     setItems]     = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState('');
@@ -139,7 +141,7 @@ export default function AboutMongolia() {
             <i className="fas fa-search" />
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder={t('filter_search_ph') || 'Search topics...'}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className={styles.filterInput}
@@ -150,7 +152,7 @@ export default function AboutMongolia() {
               type="button"
               className={`${styles.catTab} ${category === '' ? styles.catTabActive : ''}`}
               onClick={() => setCategory('')}
-            >All</button>
+            >{t('btn_view_all') || 'All'}</button>
             {CATEGORIES.map(c => (
               <button
                 key={c}
@@ -180,9 +182,9 @@ export default function AboutMongolia() {
         {!loading && items.length === 0 && (
           <div className={styles.empty}>
             <i className="fas fa-search" />
-            <h3>Nothing found</h3>
+            <h3>{t('no_packages') || 'Nothing found'}</h3>
             <button className="btn btn-outline" onClick={() => { setSearch(''); setCategory(''); }}>
-              {t('clear_filters') || 'Clear Filters'}
+              {t('clear_filters')}
             </button>
           </div>
         )}
@@ -207,7 +209,7 @@ export default function AboutMongolia() {
                           <i className={CAT_ICONS[item.category] || 'fas fa-compass'} /> {item.category}
                         </span>
                       )}
-                      <h3 className={styles.cardImgTitle}>{item.title}</h3>
+                      <h3 className={styles.cardImgTitle}>{tr(item, 'title')}</h3>
                     </div>
                     {imgs.length > 1 && (
                       <span className={styles.imgCount}><i className="fas fa-images"/> {imgs.length}</span>
@@ -215,13 +217,13 @@ export default function AboutMongolia() {
                   </div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardDesc}>
-                      {item.description?.slice(0, 120)}{item.description?.length > 120 ? '…' : ''}
+                      {tr(item, 'description')?.slice(0, 120)}{(tr(item, 'description')?.length || 0) > 120 ? '…' : ''}
                     </p>
                     <button
                       className={styles.readMoreBtn}
                       onClick={() => setModalItem(item)}
                     >
-                      Дэлгэрэнгүй <i className="fas fa-arrow-right"/>
+                      {t('btn_learn_more')} <i className="fas fa-arrow-right"/>
                     </button>
                   </div>
                 </div>
@@ -231,7 +233,7 @@ export default function AboutMongolia() {
         )}
       </div>
 
-      {modalItem && <ReadMoreModal item={modalItem} onClose={() => setModalItem(null)}/>}
+      {modalItem && <ReadMoreModal item={modalItem} onClose={() => setModalItem(null)} language={language}/>}
     </div>
   );
 }

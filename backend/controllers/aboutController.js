@@ -45,8 +45,8 @@ exports.getAllAboutAdmin = async (req, res) => {
 
 exports.createAbout = async (req, res) => {
   try {
-    const { title, description, readMore, image, category, order, isActive } = req.body;
-    const item = await AboutMongolia.create({ title, description, readMore: readMore || '', image, category, order, isActive });
+    const { title, description, readMore, image, category, order, isActive, translations } = req.body;
+    const item = await AboutMongolia.create({ title, description, readMore: readMore || '', image, category, order, isActive, translations: translations || {} });
     res.status(201).json({ success: true, message: 'Item created', item });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error creating item', error: err.message });
@@ -55,10 +55,12 @@ exports.createAbout = async (req, res) => {
 
 exports.updateAbout = async (req, res) => {
   try {
-    const { title, description, readMore, image, category, order, isActive } = req.body;
+    const { title, description, readMore, image, category, order, isActive, translations } = req.body;
+    const update = { title, description, readMore: readMore || '', image, category, order, isActive, updatedAt: Date.now() };
+    if (translations !== undefined) update.translations = translations;
     const item = await AboutMongolia.findByIdAndUpdate(
       req.params.id,
-      { title, description, readMore: readMore || '', image, category, order, isActive, updatedAt: Date.now() },
+      update,
       { new: true, runValidators: true }
     );
     if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
