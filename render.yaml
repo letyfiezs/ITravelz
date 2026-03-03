@@ -49,11 +49,3 @@ services:
         sync: false # Илгээгч нэр (e.g. ITravelz)
       - key: ADMIN_EMAIL
         sync: false # ← Клиентийн мессеж ЭНЭРҮҮ ирнэ (тан имэйл)
-
-      # Stripe
-      - key: STRIPE_SECRET_KEY
-        sync: false # sk_test_... эсвэл sk_live_...
-      - key: VITE_STRIPE_PUBLISHABLE_KEY
-        sync: false # pk_test_... эсвэл pk_live_... (frontend build-д хэрэгтэй)
-      - key: FRONTEND_URL
-        value: https://itravelz.onrender.com
