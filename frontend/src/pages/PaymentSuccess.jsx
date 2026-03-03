@@ -24,7 +24,9 @@ const PaymentSuccess = () => {
         setStatus("success");
       })
       .catch((err) => {
-        setMessage(err.response?.data?.message || "Payment verification failed.");
+        setMessage(
+          err.response?.data?.message || "Payment verification failed.",
+        );
         setStatus("error");
       });
   }, [bookingId, sessionId]);
@@ -65,9 +67,13 @@ const PaymentSuccess = () => {
           Your booking has been confirmed and payment received.
         </p>
         <p className={styles.successSub}>
-          A confirmation email has been sent to you. We look forward to your trip!
+          A confirmation email has been sent to you. We look forward to your
+          trip!
         </p>
-        <button className={styles.homeBtn} onClick={() => navigate("/bookings")}>
+        <button
+          className={styles.homeBtn}
+          onClick={() => navigate("/bookings")}
+        >
           View My Bookings
         </button>
       </div>
