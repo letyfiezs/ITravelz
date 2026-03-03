@@ -42,10 +42,10 @@ services:
 
       # Brevo (Sendinblue) — email provider
       - key: BREVO_API_KEY
-        sync: false   # Brevo дансны API key
+        sync: false # Brevo дансны API key
       - key: FROM_EMAIL
-        sync: false   # Имэйл илгээгч хаяг (e.g. info@itravelz.mn)
+        sync: false # Имэйл илгээгч хаяг (e.g. info@itravelz.mn)
       - key: FROM_NAME
-        sync: false   # Илгээгч нэр (e.g. ITravelz)
+        sync: false # Илгээгч нэр (e.g. ITravelz)
       - key: ADMIN_EMAIL
-        sync: false   # ← Клиентийн мессеж ЭНЭРҮҮ ирнэ (тан имэйл)
+        sync: false # ← Клиентийн мессеж ЭНЭРҮҮ ирнэ (тан имэйл)
