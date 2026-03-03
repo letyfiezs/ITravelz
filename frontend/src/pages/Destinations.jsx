@@ -306,7 +306,7 @@ const Destinations = () => {
 
                     <div className={styles.cardFooter}>
                       <button className={styles.learnBtn} onClick={() => setModalDest(d)}>
-                        More <i className="fas fa-arrow-right" />
+                        {t('btn_learn_more')} <i className="fas fa-arrow-right" />
                       </button>
                     </div>
                   </div>

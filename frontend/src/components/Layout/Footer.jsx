@@ -1,5 +1,7 @@
-﻿import { Link } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useContext';
+import { destinationService } from '../../services/api';
 import styles from './Footer.module.css';
 
 const EXPLORE_LINKS = [
@@ -11,18 +13,27 @@ const EXPLORE_LINKS = [
   { to: '/contact',      key: 'nav_contact'        },
 ];
 
-const destinations = ['Bali, Indonesia', 'Paris, France', 'Santorini, Greece', 'Tokyo, Japan', 'New York, USA', 'Cape Town, SA'];
-
 const socials = [
   { icon: 'fab fa-facebook-f', href: '#', label: 'Facebook' },
-  { icon: 'fab fa-instagram',  href: '#', label: 'Instagram' },
-  { icon: 'fab fa-twitter',    href: '#', label: 'Twitter' },
-  { icon: 'fab fa-youtube',    href: '#', label: 'YouTube' },
-  { icon: 'fab fa-tiktok',     href: '#', label: 'TikTok' },
+  // { icon: 'fab fa-instagram',  href: '#', label: 'Instagram' },
+  // { icon: 'fab fa-twitter',    href: '#', label: 'Twitter' },
+  // { icon: 'fab fa-youtube',    href: '#', label: 'YouTube' },
+  // { icon: 'fab fa-tiktok',     href: '#', label: 'TikTok' },
 ];
 
 export default function Footer() {
   const { t } = useLanguage();
+  const [footerDests, setFooterDests] = useState([]);
+
+  useEffect(() => {
+    destinationService.getAll()
+      .then(r => {
+        const data = r.data?.destinations || r.data?.data || r.data || [];
+        setFooterDests(Array.isArray(data) ? data.slice(0, 6) : []);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className={styles.footer}>
       <div className={`${styles.inner} container`}>
@@ -56,9 +67,18 @@ export default function Footer() {
         <div className={styles.col}>
           <h4 className={styles.colTitle}>{t('nav_destinations')}</h4>
           <ul className={styles.colList}>
-            {destinations.map(d => (
-              <li key={d}><span className={styles.colLink}>{d}</span></li>
-            ))}
+            {footerDests.length > 0
+              ? footerDests.map(d => (
+                  <li key={d._id}>
+                    <Link to="/destinations" className={styles.colLink}>
+                      {d.name || d.title}
+                    </Link>
+                  </li>
+                ))
+              : ['Ulaanbaatar', 'Gobi Desert', 'Khövsgöl Lake', 'Terelj Park', 'Bayan-Ölgii', 'Kharkhorin'].map(d => (
+                  <li key={d}><Link to="/destinations" className={styles.colLink}>{d}</Link></li>
+                ))
+            }
           </ul>
         </div>
 

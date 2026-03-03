@@ -107,7 +107,7 @@ const Packages = () => {
         {error && (
           <div className="alert alert-error" style={{margin: '32px 0'}}>
             <i className="fas fa-exclamation-circle" /> {error}
-            <button className="btn btn-sm btn-secondary" onClick={load} style={{marginLeft:'auto'}}>Retry</button>
+            <button className="btn btn-sm btn-secondary" onClick={load} style={{marginLeft:'auto'}}>{t('retry')}</button>
           </div>
         )}
 

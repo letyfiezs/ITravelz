@@ -53,7 +53,7 @@ const FALLBACK = [
 ];
 
 /* ── Detail Modal ─────────────────────────────────────────── */
-function FestivalModal({ fest, onClose }) {
+function FestivalModal({ fest, onClose, t }) {
   const imgs = resolveImages(fest);
 
   // Close on backdrop click
@@ -106,7 +106,7 @@ function FestivalModal({ fest, onClose }) {
               rel="noopener noreferrer"
               className={styles.learnBtn}
             >
-              <i className="fas fa-external-link-alt" /> Дэлгэрэнгүй мэдээлэл
+              <i className="fas fa-external-link-alt" /> {t('btn_learn_more')}
             </a>
           )}
         </div>
@@ -193,16 +193,16 @@ export default function Festivals() {
         {error && (
           <div className="alert alert-error" style={{ margin: '32px 0' }}>
             <i className="fas fa-exclamation-circle" /> {error}
-            <button className="btn btn-sm btn-secondary" onClick={load} style={{ marginLeft: 'auto' }}>Retry</button>
+            <button className="btn btn-sm btn-secondary" onClick={load} style={{ marginLeft: 'auto' }}>{t('retry')}</button>
           </div>
         )}
 
         {!loading && festivals.length === 0 && (
           <div className={styles.empty}>
             <i className="fas fa-search" />
-            <h3>No festivals found</h3>
+            <h3>{t('no_packages') || 'No festivals found'}</h3>
             <button className="btn btn-outline" onClick={() => { setSearch(''); setCategory(''); }}>
-              {t('clear_filters') || 'Clear Filters'}
+              {t('clear_filters')}
             </button>
           </div>
         )}
@@ -257,7 +257,7 @@ export default function Festivals() {
                         className={styles.detailBtn}
                         onClick={() => setModalFest(fest)}
                       >
-                        Дэлгэрэнгүй <i className="fas fa-arrow-right" />
+                        {t('btn_learn_more')} <i className="fas fa-arrow-right" />
                       </button>
                       {fest.link && (
                         <a
@@ -280,7 +280,7 @@ export default function Festivals() {
 
       {/* Festival detail modal */}
       {modalFest && (
-        <FestivalModal fest={modalFest} onClose={() => setModalFest(null)} />
+        <FestivalModal fest={modalFest} onClose={() => setModalFest(null)} t={t} />
       )}
     </div>
   );
