@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import styles from './Shop.module.css';
 
@@ -12,16 +13,45 @@ const FEATURED = [
 
 export default function Shop() {
   const { t } = useLanguage();
+  const [heroContent, setHeroContent] = useState(null);
+
+  useEffect(() => {
+    contentService.getAll({ section: 'shop_hero' })
+      .then((res) => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const heroes = res.data?.content || res.data || [];
+        const active = heroes.filter((h) => {
+          if (!h.isActive) return false;
+          if (!h.validFrom) return true;
+          return new Date(h.validFrom) <= today;
+        });
+        if (active.length > 0) setHeroContent(active[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className={styles.page}>
       {/* Hero */}
-      <div className={styles.hero}>
+      <div
+        className={styles.hero}
+        style={heroContent?.imageUrl || heroContent?.image ? {
+          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">{t('nav_shop') || 'Shop'}</span>
-          <h1 className={styles.heroTitle}>{t('page_shop') || 'ITravelz Shop'}</h1>
-          <p className={styles.heroSub}>Authentic Mongolian goods, travel accessories &amp; more</p>
+          <span className="section-label">
+            {heroContent?.eyebrow || t('nav_shop') || 'Shop'}
+          </span>
+          <h1 className={styles.heroTitle}>
+            {heroContent?.title || t('page_shop') || 'ITravelz Shop'}
+          </h1>
+          <p className={styles.heroSub}>
+            {heroContent?.subtitle || heroContent?.text || 'Authentic Mongolian goods, travel accessories &amp; more'}
+          </p>
         </div>
       </div>
 

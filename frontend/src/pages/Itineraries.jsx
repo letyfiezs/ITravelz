@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { itineraryService } from '../services/api';
+import { itineraryService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Itineraries.module.css';
@@ -21,6 +21,22 @@ const Itineraries = () => {
   const [itineraries, setItineraries] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [active,      setActive]      = useState(null);
+  const [heroContent, setHeroContent] = useState(null);
+
+  useEffect(() => {
+    contentService.getAll({ section: 'itineraries_hero' })
+      .then((res) => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const heroes = res.data?.content || res.data || [];
+        const active = heroes.filter((h) => {
+          if (!h.isActive) return false;
+          if (!h.validFrom) return true;
+          return new Date(h.validFrom) <= today;
+        });
+        if (active.length > 0) setHeroContent(active[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     itineraryService.getAll()
@@ -56,12 +72,25 @@ const Itineraries = () => {
   return (
     <div className={styles.page}>
       {/* Hero */}
-      <div className={styles.hero}>
+      <div
+        className={styles.hero}
+        style={heroContent?.imageUrl || heroContent?.image ? {
+          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">{t('nav_itineraries')}</span>
-          <h1 className={styles.heroTitle}>{t('page_itineraries')}</h1>
-          <p className={styles.heroSub}>{t('page_itin_sub')}</p>
+          <span className="section-label">
+            {heroContent?.eyebrow || t('nav_itineraries')}
+          </span>
+          <h1 className={styles.heroTitle}>
+            {heroContent?.title || t('page_itineraries')}
+          </h1>
+          <p className={styles.heroSub}>
+            {heroContent?.subtitle || heroContent?.text || t('page_itin_sub')}
+          </p>
         </div>
       </div>
 

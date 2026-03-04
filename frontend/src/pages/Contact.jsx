@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { contactService } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { contactService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import styles from './Contact.module.css';
 
@@ -35,6 +35,22 @@ const Contact = () => {
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [msg,    setMsg]    = useState('');
   const [openFaq, setOpenFaq] = useState(null);
+  const [heroContent, setHeroContent] = useState(null);
+
+  useEffect(() => {
+    contentService.getAll({ section: 'contact_hero' })
+      .then((res) => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const heroes = res.data?.content || res.data || [];
+        const active = heroes.filter((h) => {
+          if (!h.isActive) return false;
+          if (!h.validFrom) return true;
+          return new Date(h.validFrom) <= today;
+        });
+        if (active.length > 0) setHeroContent(active[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -56,12 +72,25 @@ const Contact = () => {
   return (
     <div className={styles.page}>
       {/* Hero */}
-      <div className={styles.hero}>
+      <div
+        className={styles.hero}
+        style={heroContent?.imageUrl || heroContent?.image ? {
+          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">{t('page_contact')}</span>
-          <h1 className={styles.heroTitle}>{t('page_contact')}</h1>
-          <p className={styles.heroSub}>{t('page_contact_sub')}</p>
+          <span className="section-label">
+            {heroContent?.eyebrow || t('page_contact')}
+          </span>
+          <h1 className={styles.heroTitle}>
+            {heroContent?.title || t('page_contact')}
+          </h1>
+          <p className={styles.heroSub}>
+            {heroContent?.subtitle || heroContent?.text || t('page_contact_sub')}
+          </p>
         </div>
       </div>
 

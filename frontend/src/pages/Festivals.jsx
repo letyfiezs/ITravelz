@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { festivalService } from '../services/api';
+import { festivalService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Festivals.module.css';
@@ -126,6 +126,7 @@ export default function Festivals() {
   const [search,    setSearch]    = useState('');
   const [category,  setCategory]  = useState('');
   const [modalFest, setModalFest] = useState(null);
+  const [heroContent, setHeroContent] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -144,17 +145,45 @@ export default function Festivals() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    contentService.getAll({ section: 'festivals_hero' })
+      .then((res) => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const heroes = res.data?.content || res.data || [];
+        const active = heroes.filter((h) => {
+          if (!h.isActive) return false;
+          if (!h.validFrom) return true;
+          return new Date(h.validFrom) <= today;
+        });
+        if (active.length > 0) setHeroContent(active[0]);
+      })
+      .catch(() => {});
+  }, []);
+
   const categories = [...new Set(FALLBACK.map(f => f.category))];
 
   return (
     <div className={styles.page}>
       {/* Hero */}
-      <div className={styles.hero}>
+      <div
+        className={styles.hero}
+        style={heroContent?.imageUrl || heroContent?.image ? {
+          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
         <div className={styles.heroOverlay} />
         <div className={`${styles.heroContent} container`}>
-          <span className="section-label">{t('section_festivals') || 'Culture & Celebration'}</span>
-          <h1 className={styles.heroTitle}>{t('page_festivals') || 'Festivals of Mongolia'}</h1>
-          <p className={styles.heroSub}>{t('page_festivals_sub') || 'Experience the vibrant traditions and timeless celebrations of the Mongolian people'}</p>
+          <span className="section-label">
+            {heroContent?.eyebrow || t('section_festivals') || 'Culture & Celebration'}
+          </span>
+          <h1 className={styles.heroTitle}>
+            {heroContent?.title || t('page_festivals') || 'Festivals of Mongolia'}
+          </h1>
+          <p className={styles.heroSub}>
+            {heroContent?.subtitle || heroContent?.text || t('page_festivals_sub') || 'Experience the vibrant traditions and timeless celebrations of the Mongolian people'}
+          </p>
         </div>
       </div>
 

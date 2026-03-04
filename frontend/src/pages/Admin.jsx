@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'home'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'home', 'pages'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
@@ -86,6 +86,24 @@ const Admin = () => {
 
   /* destinations hero (page header scheduling) */
   const EMPTY_HERO = { title: '', subtitle: '', eyebrow: '', imageUrl: '', validFrom: '', isActive: true };
+
+  /* ── Generic page hero management (packages, festivals, about, itineraries, shop, contact) ── */
+  const PAGE_HERO_SECTIONS = [
+    { key: 'packages_hero',    label: 'Packages Page Header'       },
+    { key: 'itineraries_hero', label: 'Itineraries Page Header'    },
+    { key: 'festivals_hero',   label: 'Festivals Page Header'      },
+    { key: 'about_hero',       label: 'About Mongolia Page Header' },
+    { key: 'shop_hero',        label: 'Shop Page Header'           },
+    { key: 'contact_hero',     label: 'Contact Page Header'        },
+  ];
+  const [pageHeroes, setPageHeroes]                 = useState({});
+  const [pageHeroModal, setPageHeroModal]           = useState(null); // section string when open
+  const [pageHeroForm, setPageHeroForm]             = useState(EMPTY_HERO);
+  const [pageHeroEdit, setPageHeroEdit]             = useState(null);
+  const [pageHeroSaving, setPageHeroSaving]         = useState(false);
+  const [pageHeroMsg, setPageHeroMsg]               = useState('');
+  const [pageHeroBgFile, setPageHeroBgFile]         = useState(null);
+  const [pageHeroBgUploading, setPageHeroBgUploading] = useState(false);
   const [destHeroList, setDestHeroList]       = useState([]);
   const [destHeroModal, setDestHeroModal]     = useState(false);
   const [destHeroForm, setDestHeroForm]       = useState(EMPTY_HERO);
@@ -172,6 +190,12 @@ const Admin = () => {
         setItineraries(itin.data.itineraries || itin.data || []);
         const allContent = cont.data.content || cont.data || [];
         setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
+        // Load all other page hero sections
+        const phData = {};
+        PAGE_HERO_SECTIONS.forEach(({ key }) => {
+          phData[key] = allContent.filter((c) => c.section === key);
+        });
+        setPageHeroes(phData);
         const heroItems = allContent.filter((c) => c.section === 'hero');
         setHomeHeroItems(heroItems);
         const findH = (key) => heroItems.find((c) => c.key === key);
@@ -554,6 +578,138 @@ const Admin = () => {
     } catch { alert('Update failed.'); }
   };
 
+  /* ── Generic Page Hero helpers ── */
+  const openPageHeroCreate = (section) => {
+    setPageHeroEdit(null); setPageHeroForm(EMPTY_HERO); setPageHeroBgFile(null); setPageHeroMsg(''); setPageHeroModal(section);
+  };
+  const openPageHeroEdit = (section, h) => {
+    setPageHeroEdit(h._id);
+    setPageHeroForm({ title: h.title||'', subtitle: h.subtitle||h.text||'', eyebrow: h.eyebrow||'', imageUrl: h.imageUrl||h.image||'', validFrom: h.validFrom ? new Date(h.validFrom).toISOString().slice(0,10) : '', isActive: h.isActive??true });
+    setPageHeroBgFile(null); setPageHeroMsg(''); setPageHeroModal(section);
+  };
+  const closePageHero = () => { setPageHeroModal(null); setPageHeroMsg(''); setPageHeroBgFile(null); };
+  const setPH = (k) => (e) => setPageHeroForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const uploadPageHeroBg = async () => {
+    if (!pageHeroBgFile) return pageHeroForm.imageUrl;
+    setPageHeroBgUploading(true);
+    try {
+      const fd = new FormData(); fd.append('image', pageHeroBgFile);
+      const res = await adminService.uploadContentImage(fd);
+      const url = res.data.imageUrl || res.data.path || '';
+      setPageHeroForm((p) => ({ ...p, imageUrl: url }));
+      setPageHeroBgFile(null);
+      return url;
+    } catch { setPageHeroMsg('❌ Image upload failed.'); return pageHeroForm.imageUrl; }
+    finally { setPageHeroBgUploading(false); }
+  };
+
+  const savePageHero = async (e) => {
+    e.preventDefault(); setPageHeroSaving(true); setPageHeroMsg('');
+    const section = pageHeroModal;
+    let imageUrl = pageHeroForm.imageUrl;
+    if (pageHeroBgFile) imageUrl = await uploadPageHeroBg();
+    const list = pageHeroes[section] || [];
+    const uniqueKey = pageHeroEdit
+      ? list.find((h) => h._id === pageHeroEdit)?.key || `${section}_${Date.now()}`
+      : `${section}_${Date.now()}`;
+    const payload = {
+      key: uniqueKey, title: pageHeroForm.title, subtitle: pageHeroForm.subtitle,
+      eyebrow: pageHeroForm.eyebrow, text: pageHeroForm.subtitle, imageUrl,
+      section, isActive: pageHeroForm.isActive, validFrom: pageHeroForm.validFrom || null,
+    };
+    try {
+      if (pageHeroEdit) {
+        const r = await adminService.updateContent(pageHeroEdit, payload);
+        const updated = r.data.content || r.data;
+        setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).map((x) => x._id === pageHeroEdit ? updated : x) }));
+        setPageHeroMsg('✅ Hero updated!');
+      } else {
+        const r = await adminService.createContent(payload);
+        const created = r.data.content || r.data;
+        setPageHeroes((p) => ({ ...p, [section]: [created, ...(p[section]||[])] }));
+        setPageHeroMsg('✅ Hero created!');
+      }
+      setTimeout(closePageHero, 900);
+    } catch (err) { setPageHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
+    finally { setPageHeroSaving(false); }
+  };
+
+  const deletePageHero = async (section, id) => {
+    if (!window.confirm('Delete this hero entry?')) return;
+    try { await adminService.deleteContent(id); setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).filter((x) => x._id !== id) })); }
+    catch { alert('Delete failed.'); }
+  };
+
+  const togglePageHeroActive = async (section, h) => {
+    try {
+      const r = await adminService.updateContent(h._id, { ...h, imageUrl: h.imageUrl || h.image, isActive: !h.isActive });
+      setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).map((x) => x._id === h._id ? (r.data.content || r.data) : x) }));
+    } catch { alert('Update failed.'); }
+  };
+
+  /* Helper: render hero management block (reused in each tab) */
+  const renderPageHeroBlock = (section, label) => {
+    const list = pageHeroes[section] || [];
+    return (
+      <div style={{marginBottom:32,background:'var(--bg-alt)',borderRadius:14,padding:'20px 24px',border:'1px solid var(--border)'}}>
+        <div className={styles.tabToolbar} style={{marginBottom:16}}>
+          <div>
+            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>
+              <i className="fas fa-image" style={{marginRight:8,color:'var(--primary)'}}/>
+              {label}
+            </h3>
+            <p style={{fontSize:12,color:'var(--text-muted)',margin:'4px 0 0'}}>Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг огноогоор удирдах</p>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => openPageHeroCreate(section)}>
+            <i className="fas fa-plus"/> Add Hero Entry
+          </button>
+        </div>
+        {list.length === 0 ? (
+          <p style={{color:'var(--text-muted)',fontSize:13,textAlign:'center',padding:'12px 0'}}>No hero entries yet — click "Add Hero Entry" to set a custom page header.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead><tr><th>BG Image</th><th>Title</th><th>Subtitle</th><th>Valid From</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {list.map((h) => (
+                  <tr key={h._id}>
+                    <td>
+                      {(h.imageUrl || h.image)
+                        ? <img src={h.imageUrl||h.image} alt="" style={{width:64,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
+                        : <div style={{width:64,height:40,background:'var(--bg)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:16}}><i className="fas fa-image"/></div>}
+                    </td>
+                    <td style={{fontWeight:600}}>{h.title||'—'}</td>
+                    <td style={{fontSize:12,color:'var(--text-muted)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{h.subtitle||h.text||'—'}</td>
+                    <td style={{fontSize:12}}>
+                      {h.validFrom ? (
+                        <span style={{color:'var(--primary)',fontWeight:600}}>
+                          <i className="fas fa-calendar-day" style={{marginRight:4}}/>
+                          {new Date(h.validFrom).toLocaleDateString()}
+                        </span>
+                      ) : <span style={{color:'var(--text-muted)'}}>Always</span>}
+                    </td>
+                    <td>
+                      <button onClick={()=>togglePageHeroActive(section,h)} className={`${styles.toggleBtn} ${h.isActive?styles.toggleOn:styles.toggleOff}`}>
+                        {h.isActive?'Active':'Hidden'}
+                      </button>
+                    </td>
+                    <td>
+                      <div className={styles.actions}>
+                        <button className={styles.btnEdit} onClick={()=>openPageHeroEdit(section,h)}><i className="fas fa-pen"/></button>
+                        <button className={styles.btnDel} onClick={()=>deletePageHero(section,h._id)}><i className="fas fa-trash"/></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   /* ── Home Hero helpers ── */
   const setHH = (k) => (e) => setHomeHeroForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -883,6 +1039,7 @@ const Admin = () => {
           {/* ── Packages ── */}
           {tab === 'packages' && (
             <div>
+              {renderPageHeroBlock('packages_hero', 'Packages Page Header')}
               <div className={styles.tabToolbar}>
                 <span>{packages.length} package{packages.length!==1?'s':''}</span>
                 <button className="btn btn-primary btn-sm" onClick={openPkgCreate}><i className="fas fa-plus"/> Add Package</button>
@@ -925,6 +1082,7 @@ const Admin = () => {
           {/* ── Itineraries ── */}
           {tab === 'itineraries' && (
             <div>
+              {renderPageHeroBlock('itineraries_hero', 'Itineraries Page Header')}
               <div className={styles.tabToolbar}>
                 <span>{itineraries.length} itinerar{itineraries.length!==1?'ies':'y'}</span>
                 <button className="btn btn-primary btn-sm" onClick={openItinCreate}><i className="fas fa-plus"/> Add Itinerary</button>
@@ -1058,6 +1216,7 @@ const Admin = () => {
           {/* ── About Mongolia ── */}
           {tab === 'about' && (
             <div>
+              {renderPageHeroBlock('about_hero', 'About Mongolia Page Header')}
               <div className={styles.tabToolbar}>
                 <span>{aboutItems.length} item{aboutItems.length!==1?'s':''}</span>
                 <button className="btn btn-primary btn-sm" onClick={openAboutCreate}><i className="fas fa-plus"/> Add Item</button>
@@ -1101,6 +1260,7 @@ const Admin = () => {
           {/* ── Festivals ── */}
           {tab === 'festivals' && (
             <div>
+              {renderPageHeroBlock('festivals_hero', 'Festivals Page Header')}
               <div className={styles.tabToolbar}>
                 <span>{festivals.length} festival{festivals.length!==1?'s':''}</span>
                 <button className="btn btn-primary btn-sm" onClick={openFestCreate}><i className="fas fa-plus"/> Add Festival</button>
@@ -1285,6 +1445,14 @@ const Admin = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {/* ── Pages (Shop & Contact) Hero ── */}
+          {tab === 'pages' && (
+            <div>
+              {renderPageHeroBlock('shop_hero', 'Shop Page Header')}
+              {renderPageHeroBlock('contact_hero', 'Contact Page Header')}
             </div>
           )}
 
@@ -2055,6 +2223,70 @@ const Admin = () => {
               <button type="button" className="btn btn-outline btn-sm" onClick={closeAbout}>Cancel</button>
               <button type="submit" className="btn btn-primary btn-sm" disabled={aboutSaving}>
                 {aboutSaving?<><span className="spinner"/> Saving…</>:aboutEdit?'Save Changes':'Create Item'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Generic Page Hero Create/Edit Modal ── */}
+      {pageHeroModal && (
+        <Modal
+          title={pageHeroEdit ? `Edit Hero Entry` : `Add Hero Entry`}
+          onClose={closePageHero}
+        >
+          <form onSubmit={savePageHero} className={styles.itinForm}>
+            <div className={styles.formGroup}>
+              <label>Page Title *</label>
+              <input className="form-input" value={pageHeroForm.title} onChange={setPH('title')} required placeholder="e.g. Explore Packages"/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Subtitle / Description</label>
+              <textarea className="form-input" rows={2} value={pageHeroForm.subtitle} onChange={setPH('subtitle')} placeholder="A short subtitle shown below the title…" style={{resize:'vertical'}}/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Eyebrow Label <span style={{fontWeight:400,color:'var(--text-muted)'}}>Small text above the title</span></label>
+              <input className="form-input" value={pageHeroForm.eyebrow} onChange={setPH('eyebrow')} placeholder="e.g. Discover The World"/>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Background Image</label>
+              <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
+                <i className="fas fa-cloud-upload-alt"/>
+                <span>{pageHeroBgFile ? pageHeroBgFile.name : 'Upload background image (Cloudinary)'}</span>
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{ const f=e.target.files[0]; if(f) setPageHeroBgFile(f); e.target.value=''; }}/>
+              </label>
+              {pageHeroBgFile && (
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <img src={URL.createObjectURL(pageHeroBgFile)} alt="" style={{width:120,height:70,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
+                  <button type="button" onClick={()=>setPageHeroBgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                </div>
+              )}
+              <input className="form-input" value={pageHeroForm.imageUrl} onChange={setPH('imageUrl')} placeholder="Or paste image URL: https://…"/>
+              {!pageHeroBgFile && pageHeroForm.imageUrl && (
+                <img src={pageHeroForm.imageUrl} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+              )}
+            </div>
+            <div className={styles.formGroup}>
+              <label>
+                Valid From Date{' '}
+                <span style={{fontWeight:400,color:'var(--text-muted)'}}>Leave empty = always active.</span>
+              </label>
+              <input className="form-input" type="date" value={pageHeroForm.validFrom} onChange={setPH('validFrom')}/>
+              {pageHeroForm.validFrom && (
+                <p style={{fontSize:12,color:'var(--primary)',marginTop:4}}>
+                  <i className="fas fa-info-circle"/> Active from {new Date(pageHeroForm.validFrom).toLocaleDateString()} onwards
+                </p>
+              )}
+            </div>
+            <label className={styles.checkRow}>
+              <input type="checkbox" checked={pageHeroForm.isActive} onChange={setPH('isActive')}/>
+              <span>Visible (Active)</span>
+            </label>
+            {pageHeroMsg && <p className={styles.formMsg}>{pageHeroMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={closePageHero}>Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={pageHeroSaving||pageHeroBgUploading}>
+                {(pageHeroSaving||pageHeroBgUploading) ? <><span className="spinner"/> Saving…</> : pageHeroEdit ? 'Save Changes' : 'Create Hero Entry'}
               </button>
             </div>
           </form>
