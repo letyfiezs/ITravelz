@@ -20,7 +20,7 @@ services:
 
       # Set to your Render service URL once deployed (e.g. https://itravelz.onrender.com)
       - key: CLIENT_URL
-        sync: false
+        value: https://itravelz.onrender.com
 
       # Google OAuth
       - key: GOOGLE_CLIENT_ID
