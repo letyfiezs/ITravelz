@@ -253,6 +253,36 @@ html[data-theme="dark"] .statsCard {
   margin-bottom: 44px;
   gap: 16px;
 }
+.viewAllBtn {
+  border-color: color-mix(in srgb, var(--primary) 75%, #ffffff 25%);
+  color: color-mix(in srgb, var(--primary) 82%, #ffffff 18%);
+  background: color-mix(in srgb, var(--primary) 8%, transparent 92%);
+}
+.viewAllBtn:hover {
+  background: color-mix(in srgb, var(--primary) 95%, #ffffff 5%);
+  border-color: color-mix(in srgb, var(--primary) 95%, #ffffff 5%);
+}
+
+.learnMoreBtn {
+  border-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
+  color: color-mix(in srgb, var(--accent-dark) 78%, #ffffff 22%);
+  background: color-mix(in srgb, var(--accent) 10%, transparent 90%);
+}
+.learnMoreBtn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+html[data-theme="dark"] .viewAllBtn {
+  background: color-mix(in srgb, var(--primary-light) 18%, transparent 82%);
+  border-color: color-mix(in srgb, var(--primary-light) 50%, var(--border) 50%);
+}
+html[data-theme="dark"] .learnMoreBtn {
+  background: color-mix(in srgb, var(--accent) 16%, transparent 84%);
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--border) 54%);
+  color: color-mix(in srgb, var(--accent-light) 80%, #ffffff 20%);
+}
 .sectionCenter {
   text-align: center;
   margin-bottom: 48px;

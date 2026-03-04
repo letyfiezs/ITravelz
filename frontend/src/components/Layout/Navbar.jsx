@@ -131,7 +131,9 @@ export default function Navbar() {
             className={styles.themeBtn}
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             <i className={`fas ${theme === "dark" ? "fa-moon" : "fa-sun"}`} />
           </button>

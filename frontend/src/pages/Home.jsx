@@ -52,7 +52,7 @@ function ScrollRow({ children, label, viewAllTo, t }) {
       <div className={`${styles.sectionHead} container`}>
         <h2 className={styles.sectionTitle}>{label}</h2>
         {viewAllTo && (
-          <Link to={viewAllTo} className="btn btn-outline btn-sm">
+          <Link to={viewAllTo} className={`btn btn-outline btn-sm ${styles.viewAllBtn}`}>
             {t('btn_view_all')} <i className="fas fa-arrow-right" />
           </Link>
         )}
@@ -281,7 +281,7 @@ export default function Home() {
               </p>
               <h3 className={styles.scrollCardTitle}>{fest.name}</h3>
               <div className={styles.scrollCardFooter}>
-                <Link to="/festivals" className="btn btn-outline btn-sm">{t('btn_learn_more')}</Link>
+                <Link to="/festivals" className={`btn btn-outline btn-sm ${styles.learnMoreBtn}`}>{t('btn_learn_more')}</Link>
               </div>
             </div>
           </div>
