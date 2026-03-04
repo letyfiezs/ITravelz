@@ -37,6 +37,12 @@ const BookingForm = () => {
   const [availLoading, setAvailLoading] = useState(false);
 
   useEffect(() => {
+    if (success) {
+      window.scrollTo(0, 0);
+    }
+  }, [success]);
+
+  useEffect(() => {
     packageService
       .getAll()
       .then((res) => {
