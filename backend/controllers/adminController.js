@@ -82,6 +82,94 @@ exports.getUsers = async (req, res, next) => {
 
 };
 
+exports.makeAdminByEmail = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const email = String(req.body?.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+      const safeUser = await User.findById(user._id).select('-password');
+      return res.status(200).json({ success: true, message: 'User is already admin', user: safeUser });
+    }
+
+    user.role = 'admin';
+    user.updatedAt = Date.now();
+    await user.save();
+
+    const safeUser = await User.findById(user._id).select('-password');
+    res.status(200).json({ success: true, message: 'User promoted to admin', user: safeUser });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.removeAdminByEmail = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const email = String(req.body?.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (String(user._id) === String(req.admin?.id)) {
+      return res.status(400).json({ success: false, message: 'You cannot remove your own admin role' });
+    }
+
+    if (user.role !== 'admin') {
+      const safeUser = await User.findById(user._id).select('-password');
+      return res.status(200).json({ success: true, message: 'User is already not admin', user: safeUser });
+    }
+
+    user.role = 'user';
+    user.updatedAt = Date.now();
+    await user.save();
+
+    const safeUser = await User.findById(user._id).select('-password');
+    res.status(200).json({ success: true, message: 'Admin role removed', user: safeUser });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteUserById = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const Booking = require('../models/Booking');
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (String(user._id) === String(req.admin?.id)) {
+      return res.status(400).json({ success: false, message: 'You cannot delete your own account' });
+    }
+
+    await Booking.deleteMany({ $or: [{ userId: user._id }, { email: user.email }] });
+    await User.deleteOne({ _id: user._id });
+
+    res.status(200).json({ success: true, message: 'User deleted from database' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ── Auto-translate texts using MyMemory (free, no API key needed) ──
 const SUPPORTED_LANGS = ['mn', 'en', 'de', 'ko', 'ja', 'zh'];
 

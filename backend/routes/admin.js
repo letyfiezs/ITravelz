@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { login, getProfile, updateProfile, getStats, getUsers, translateText } = require('../controllers/adminController');
+const { login, getProfile, updateProfile, getStats, getUsers, makeAdminByEmail, removeAdminByEmail, deleteUserById, translateText } = require('../controllers/adminController');
 const {
   getAllBookings,
   getBookingById,
@@ -76,6 +76,9 @@ router.put('/profile', protectAdmin, updateProfile);
 // Stats & Users
 router.get('/stats', protectAdmin, getStats);
 router.get('/users', protectAdmin, getUsers);
+router.post('/users/make-admin', protectAdmin, makeAdminByEmail);
+router.patch('/users/remove-admin', protectAdmin, removeAdminByEmail);
+router.delete('/users/:id', protectAdmin, deleteUserById);
 
 // Auto-translate
 router.post('/translate', protectAdmin, translateText);

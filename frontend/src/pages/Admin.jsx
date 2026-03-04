@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/api';
 import styles from './Admin.module.css';
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'home', 'pages'];
+const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'admins', 'home', 'pages'];
 const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
 const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
 const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
@@ -60,6 +60,10 @@ const Admin = () => {
   const [stats, setStats]         = useState(null);
   const [bookings, setBookings]   = useState([]);
   const [users, setUsers]         = useState([]);
+  const [userEmailQuery, setUserEmailQuery] = useState('');
+  const [adminEmailQuery, setAdminEmailQuery] = useState('');
+  const [adminActionMsg, setAdminActionMsg] = useState('');
+  const [adminActionLoading, setAdminActionLoading] = useState(false);
   const [packages, setPackages]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
@@ -238,6 +242,83 @@ const Admin = () => {
     catch { alert('Delete failed.'); }
   };
   const filteredBookings = bFilter === 'all' ? bookings : bookings.filter((b) => b.status === bFilter);
+  const qUsers = userEmailQuery.trim().toLowerCase();
+  const qAdmins = adminEmailQuery.trim().toLowerCase();
+  const filteredUsers = users.filter((u) => !qUsers || String(u.email || '').toLowerCase().includes(qUsers));
+  const admins = users.filter((u) => u.role === 'admin');
+  const filteredAdmins = admins.filter((u) => !qAdmins || String(u.email || '').toLowerCase().includes(qAdmins));
+
+  const makeAdmin = async (email) => {
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized) {
+      setAdminActionMsg('Please enter an email.');
+      return;
+    }
+    setAdminActionLoading(true);
+    setAdminActionMsg('');
+    try {
+      const res = await adminService.makeAdminByEmail(normalized);
+      const updatedUser = res.data?.user;
+      if (updatedUser?._id) {
+        setUsers((prev) => prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)));
+      } else {
+        const all = await adminService.getUsers();
+        setUsers(all.data.users || all.data || []);
+      }
+      setAdminActionMsg(res.data?.message || 'User promoted to admin.');
+      setAdminEmailQuery(normalized);
+      setUserEmailQuery(normalized);
+    } catch (err) {
+      setAdminActionMsg(err.response?.data?.message || 'Failed to make admin.');
+    } finally {
+      setAdminActionLoading(false);
+    }
+  };
+
+  const removeAdmin = async (email) => {
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized) {
+      setAdminActionMsg('Please enter an email.');
+      return;
+    }
+    if (!window.confirm(`Remove admin role from ${normalized}?`)) return;
+
+    setAdminActionLoading(true);
+    setAdminActionMsg('');
+    try {
+      const res = await adminService.removeAdminByEmail(normalized);
+      const updatedUser = res.data?.user;
+      if (updatedUser?._id) {
+        setUsers((prev) => prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)));
+      } else {
+        const all = await adminService.getUsers();
+        setUsers(all.data.users || all.data || []);
+      }
+      setAdminActionMsg(res.data?.message || 'Admin role removed.');
+    } catch (err) {
+      setAdminActionMsg(err.response?.data?.message || 'Failed to remove admin role.');
+    } finally {
+      setAdminActionLoading(false);
+    }
+  };
+
+  const deleteUser = async (user) => {
+    if (!user?._id) return;
+    const label = user.email || user.name || 'this user';
+    if (!window.confirm(`Delete ${label} from database?`)) return;
+
+    setAdminActionLoading(true);
+    setAdminActionMsg('');
+    try {
+      const res = await adminService.deleteUser(user._id);
+      setUsers((prev) => prev.filter((u) => u._id !== user._id));
+      setAdminActionMsg(res.data?.message || 'User deleted from database.');
+    } catch (err) {
+      setAdminActionMsg(err.response?.data?.message || 'Failed to delete user.');
+    } finally {
+      setAdminActionLoading(false);
+    }
+  };
 
   /* ── Package helpers ── */
   const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setPkgCurImages([]); setPkgImgFiles([]); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
@@ -968,6 +1049,7 @@ const Admin = () => {
                   t==='destinations'?'fa-globe':
                   t==='festivals'?'fa-drum':
                   t==='about'?'fa-mountain':
+                  t==='admins'?'fa-user-shield':
                   t==='home'?'fa-home':
                   'fa-users'
                 }`} />
@@ -1249,11 +1331,94 @@ const Admin = () => {
 
           {/* ── Users ── */}
           {tab === 'users' && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
-                  <tbody>{users.map((u)=>(<tr key={u._id}><td>{u.name}</td><td>{u.email}</td><td><span className={`badge ${u.role==='admin'?'badge-primary':'badge-accent'}`}>{u.role}</span></td><td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td></tr>))}</tbody>
-              </table>
+            <div>
+              <div className={styles.tabToolbar}>
+                <span>{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
+                <input
+                  className="form-input"
+                  style={{ maxWidth: 320 }}
+                  placeholder="Search user by email"
+                  value={userEmailQuery}
+                  onChange={(e) => setUserEmailQuery(e.target.value)}
+                />
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredUsers.length === 0 && (
+                        <tr><td colSpan={5} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No users found</td></tr>
+                      )}
+                      {filteredUsers.map((u)=>(
+                        <tr key={u._id}>
+                          <td>{u.name}</td>
+                          <td>{u.email}</td>
+                          <td><span className={`badge ${u.role==='admin'?'badge-primary':'badge-accent'}`}>{u.role}</span></td>
+                          <td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td>
+                          <td>
+                            <div className={styles.actions}>
+                              {u.role !== 'admin' && (
+                                <button className="btn btn-primary btn-sm" onClick={() => makeAdmin(u.email)} disabled={adminActionLoading}>
+                                  <i className="fas fa-user-shield"/> Make Admin
+                                </button>
+                              )}
+                              <button className={styles.btnDel} title="Delete user from database" onClick={() => deleteUser(u)} disabled={adminActionLoading}>
+                                <i className="fas fa-trash"/> Delete User
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── Admins ── */}
+          {tab === 'admins' && (
+            <div>
+              <div className={styles.tabToolbar}>
+                <span>{filteredAdmins.length} admin{filteredAdmins.length !== 1 ? 's' : ''}</span>
+                <input
+                  className="form-input"
+                  style={{ maxWidth: 320 }}
+                  placeholder="Search email to make admin"
+                  value={adminEmailQuery}
+                  onChange={(e) => setAdminEmailQuery(e.target.value)}
+                />
+                <button className="btn btn-primary btn-sm" onClick={() => makeAdmin(adminEmailQuery)} disabled={adminActionLoading}>
+                  <i className="fas fa-user-shield"/> Make Admin
+                </button>
+              </div>
+              {adminActionMsg && (
+                <div className="alert alert-info" style={{marginBottom:12}}>
+                  <i className="fas fa-info-circle"/> {adminActionMsg}
+                </div>
+              )}
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {filteredAdmins.length === 0 && (
+                        <tr><td colSpan={5} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No admins found</td></tr>
+                      )}
+                      {filteredAdmins.map((u)=>(
+                        <tr key={u._id}>
+                          <td>{u.name}</td>
+                          <td>{u.email}</td>
+                          <td><span className="badge badge-primary">{u.role}</span></td>
+                          <td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td>
+                          <td>
+                            <button className="btn btn-outline btn-sm" onClick={() => removeAdmin(u.email)} disabled={adminActionLoading}>
+                              <i className="fas fa-user-minus"/> Remove Admin
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                </table>
+              </div>
             </div>
           )}
 

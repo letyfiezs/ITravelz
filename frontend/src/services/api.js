@@ -116,6 +116,10 @@ export const chatService = {
 export const adminService = {
   getStats: () => api.get("/admin/stats"),
   getUsers: () => api.get("/admin/users"),
+  makeAdminByEmail: (email) => api.post("/admin/users/make-admin", { email }),
+  removeAdminByEmail: (email) =>
+    api.patch("/admin/users/remove-admin", { email }),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
   getBookings: () => api.get("/admin/bookings"),
   updateBookingStatus: (id, status) =>
     api.patch(`/admin/bookings/${id}`, { status }),

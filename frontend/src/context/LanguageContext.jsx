@@ -599,8 +599,7 @@ const T = {
     booking_select_time_slot: "Bitte eine Uhrzeit auswählen",
     booking_special_requests: "Besondere Wünsche",
     booking_optional: "optional",
-    booking_special_placeholder:
-      "Ernährung, Barrierefreiheit, Jubiläen…",
+    booking_special_placeholder: "Ernährung, Barrierefreiheit, Jubiläen…",
     booking_back: "Zurück",
     booking_confirming: "Wird bestätigt…",
     booking_confirm_booking: "Buchung bestätigen",
@@ -960,8 +959,7 @@ const T = {
     booking_submitted_title: "予約を受け付けました！",
     booking_submitted_for: "",
     booking_submitted_received: " の予約を受け付けました。",
-    booking_submitted_review:
-      " 内容を確認後、確認メールをお送りします。",
+    booking_submitted_review: " 内容を確認後、確認メールをお送りします。",
     booking_step_received: "予約受付・確認中",
     booking_step_approved: "管理者が承認し、支払いリンクを送信",
     booking_step_payment: "お支払い完了で旅行が確定します",
@@ -989,8 +987,7 @@ const T = {
     booking_select_time_slot: "時間枠を選択してください",
     booking_special_requests: "特別リクエスト",
     booking_optional: "任意",
-    booking_special_placeholder:
-      "食事制限、アクセシビリティ、記念日など…",
+    booking_special_placeholder: "食事制限、アクセシビリティ、記念日など…",
     booking_back: "戻る",
     booking_confirming: "確認中…",
     booking_confirm_booking: "予約を確定",
