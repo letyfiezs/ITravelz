@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
 
@@ -9,9 +9,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading]         = useState(true);
   const [isAuthenticated, setIsAuth]  = useState(false);
   const navigate = useNavigate();
+  // Track whether loginWithToken was called so we don't remove its token
+  const oauthDone = useRef(false);
 
   // Validate stored token on mount
   useEffect(() => {
+    // Skip validation on OAuth callback pages — loginWithToken handles auth there
+    const isOAuthCallback =
+      window.location.pathname === '/auth/google/callback' ||
+      window.location.pathname === '/google-complete';
+    if (isOAuthCallback) {
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
       authService.validateToken()
@@ -20,7 +31,10 @@ export const AuthProvider = ({ children }) => {
           setIsAuth(true);
         })
         .catch(() => {
-          localStorage.removeItem('token');
+          // Only remove the token if loginWithToken hasn't already replaced it
+          if (!oauthDone.current) {
+            localStorage.removeItem('token');
+          }
         })
         .finally(() => setLoading(false));
     } else {
@@ -66,9 +80,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithToken = (token, userData) => {
+    oauthDone.current = true;
     localStorage.setItem('token', token);
     setUser(userData);
     setIsAuth(true);
+    setLoading(false);
   };
 
   const updateUser = (updated) => setUser((prev) => ({ ...prev, ...updated }));
