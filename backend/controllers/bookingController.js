@@ -290,8 +290,22 @@ exports.createBooking = async (req, res) => {
       booking.email,
     );
 
-    // No email on creation — user will receive payment request after admin approval,
-    // and final confirmation after successful payment.
+    // Send booking confirmation email to customer
+    if (booking.email) {
+      try {
+        await sendBookingConfirmationEmail(booking.email, booking.fullName, {
+          bookingId:   booking.bookingId,
+          packageName: booking.serviceName,
+          duration:    booking.duration,
+          travelDate:  booking.bookingDate
+            ? booking.bookingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : finalBookingDate,
+        });
+        console.log("✅ Confirmation email sent to", booking.email);
+      } catch (emailErr) {
+        console.error("Confirmation email error (non-critical):", emailErr.message);
+      }
+    }
 
     res.status(201).json({
       success: true,

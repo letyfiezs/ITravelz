@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { bookingService, packageService } from '../services/api';
 import { useAuth } from '../hooks/useContext';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './BookingForm.module.css';
 
 const BookingForm = () => {
@@ -19,6 +20,7 @@ const BookingForm = () => {
   });
   const [error, setError]         = useState('');
   const [loading, setLoading]     = useState(false);
+  const [success, setSuccess]     = useState(null); // holds { bookingId, packageName }
   const [availability, setAvail]  = useState(null);  // { remainingCapacity, totalCapacity, bookedPeople }
   const [availLoading, setAvailLoading] = useState(false);
 
@@ -72,7 +74,7 @@ const BookingForm = () => {
         userId:        user?.id,
         price:         selectedPkg?.price || 0,
       });
-      navigate('/bookings');
+      setSuccess({ packageName: selectedPkg?.name || '', bookingId: Date.now() });
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
       setLoading(false);
@@ -84,9 +86,73 @@ const BookingForm = () => {
   const hasDates     = (selectedPkg?.availableDates || []).length > 0;
   const hasTimes     = (selectedPkg?.availableTimes || []).length > 0;
   const totalPrice   = selectedPkg ? selectedPkg.price * Number(form.numberOfGuests) : 0;
+  const pkgImages    = selectedPkg ? (selectedPkg.images?.length ? selectedPkg.images : selectedPkg.image ? [selectedPkg.image] : []) : [];
+
+  /* ── Success screen ── */
+  if (success) {
+    return (
+      <div className={styles.page}>
+        <div className="container">
+          <div className={styles.successWrap}>
+            <div className={styles.successIcon}><i className="fas fa-check-circle" /></div>
+            <h2 className={styles.successTitle}>Booking Submitted!</h2>
+            <p className={styles.successSub}>
+              Your booking for <strong>{success.packageName}</strong> has been received.
+              Our team will review it shortly and send you a confirmation email.
+            </p>
+            <div className={styles.successSteps}>
+              <div className={styles.successStep}>
+                <span className={styles.successStepNum}>1</span>
+                <span>Booking received &amp; under review</span>
+              </div>
+              <div className={styles.successStep}>
+                <span className={styles.successStepNum}>2</span>
+                <span>Admin approves &amp; sends payment link</span>
+              </div>
+              <div className={styles.successStep}>
+                <span className={styles.successStepNum}>3</span>
+                <span>Complete payment to confirm your trip</span>
+              </div>
+            </div>
+            <div className={styles.successActions}>
+              <Link to="/bookings" className="btn btn-primary btn-lg">
+                <i className="fas fa-list" /> View My Bookings
+              </Link>
+              <Link to="/packages" className="btn btn-outline btn-lg">
+                <i className="fas fa-compass" /> Explore More Tours
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
+      {/* Hero strip with selected package image */}
+      {selectedPkg && pkgImages.length > 0 && (
+        <div className={styles.heroStrip}>
+          <ImageSlideshow
+            images={pkgImages}
+            fallback={selectedPkg.image}
+            alt={selectedPkg.name}
+            interval={5000}
+            className={styles.heroSlide}
+          />
+          <div className={styles.heroStripOverlay} />
+          <div className={styles.heroStripContent}>
+            <span className={styles.heroStripBadge}>{selectedPkg.category}</span>
+            <h2 className={styles.heroStripTitle}>{selectedPkg.name}</h2>
+            {selectedPkg.destination && (
+              <p className={styles.heroStripMeta}>
+                <i className="fas fa-map-marker-alt" /> {selectedPkg.destination}
+                {selectedPkg.duration && <> &bull; <i className="fas fa-clock" /> {selectedPkg.duration}</>}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
       <div className="container">
         <div className={styles.pageHeader}>
           <span className="section-label">Almost there!</span>
@@ -236,10 +302,11 @@ const BookingForm = () => {
           {selectedPkg && (
             <div className={styles.infoCard}>
               <div className={styles.infoImg}>
-                <img
-                  src={selectedPkg.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'}
+                <ImageSlideshow
+                  images={pkgImages}
+                  fallback={selectedPkg.image || 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'}
                   alt={selectedPkg.name}
-                  onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'; }}
+                  interval={5000}
                 />
                 <div className={styles.infoImgOverlay} />
                 <span className={styles.infoCategoryBadge}>{selectedPkg.category}</span>

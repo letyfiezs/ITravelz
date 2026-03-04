@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { packageService, destinationService, festivalService, aboutService, contentService } from '../services/api';
 import { useLanguage } from '../hooks/useContext';
+import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './Home.module.css';
 
 const STATS = [
@@ -130,8 +131,8 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const slogan = heroSlogan || t('home_slogan') || 'Discover Mongolia, Explore the World';
-  const intro  = heroIntro  || t('home_intro')  || 'The land of ancient nomads — a place that stays forever in the hearts of travellers.';
+  const slogan = t('home_slogan') || heroSlogan || 'Discover Mongolia, Explore the World';
+  const intro  = t('home_intro')  || heroIntro  || 'The land of ancient nomads — a place that stays forever in the hearts of travellers.';
   const bgImg  = heroImage  || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=90';
 
   const handleSubscribe = (e) => { e.preventDefault(); setSubscribed(true); setEmail(''); };
@@ -204,7 +205,12 @@ export default function Home() {
         {packages.map(pkg => (
           <div key={pkg._id} className={styles.scrollCard}>
             <div className={styles.scrollCardImg}>
-              <img src={pkg.images?.[0] || pkg.image || FALLBACK_PKGS[0].image} alt={pkg.name} loading="lazy" />
+              <ImageSlideshow
+                images={pkg.images?.length ? pkg.images : []}
+                fallback={pkg.image || FALLBACK_PKGS[0].image}
+                alt={pkg.name}
+                interval={5000}
+              />
               {(pkg.duration || pkg.dur) && (
                 <span className={styles.scrollCardBadge}>
                   <i className="fas fa-clock" /> {pkg.duration || pkg.dur}
@@ -237,7 +243,12 @@ export default function Home() {
           return (
             <Link key={dest._id} to="/destinations" className={`${styles.scrollCard} ${styles.destScrollCard}`}>
               <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
-                <img src={img} alt={name} loading="lazy" />
+                <ImageSlideshow
+                  images={dest.images?.length ? dest.images : []}
+                  fallback={img}
+                  alt={name}
+                  interval={5000}
+                />
                 <div className={styles.destOverlay} />
                 {tag && <span className={styles.destTagBadge}>{tag}</span>}
                 <div className={styles.destInfo}>
@@ -255,7 +266,12 @@ export default function Home() {
         {festivals.map(fest => (
           <div key={fest._id} className={styles.scrollCard}>
             <div className={styles.scrollCardImg}>
-              <img src={fest.image || FALLBACK_FESTIVALS[0].image} alt={fest.name} loading="lazy" />
+              <ImageSlideshow
+                images={fest.images?.length ? fest.images : []}
+                fallback={fest.image || FALLBACK_FESTIVALS[0].image}
+                alt={fest.name}
+                interval={5000}
+              />
               {fest.category && <span className={styles.scrollCardBadge}>{fest.category}</span>}
             </div>
             <div className={styles.scrollCardBody}>
@@ -277,7 +293,12 @@ export default function Home() {
         {abouts.map(item => (
           <Link key={item._id} to="/about-mongolia" className={`${styles.scrollCard} ${styles.destScrollCard}`}>
             <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
-              <img src={item.image || FALLBACK_ABOUT[0].image} alt={item.title} loading="lazy" />
+              <ImageSlideshow
+                images={item.images?.length ? item.images : []}
+                fallback={item.image || FALLBACK_ABOUT[0].image}
+                alt={item.title}
+                interval={5000}
+              />
               <div className={styles.destOverlay} />
               {item.category && <span className={styles.destTagBadge}>{item.category}</span>}
               <div className={styles.destInfo}>
