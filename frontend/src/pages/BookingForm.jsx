@@ -9,6 +9,8 @@ const BookingForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { language, t } = useLanguage();
+  const dateLocaleMap = { mn: 'mn-MN', en: 'en-US', de: 'de-DE', ko: 'ko-KR', ja: 'ja-JP', zh: 'zh-CN' };
+  const dateLocale = dateLocaleMap[language] || 'en-US';
   const tr = (pkg, key) => pkg?.translations?.[language]?.[key] || pkg?.[key] || '';
   const [searchParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
@@ -78,7 +80,7 @@ const BookingForm = () => {
       });
       setSuccess({ packageName: tr(selectedPkg, 'name') || selectedPkg?.name || '', bookingId: Date.now() });
     } catch (err) {
-      setError(err.response?.data?.message || 'Booking failed. Please try again.');
+      setError(err.response?.data?.message || t('booking_failed'));
       setLoading(false);
     }
   };
@@ -97,31 +99,31 @@ const BookingForm = () => {
         <div className="container">
           <div className={styles.successWrap}>
             <div className={styles.successIcon}><i className="fas fa-check-circle" /></div>
-            <h2 className={styles.successTitle}>Booking Submitted!</h2>
+            <h2 className={styles.successTitle}>{t('booking_submitted_title')}</h2>
             <p className={styles.successSub}>
-              Your booking for <strong>{success.packageName}</strong> has been received.
-              Our team will review it shortly and send you a confirmation email.
+              {t('booking_submitted_for')} <strong>{success.packageName}</strong> {t('booking_submitted_received')}
+              {t('booking_submitted_review')}
             </p>
             <div className={styles.successSteps}>
               <div className={styles.successStep}>
                 <span className={styles.successStepNum}>1</span>
-                <span>Booking received &amp; under review</span>
+                <span>{t('booking_step_received')}</span>
               </div>
               <div className={styles.successStep}>
                 <span className={styles.successStepNum}>2</span>
-                <span>Admin approves &amp; sends payment link</span>
+                <span>{t('booking_step_approved')}</span>
               </div>
               <div className={styles.successStep}>
                 <span className={styles.successStepNum}>3</span>
-                <span>Complete payment to confirm your trip</span>
+                <span>{t('booking_step_payment')}</span>
               </div>
             </div>
             <div className={styles.successActions}>
               <Link to="/bookings" className="btn btn-primary btn-lg">
-                <i className="fas fa-list" /> View My Bookings
+                <i className="fas fa-list" /> {t('booking_view_my_bookings')}
               </Link>
               <Link to="/packages" className="btn btn-outline btn-lg">
-                <i className="fas fa-compass" /> Explore More Tours
+                <i className="fas fa-compass" /> {t('booking_explore_more_tours')}
               </Link>
             </div>
           </div>
@@ -157,9 +159,9 @@ const BookingForm = () => {
       )}
       <div className="container">
         <div className={styles.pageHeader}>
-          <span className="section-label">Almost there!</span>
-          <h1 className={styles.title}>Book Your Tour</h1>
-          <p className={styles.subtitle}>Select a package and fill in your details — our team will confirm shortly.</p>
+          <span className="section-label">{t('booking_almost_there')}</span>
+          <h1 className={styles.title}>{t('booking_title')}</h1>
+          <p className={styles.subtitle}>{t('booking_subtitle')}</p>
         </div>
 
         <div className={`${styles.layout} ${selectedPkg ? styles.layoutSplit : ''}`}>
@@ -170,7 +172,7 @@ const BookingForm = () => {
             <form onSubmit={handleSubmit} className={styles.form}>
               {/* Package Select */}
               <div className="form-group">
-                <label>Tour Package</label>
+                <label>{t('booking_tour_package')}</label>
                 <div className={styles.pkgGrid}>
                   {packages.map((p) => (
                     <button
@@ -199,7 +201,7 @@ const BookingForm = () => {
                 </div>
                 {packages.length === 0 && (
                   <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
-                    <i className="fas fa-spinner fa-spin" /> Loading packages…
+                    <i className="fas fa-spinner fa-spin" /> {t('booking_loading_packages')}
                   </p>
                 )}
               </div>
@@ -207,12 +209,12 @@ const BookingForm = () => {
               {/* Date + Guests */}
               <div className={styles.row}>
                 <div className="form-group">
-                  <label>Travel Date</label>
+                  <label>{t('booking_travel_date')}</label>
                   {hasDates ? (
                     <select className="form-input" value={form.travelDate} onChange={set('travelDate')} required>
-                      <option value="">Select a date</option>
+                      <option value="">{t('booking_select_date')}</option>
                       {selectedPkg.availableDates.map((d) => (
-                        <option key={d} value={d}>{new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</option>
+                        <option key={d} value={d}>{new Date(d + 'T00:00:00').toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}</option>
                       ))}
                     </select>
                   ) : (
@@ -220,7 +222,7 @@ const BookingForm = () => {
                   )}
                 </div>
                 <div className="form-group">
-                  <label>Number of Guests</label>
+                  <label>{t('booking_guests_label')}</label>
                   <input
                     className="form-input"
                     type="number"
@@ -232,22 +234,22 @@ const BookingForm = () => {
                   />
                   {availLoading && (
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                      <i className="fas fa-spinner fa-spin" style={{ marginRight: 4 }} /> Checking availability…
+                      <i className="fas fa-spinner fa-spin" style={{ marginRight: 4 }} /> {t('booking_checking_availability')}
                     </p>
                   )}
                   {!availLoading && availability && (
                     <p style={{ fontSize: 12, marginTop: 4, color: availability.remainingCapacity === 0 ? 'var(--error)' : availability.remainingCapacity <= 3 ? '#f59e0b' : 'var(--success, #10b981)', fontWeight: 600 }}>
                       <i className={`fas ${availability.remainingCapacity === 0 ? 'fa-ban' : availability.remainingCapacity <= 3 ? 'fa-exclamation-triangle' : 'fa-users'}`} style={{ marginRight: 4 }} />
                       {availability.remainingCapacity === 0
-                        ? 'This slot is fully booked — choose another date or time'
-                        : `${availability.remainingCapacity} of ${availability.totalCapacity} spots available`
+                        ? t('booking_slot_full')
+                        : `${availability.remainingCapacity} ${t('booking_of')} ${availability.totalCapacity} ${t('booking_spots_available')}`
                       }
                     </p>
                   )}
                   {!availLoading && !availability && selectedPkg?.bookingLimitPerSlot && (
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
                       <i className="fas fa-users" style={{ color: 'var(--primary)', marginRight: 4 }} />
-                      Up to <strong>{selectedPkg.bookingLimitPerSlot}</strong> guests per slot — select date &amp; time to see live availability
+                      {t('booking_up_to')} <strong>{selectedPkg.bookingLimitPerSlot}</strong> {t('booking_guests_per_slot')} — {t('booking_select_datetime_hint')}
                     </p>
                   )}
                 </div>
@@ -256,7 +258,7 @@ const BookingForm = () => {
               {/* Time slot (only if package has times) */}
               {hasTimes && (
                 <div className="form-group">
-                  <label><i className="fas fa-clock" /> Departure Time</label>
+                  <label><i className="fas fa-clock" /> {t('booking_departure_time')}</label>
                   <div className={styles.timeGrid}>
                     {selectedPkg.availableTimes.map((t) => (
                       <button
@@ -270,31 +272,31 @@ const BookingForm = () => {
                     ))}
                   </div>
                   {hasTimes && !form.bookingTime && (
-                    <p style={{ color: 'var(--error)', fontSize: 12, marginTop: 4 }}>Please select a time slot</p>
+                    <p style={{ color: 'var(--error)', fontSize: 12, marginTop: 4 }}>{t('booking_select_time_slot')}</p>
                   )}
                 </div>
               )}
 
               <div className="form-group">
-                <label>Phone Number</label>
+                <label>{t('contact_phone')}</label>
                 <input className="form-input" type="tel" value={form.phone} onChange={set('phone')} placeholder="+976 9900-0000" required />
               </div>
 
               <div className="form-group">
-                <label>Special Requests <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
-                <textarea className="form-input" rows={3} value={form.specialRequests} onChange={set('specialRequests')} placeholder="Dietary requirements, accessibility needs, anniversaries…" />
+                <label>{t('booking_special_requests')} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({t('booking_optional')})</span></label>
+                <textarea className="form-input" rows={3} value={form.specialRequests} onChange={set('specialRequests')} placeholder={t('booking_special_placeholder')} />
               </div>
 
               <div className={styles.actions}>
                 <button type="button" className="btn btn-outline" onClick={() => navigate('/bookings')}>
-                  <i className="fas fa-arrow-left" /> Back
+                  <i className="fas fa-arrow-left" /> {t('booking_back')}
                 </button>
                 <button
                   type="submit"
                   className="btn btn-primary btn-lg"
                   disabled={loading || !form.packageId || (hasTimes && !form.bookingTime) || availability?.remainingCapacity === 0}
                 >
-                  {loading ? <><span className="spinner" /> Confirming…</> : <><i className="fas fa-check" /> Confirm Booking</>}
+                  {loading ? <><span className="spinner" /> {t('booking_confirming')}</> : <><i className="fas fa-check" /> {t('booking_confirm_booking')}</>}
                 </button>
               </div>
             </form>
@@ -331,12 +333,12 @@ const BookingForm = () => {
                 )}
                 <div className={styles.infoPriceBox}>
                   <div>
-                    <span className={styles.infoPriceLabel}>Price per person</span>
+                    <span className={styles.infoPriceLabel}>{t('booking_price_per_person')}</span>
                     <strong className={styles.infoPriceValue}>${Number(selectedPkg.price).toLocaleString()}</strong>
                   </div>
                   {Number(form.numberOfGuests) > 1 && (
                     <div className={styles.infoTotal}>
-                      <span>{form.numberOfGuests} guests</span>
+                      <span>{form.numberOfGuests} {t('booking_guests_count')}</span>
                       <strong>${totalPrice.toLocaleString()}</strong>
                     </div>
                   )}
