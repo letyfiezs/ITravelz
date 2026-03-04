@@ -1,43 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import { adminService } from '../services/api';
-import { useLanguage } from '../hooks/useContext';
-import styles from './Admin.module.css';
+import React, { useState, useEffect } from "react";
+import { adminService } from "../services/api";
+import { useLanguage } from "../hooks/useContext";
+import styles from "./Admin.module.css";
 
-const TABS             = ['overview', 'bookings', 'packages', 'itineraries', 'destinations', 'festivals', 'about', 'users', 'admins', 'home', 'pages'];
-const BOOKING_STATUSES = ['pending', 'approved', 'completed', 'cancelled'];
-const CATEGORIES       = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Cruise'];
-const DEST_CATEGORIES  = ['Beach', 'Cultural', 'Adventure', 'City', 'Nature', 'Romantic', 'Family', 'Historical', 'Mountain', 'Desert'];
+const TABS = [
+  "overview",
+  "bookings",
+  "packages",
+  "itineraries",
+  "destinations",
+  "festivals",
+  "about",
+  "users",
+  "admins",
+  "home",
+  "pages",
+];
+const BOOKING_STATUSES = ["pending", "approved", "completed", "cancelled"];
+const CATEGORIES = [
+  "Beach",
+  "Cultural",
+  "Adventure",
+  "City",
+  "Nature",
+  "Romantic",
+  "Family",
+  "Cruise",
+];
+const DEST_CATEGORIES = [
+  "Beach",
+  "Cultural",
+  "Adventure",
+  "City",
+  "Nature",
+  "Romantic",
+  "Family",
+  "Historical",
+  "Mountain",
+  "Desert",
+];
 
-const EMPTY_PKG  = { name: '', description: '', price: '', category: 'Beach', duration: '', destination: '', image: '', images: [], features: '', status: 'active', availableDates: [], availableTimes: [], bookingLimitPerSlot: 5, translations: {} };
-const EMPTY_ITIN = { title: '', description: '', duration: '', locations: '', difficulty: 'moderate', price: '', order: 0, isActive: true };
-const DIFFICULTIES = ['easy', 'moderate', 'challenging'];
-const EMPTY_DEST = { name: '', city: '', country: '', category: 'Cultural', image: '', images: [], location: '', tagline: '', description: '', culturalInfo: '', highlights: '', bestTime: '', avgCost: '', readMore: '', isActive: true, translations: {} };
-const FEST_CATEGORIES = ['naadam', 'culture', 'religious', 'winter', 'food', 'music', 'other'];
-const EMPTY_FEST = { name: '', description: '', date: '', location: '', image: '', images: [], category: 'culture', link: '', isActive: true, translations: {} };
-const ABOUT_CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
-const EMPTY_ABOUT = { title: '', description: '', readMore: '', image: '', images: [], category: 'misc', order: 0, isActive: true, translations: {} };
+const EMPTY_PKG = {
+  name: "",
+  description: "",
+  price: "",
+  category: "Beach",
+  duration: "",
+  destination: "",
+  image: "",
+  images: [],
+  features: "",
+  status: "active",
+  availableDates: [],
+  availableTimes: [],
+  bookingLimitPerSlot: 5,
+  translations: {},
+};
+const EMPTY_ITIN = {
+  title: "",
+  description: "",
+  duration: "",
+  locations: "",
+  difficulty: "moderate",
+  price: "",
+  order: 0,
+  isActive: true,
+};
+const DIFFICULTIES = ["easy", "moderate", "challenging"];
+const EMPTY_DEST = {
+  name: "",
+  city: "",
+  country: "",
+  category: "Cultural",
+  image: "",
+  images: [],
+  location: "",
+  tagline: "",
+  description: "",
+  culturalInfo: "",
+  highlights: "",
+  bestTime: "",
+  avgCost: "",
+  readMore: "",
+  isActive: true,
+  translations: {},
+};
+const FEST_CATEGORIES = [
+  "naadam",
+  "culture",
+  "religious",
+  "winter",
+  "food",
+  "music",
+  "other",
+];
+const EMPTY_FEST = {
+  name: "",
+  description: "",
+  date: "",
+  location: "",
+  image: "",
+  images: [],
+  category: "culture",
+  link: "",
+  isActive: true,
+  translations: {},
+};
+const ABOUT_CATEGORIES = [
+  "culture",
+  "nature",
+  "history",
+  "food",
+  "nomad",
+  "misc",
+];
+const EMPTY_ABOUT = {
+  title: "",
+  description: "",
+  readMore: "",
+  image: "",
+  images: [],
+  category: "misc",
+  order: 0,
+  isActive: true,
+  translations: {},
+};
 
 /* ── Auto-detect source language: Cyrillic-heavy → 'mn', otherwise → 'en' ── */
 const detectSourceLang = (texts) => {
-  const combined = Object.values(texts).flat().join(' ');
+  const combined = Object.values(texts).flat().join(" ");
   const cyrillic = (combined.match(/[\u0400-\u04FF]/g) || []).length;
-  return cyrillic > combined.replace(/\s/g, '').length * 0.15 ? 'mn' : 'en';
+  return cyrillic > combined.replace(/\s/g, "").length * 0.15 ? "mn" : "en";
 };
 
 /* ── Google Maps embed URL builder (no API key needed) ── */
 const buildMapEmbedUrl = (query) => {
-  if (!query || !query.trim()) return '';
+  if (!query || !query.trim()) return "";
   const q = query.trim();
   // Already an embed URL
-  if (q.includes('/maps/embed')) return q;
+  if (q.includes("/maps/embed")) return q;
   // Google Maps place URL
-  if (q.includes('google.com/maps/place')) {
-    const part = q.replace(/.*google\.com\/maps\/place\//, '').split('/')[0];
+  if (q.includes("google.com/maps/place")) {
+    const part = q.replace(/.*google\.com\/maps\/place\//, "").split("/")[0];
     return `https://maps.google.com/maps?q=${encodeURIComponent(decodeURIComponent(part))}&output=embed`;
   }
   // Any other Google Maps / goo.gl link
-  if (q.includes('google.com/maps') || q.includes('maps.google') || q.includes('goo.gl/maps')) {
-    return q.replace('/maps?', '/maps/embed?').replace(/\/maps\/(?!embed)/, '/maps/embed/');
+  if (
+    q.includes("google.com/maps") ||
+    q.includes("maps.google") ||
+    q.includes("goo.gl/maps")
+  ) {
+    return q
+      .replace("/maps?", "/maps/embed?")
+      .replace(/\/maps\/(?!embed)/, "/maps/embed/");
   }
   // Plain text search
   return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
@@ -49,7 +164,9 @@ const Modal = ({ title, onClose, children }) => (
     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
       <div className={styles.modalHeader}>
         <h3>{title}</h3>
-        <button className={styles.modalClose} onClick={onClose}><i className="fas fa-times" /></button>
+        <button className={styles.modalClose} onClick={onClose}>
+          <i className="fas fa-times" />
+        </button>
       </div>
       {children}
     </div>
@@ -58,123 +175,139 @@ const Modal = ({ title, onClose, children }) => (
 
 const Admin = () => {
   const { t } = useLanguage();
-  const [tab, setTab]             = useState('overview');
-  const [stats, setStats]         = useState(null);
-  const [bookings, setBookings]   = useState([]);
-  const [users, setUsers]         = useState([]);
-  const [userEmailQuery, setUserEmailQuery] = useState('');
-  const [adminEmailQuery, setAdminEmailQuery] = useState('');
-  const [adminActionMsg, setAdminActionMsg] = useState('');
-  const [adminActionTone, setAdminActionTone] = useState('info');
+  const [tab, setTab] = useState("overview");
+  const [stats, setStats] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [userEmailQuery, setUserEmailQuery] = useState("");
+  const [adminEmailQuery, setAdminEmailQuery] = useState("");
+  const [adminActionMsg, setAdminActionMsg] = useState("");
+  const [adminActionTone, setAdminActionTone] = useState("info");
   const [adminActionLoading, setAdminActionLoading] = useState(false);
-  const [packages, setPackages]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState('');
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   /* booking filter */
-  const [bFilter, setBFilter]     = useState('all');
+  const [bFilter, setBFilter] = useState("all");
 
   /* booking detail modal */
-  const [bDetail, setBDetail]     = useState(null);
+  const [bDetail, setBDetail] = useState(null);
 
   /* destinations */
   const [destinations, setDestinations] = useState([]);
-  const [destModal, setDestModal]       = useState(false);
-  const [destForm, setDestForm]         = useState(EMPTY_DEST);
-  const [destEdit, setDestEdit]         = useState(null);
-  const [destSaving, setDestSaving]     = useState(false);
-  const [destMsg, setDestMsg]           = useState('');
+  const [destModal, setDestModal] = useState(false);
+  const [destForm, setDestForm] = useState(EMPTY_DEST);
+  const [destEdit, setDestEdit] = useState(null);
+  const [destSaving, setDestSaving] = useState(false);
+  const [destMsg, setDestMsg] = useState("");
   const [destImgFiles, setDestImgFiles] = useState([]);
   const [destCurImages, setDestCurImages] = useState([]);
   const [destTranslating, setDestTranslating] = useState(false);
   /* destination map picker */
-  const [destMapSearch, setDestMapSearch]   = useState('');
-  const [destMapPreview, setDestMapPreview] = useState('');
+  const [destMapSearch, setDestMapSearch] = useState("");
+  const [destMapPreview, setDestMapPreview] = useState("");
 
   /* destinations hero (page header scheduling) */
-  const EMPTY_HERO = { title: '', subtitle: '', eyebrow: '', imageUrl: '', validFrom: '', isActive: true };
+  const EMPTY_HERO = {
+    title: "",
+    subtitle: "",
+    eyebrow: "",
+    imageUrl: "",
+    validFrom: "",
+    isActive: true,
+  };
 
   /* ── Generic page hero management (packages, festivals, about, itineraries, shop, contact) ── */
   const PAGE_HERO_SECTIONS = [
-    { key: 'packages_hero',    label: 'Packages Page Header'       },
-    { key: 'itineraries_hero', label: 'Itineraries Page Header'    },
-    { key: 'festivals_hero',   label: 'Festivals Page Header'      },
-    { key: 'about_hero',       label: 'About Mongolia Page Header' },
-    { key: 'shop_hero',        label: 'Shop Page Header'           },
-    { key: 'contact_hero',     label: 'Contact Page Header'        },
+    { key: "packages_hero", label: "Packages Page Header" },
+    { key: "itineraries_hero", label: "Itineraries Page Header" },
+    { key: "festivals_hero", label: "Festivals Page Header" },
+    { key: "about_hero", label: "About Mongolia Page Header" },
+    { key: "shop_hero", label: "Shop Page Header" },
+    { key: "contact_hero", label: "Contact Page Header" },
   ];
-  const [pageHeroes, setPageHeroes]                 = useState({});
-  const [pageHeroModal, setPageHeroModal]           = useState(null); // section string when open
-  const [pageHeroForm, setPageHeroForm]             = useState(EMPTY_HERO);
-  const [pageHeroEdit, setPageHeroEdit]             = useState(null);
-  const [pageHeroSaving, setPageHeroSaving]         = useState(false);
-  const [pageHeroMsg, setPageHeroMsg]               = useState('');
-  const [pageHeroBgFile, setPageHeroBgFile]         = useState(null);
+  const [pageHeroes, setPageHeroes] = useState({});
+  const [pageHeroModal, setPageHeroModal] = useState(null); // section string when open
+  const [pageHeroForm, setPageHeroForm] = useState(EMPTY_HERO);
+  const [pageHeroEdit, setPageHeroEdit] = useState(null);
+  const [pageHeroSaving, setPageHeroSaving] = useState(false);
+  const [pageHeroMsg, setPageHeroMsg] = useState("");
+  const [pageHeroBgFile, setPageHeroBgFile] = useState(null);
   const [pageHeroBgUploading, setPageHeroBgUploading] = useState(false);
-  const [destHeroList, setDestHeroList]       = useState([]);
-  const [destHeroModal, setDestHeroModal]     = useState(false);
-  const [destHeroForm, setDestHeroForm]       = useState(EMPTY_HERO);
-  const [destHeroEdit, setDestHeroEdit]       = useState(null);
-  const [destHeroSaving, setDestHeroSaving]   = useState(false);
-  const [destHeroMsg, setDestHeroMsg]         = useState('');
-  const [destHeroBgFile, setDestHeroBgFile]   = useState(null);
+  const [destHeroList, setDestHeroList] = useState([]);
+  const [destHeroModal, setDestHeroModal] = useState(false);
+  const [destHeroForm, setDestHeroForm] = useState(EMPTY_HERO);
+  const [destHeroEdit, setDestHeroEdit] = useState(null);
+  const [destHeroSaving, setDestHeroSaving] = useState(false);
+  const [destHeroMsg, setDestHeroMsg] = useState("");
+  const [destHeroBgFile, setDestHeroBgFile] = useState(null);
   const [destHeroBgUploading, setDestHeroBgUploading] = useState(false);
 
   /* festivals */
-  const [festivals, setFestivals]             = useState([]);
-  const [festModal, setFestModal]             = useState(false);
-  const [festForm, setFestForm]               = useState(EMPTY_FEST);
-  const [festEdit, setFestEdit]               = useState(null);
-  const [festSaving, setFestSaving]           = useState(false);
-  const [festMsg, setFestMsg]                 = useState('');
-  const [festImgFiles, setFestImgFiles]       = useState([]);
-  const [festCurImages, setFestCurImages]     = useState([]);
+  const [festivals, setFestivals] = useState([]);
+  const [festModal, setFestModal] = useState(false);
+  const [festForm, setFestForm] = useState(EMPTY_FEST);
+  const [festEdit, setFestEdit] = useState(null);
+  const [festSaving, setFestSaving] = useState(false);
+  const [festMsg, setFestMsg] = useState("");
+  const [festImgFiles, setFestImgFiles] = useState([]);
+  const [festCurImages, setFestCurImages] = useState([]);
   const [festTranslating, setFestTranslating] = useState(false);
 
   /* about mongolia */
-  const [aboutItems, setAboutItems]           = useState([]);
-  const [aboutModal, setAboutModal]           = useState(false);
-  const [aboutForm, setAboutForm]             = useState(EMPTY_ABOUT);
-  const [aboutEdit, setAboutEdit]             = useState(null);
-  const [aboutSaving, setAboutSaving]         = useState(false);
-  const [aboutMsg, setAboutMsg]               = useState('');
-  const [aboutImgFiles, setAboutImgFiles]     = useState([]);
-  const [aboutCurImages, setAboutCurImages]   = useState([]);
+  const [aboutItems, setAboutItems] = useState([]);
+  const [aboutModal, setAboutModal] = useState(false);
+  const [aboutForm, setAboutForm] = useState(EMPTY_ABOUT);
+  const [aboutEdit, setAboutEdit] = useState(null);
+  const [aboutSaving, setAboutSaving] = useState(false);
+  const [aboutMsg, setAboutMsg] = useState("");
+  const [aboutImgFiles, setAboutImgFiles] = useState([]);
+  const [aboutCurImages, setAboutCurImages] = useState([]);
   const [aboutTranslating, setAboutTranslating] = useState(false);
 
   /* package modal */
-  const [pkgModal, setPkgModal]         = useState(false);
-  const [pkgForm, setPkgForm]           = useState(EMPTY_PKG);
-  const [pkgEdit, setPkgEdit]           = useState(null);
-  const [pkgSaving, setPkgSaving]       = useState(false);
-  const [pkgMsg, setPkgMsg]             = useState('');
-  const [pkgImgFiles, setPkgImgFiles]   = useState([]);
+  const [pkgModal, setPkgModal] = useState(false);
+  const [pkgForm, setPkgForm] = useState(EMPTY_PKG);
+  const [pkgEdit, setPkgEdit] = useState(null);
+  const [pkgSaving, setPkgSaving] = useState(false);
+  const [pkgMsg, setPkgMsg] = useState("");
+  const [pkgImgFiles, setPkgImgFiles] = useState([]);
   const [pkgCurImages, setPkgCurImages] = useState([]);
   const [pkgTranslating, setPkgTranslating] = useState(false);
   /* date/time inputs */
-  const [newDate, setNewDate]     = useState('');
-  const [newTime, setNewTime]     = useState('');
+  const [newDate, setNewDate] = useState("");
+  const [newTime, setNewTime] = useState("");
 
   /* itinerary modal */
-  const [itineraries, setItineraries]   = useState([]);
-  const [itinModal, setItinModal]       = useState(false);
-  const [itinForm, setItinForm]         = useState(EMPTY_ITIN);
-  const [itinEdit, setItinEdit]         = useState(null);
-  const [itinSaving, setItinSaving]     = useState(false);
-  const [itinMsg, setItinMsg]           = useState('');
+  const [itineraries, setItineraries] = useState([]);
+  const [itinModal, setItinModal] = useState(false);
+  const [itinForm, setItinForm] = useState(EMPTY_ITIN);
+  const [itinEdit, setItinEdit] = useState(null);
+  const [itinSaving, setItinSaving] = useState(false);
+  const [itinMsg, setItinMsg] = useState("");
   const [itinImgFiles, setItinImgFiles] = useState([]);
   const [itinCurImages, setItinCurImages] = useState([]);
 
   /* home hero */
-  const EMPTY_HOME_HERO = { slogan: '', intro: '', imageUrl: '', frontType: 'image', frontText: '', frontImageUrl: '', frontOverlayText: '', frontVideoUrl: '' };
-  const [homeHeroForm, setHomeHeroForm]         = useState(EMPTY_HOME_HERO);
-  const [homeHeroItems, setHomeHeroItems]       = useState([]);
-  const [homeHeroImgFile, setHomeHeroImgFile]   = useState(null);
+  const EMPTY_HOME_HERO = {
+    slogan: "",
+    intro: "",
+    imageUrl: "",
+    frontType: "image",
+    frontText: "",
+    frontImageUrl: "",
+    frontOverlayText: "",
+    frontVideoUrl: "",
+  };
+  const [homeHeroForm, setHomeHeroForm] = useState(EMPTY_HOME_HERO);
+  const [homeHeroItems, setHomeHeroItems] = useState([]);
+  const [homeHeroImgFile, setHomeHeroImgFile] = useState(null);
   const [homeHeroFrontFile, setHomeHeroFrontFile] = useState(null);
   const [homeHeroFrontVideoFile, setHomeHeroFrontVideoFile] = useState(null);
-  const [homeHeroSaving, setHomeHeroSaving]     = useState(false);
+  const [homeHeroSaving, setHomeHeroSaving] = useState(false);
   const [homeHeroUploading, setHomeHeroUploading] = useState(false);
-  const [homeHeroMsg, setHomeHeroMsg]           = useState('');
+  const [homeHeroMsg, setHomeHeroMsg] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -196,30 +329,44 @@ const Admin = () => {
         setDestinations(dest.data.destinations || dest.data || []);
         setItineraries(itin.data.itineraries || itin.data || []);
         const allContent = cont.data.content || cont.data || [];
-        setDestHeroList(allContent.filter((c) => c.section === 'destinations_hero'));
+        setDestHeroList(
+          allContent.filter((c) => c.section === "destinations_hero"),
+        );
         // Load all other page hero sections
         const phData = {};
         PAGE_HERO_SECTIONS.forEach(({ key }) => {
           phData[key] = allContent.filter((c) => c.section === key);
         });
         setPageHeroes(phData);
-        const heroItems = allContent.filter((c) => c.section === 'hero');
+        const heroItems = allContent.filter((c) => c.section === "hero");
         setHomeHeroItems(heroItems);
         const findH = (key) => heroItems.find((c) => c.key === key);
         setHomeHeroForm({
-          slogan:       findH('home_slogan')?.text  || findH('home_slogan')?.title || '',
-          intro:        findH('home_intro')?.text   || '',
-          imageUrl:     findH('home_image')?.image  || findH('home_image')?.imageUrl || '',
-          frontType:    findH('home_front_type')?.text || 'image',
-          frontText:    findH('home_front_text')?.text || '',
-          frontImageUrl: findH('home_front_image')?.image || findH('home_front_image')?.imageUrl || '',
-          frontOverlayText: findH('home_front_overlay_text')?.text || '',
-          frontVideoUrl: findH('home_front_video')?.text || findH('home_front_video')?.image || '',
+          slogan:
+            findH("home_slogan")?.text || findH("home_slogan")?.title || "",
+          intro: findH("home_intro")?.text || "",
+          imageUrl:
+            findH("home_image")?.image || findH("home_image")?.imageUrl || "",
+          frontType: findH("home_front_type")?.text || "image",
+          frontText: findH("home_front_text")?.text || "",
+          frontImageUrl:
+            findH("home_front_image")?.image ||
+            findH("home_front_image")?.imageUrl ||
+            "",
+          frontOverlayText: findH("home_front_overlay_text")?.text || "",
+          frontVideoUrl:
+            findH("home_front_video")?.text ||
+            findH("home_front_video")?.image ||
+            "",
         });
         setFestivals(fest.data.festivals || fest.data || []);
         setAboutItems(abt.data.items || abt.data || []);
       })
-      .catch(() => setError('Failed to load admin data. Make sure the backend is running.'))
+      .catch(() =>
+        setError(
+          "Failed to load admin data. Make sure the backend is running.",
+        ),
+      )
       .finally(() => setLoading(false));
   }, []);
 
@@ -227,87 +374,140 @@ const Admin = () => {
   const updateStatus = async (id, status) => {
     try {
       await adminService.updateBookingStatus(id, status);
-      setBookings((prev) => prev.map((b) => b._id === id ? { ...b, status } : b));
+      setBookings((prev) =>
+        prev.map((b) => (b._id === id ? { ...b, status } : b)),
+      );
       if (bDetail?._id === id) setBDetail((p) => ({ ...p, status }));
-    } catch { alert('Status update failed.'); }
+    } catch {
+      alert("Status update failed.");
+    }
   };
   const approveBook = async (id) => {
-    try { await adminService.approveBooking(id); setBookings((p) => p.map((b) => b._id === id ? { ...b, status: 'approved' } : b)); if (bDetail?._id === id) setBDetail((p) => ({ ...p, status: 'approved' })); }
-    catch { alert('Approve failed.'); }
+    try {
+      await adminService.approveBooking(id);
+      setBookings((p) =>
+        p.map((b) => (b._id === id ? { ...b, status: "approved" } : b)),
+      );
+      if (bDetail?._id === id)
+        setBDetail((p) => ({ ...p, status: "approved" }));
+    } catch {
+      alert("Approve failed.");
+    }
   };
   const declineBook = async (id) => {
-    try { await adminService.declineBooking(id); setBookings((p) => p.map((b) => b._id === id ? { ...b, status: 'cancelled' } : b)); if (bDetail?._id === id) setBDetail((p) => ({ ...p, status: 'cancelled' })); }
-    catch { alert('Decline failed.'); }
+    try {
+      await adminService.declineBooking(id);
+      setBookings((p) =>
+        p.map((b) => (b._id === id ? { ...b, status: "cancelled" } : b)),
+      );
+      if (bDetail?._id === id)
+        setBDetail((p) => ({ ...p, status: "cancelled" }));
+    } catch {
+      alert("Decline failed.");
+    }
   };
   const deleteBooking = async (id) => {
-    if (!window.confirm('Delete this booking permanently?')) return;
-    try { await adminService.deleteBooking(id); setBookings((p) => p.filter((b) => b._id !== id)); setBDetail(null); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this booking permanently?")) return;
+    try {
+      await adminService.deleteBooking(id);
+      setBookings((p) => p.filter((b) => b._id !== id));
+      setBDetail(null);
+    } catch {
+      alert("Delete failed.");
+    }
   };
-  const filteredBookings = bFilter === 'all' ? bookings : bookings.filter((b) => b.status === bFilter);
+  const filteredBookings =
+    bFilter === "all" ? bookings : bookings.filter((b) => b.status === bFilter);
   const qUsers = userEmailQuery.trim().toLowerCase();
   const qAdmins = adminEmailQuery.trim().toLowerCase();
-  const filteredUsers = users.filter((u) => !qUsers || String(u.email || '').toLowerCase().includes(qUsers));
-  const admins = users.filter((u) => u.role === 'admin');
-  const filteredAdmins = admins.filter((u) => !qAdmins || String(u.email || '').toLowerCase().includes(qAdmins));
+  const filteredUsers = users.filter(
+    (u) =>
+      !qUsers ||
+      String(u.email || "")
+        .toLowerCase()
+        .includes(qUsers),
+  );
+  const admins = users.filter((u) => u.role === "admin");
+  const filteredAdmins = admins.filter(
+    (u) =>
+      !qAdmins ||
+      String(u.email || "")
+        .toLowerCase()
+        .includes(qAdmins),
+  );
 
   const makeAdmin = async (email) => {
-    const normalized = String(email || '').trim().toLowerCase();
+    const normalized = String(email || "")
+      .trim()
+      .toLowerCase();
     if (!normalized) {
-      setAdminActionTone('error');
-      setAdminActionMsg(t('admin_users_enter_email'));
+      setAdminActionTone("error");
+      setAdminActionMsg(t("admin_users_enter_email"));
       return;
     }
     setAdminActionLoading(true);
-    setAdminActionMsg('');
-    setAdminActionTone('info');
+    setAdminActionMsg("");
+    setAdminActionTone("info");
     try {
       const res = await adminService.makeAdminByEmail(normalized);
       const updatedUser = res.data?.user;
       if (updatedUser?._id) {
-        setUsers((prev) => prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)));
+        setUsers((prev) =>
+          prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)),
+        );
       } else {
         const all = await adminService.getUsers();
         setUsers(all.data.users || all.data || []);
       }
-      setAdminActionTone('info');
-      setAdminActionMsg(t('admin_users_promoted'));
+      setAdminActionTone("info");
+      setAdminActionMsg(t("admin_users_promoted"));
       setAdminEmailQuery(normalized);
       setUserEmailQuery(normalized);
     } catch (err) {
-      setAdminActionTone('error');
-      setAdminActionMsg(err.response?.data?.message || t('admin_users_make_failed'));
+      setAdminActionTone("error");
+      setAdminActionMsg(
+        err.response?.data?.message || t("admin_users_make_failed"),
+      );
     } finally {
       setAdminActionLoading(false);
     }
   };
 
   const removeAdmin = async (email) => {
-    const normalized = String(email || '').trim().toLowerCase();
+    const normalized = String(email || "")
+      .trim()
+      .toLowerCase();
     if (!normalized) {
-      setAdminActionTone('error');
-      setAdminActionMsg(t('admin_users_enter_email'));
+      setAdminActionTone("error");
+      setAdminActionMsg(t("admin_users_enter_email"));
       return;
     }
-    if (!window.confirm(`${t('admin_users_confirm_remove_admin')} ${normalized}?`)) return;
+    if (
+      !window.confirm(`${t("admin_users_confirm_remove_admin")} ${normalized}?`)
+    )
+      return;
 
     setAdminActionLoading(true);
-    setAdminActionMsg('');
-    setAdminActionTone('info');
+    setAdminActionMsg("");
+    setAdminActionTone("info");
     try {
       const res = await adminService.removeAdminByEmail(normalized);
       const updatedUser = res.data?.user;
       if (updatedUser?._id) {
-        setUsers((prev) => prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)));
+        setUsers((prev) =>
+          prev.map((u) => (u._id === updatedUser._id ? updatedUser : u)),
+        );
       } else {
         const all = await adminService.getUsers();
         setUsers(all.data.users || all.data || []);
       }
-      setAdminActionTone('info');
-      setAdminActionMsg(t('admin_users_removed_admin'));
+      setAdminActionTone("info");
+      setAdminActionMsg(t("admin_users_removed_admin"));
     } catch (err) {
-      setAdminActionTone('error');
-      setAdminActionMsg(err.response?.data?.message || t('admin_users_remove_failed'));
+      setAdminActionTone("error");
+      setAdminActionMsg(
+        err.response?.data?.message || t("admin_users_remove_failed"),
+      );
     } finally {
       setAdminActionLoading(false);
     }
@@ -315,217 +515,412 @@ const Admin = () => {
 
   const deleteUser = async (user) => {
     if (!user?._id) return;
-    const label = user.email || user.name || 'this user';
-    if (!window.confirm(`${t('admin_users_confirm_delete')} ${label}?`)) return;
+    const label = user.email || user.name || "this user";
+    if (!window.confirm(`${t("admin_users_confirm_delete")} ${label}?`)) return;
 
     setAdminActionLoading(true);
-    setAdminActionMsg('');
-    setAdminActionTone('info');
+    setAdminActionMsg("");
+    setAdminActionTone("info");
     try {
       await adminService.deleteUser(user._id);
       setUsers((prev) => prev.filter((u) => u._id !== user._id));
-      setAdminActionTone('info');
-      setAdminActionMsg(t('admin_users_deleted'));
+      setAdminActionTone("info");
+      setAdminActionMsg(t("admin_users_deleted"));
     } catch (err) {
-      setAdminActionTone('error');
-      setAdminActionMsg(err.response?.data?.message || t('admin_users_delete_failed'));
+      setAdminActionTone("error");
+      setAdminActionMsg(
+        err.response?.data?.message || t("admin_users_delete_failed"),
+      );
     } finally {
       setAdminActionLoading(false);
     }
   };
 
   /* ── Package helpers ── */
-  const openPkgCreate = () => { setPkgEdit(null); setPkgForm(EMPTY_PKG); setPkgCurImages([]); setPkgImgFiles([]); setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true); };
-  const openPkgEdit   = (p) => {
+  const openPkgCreate = () => {
+    setPkgEdit(null);
+    setPkgForm(EMPTY_PKG);
+    setPkgCurImages([]);
+    setPkgImgFiles([]);
+    setNewDate("");
+    setNewTime("");
+    setPkgMsg("");
+    setPkgModal(true);
+  };
+  const openPkgEdit = (p) => {
     setPkgEdit(p._id);
-    setPkgForm({ name: p.name, description: p.description, price: p.price, category: p.category, duration: p.duration, destination: p.destination, image: p.image || '', images: p.images || [], features: (p.features || []).join(', '), status: p.status || 'active', availableDates: p.availableDates || [], availableTimes: p.availableTimes || [], bookingLimitPerSlot: p.bookingLimitPerSlot || 5, translations: p.translations || {} });
+    setPkgForm({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      category: p.category,
+      duration: p.duration,
+      destination: p.destination,
+      image: p.image || "",
+      images: p.images || [],
+      features: (p.features || []).join(", "),
+      status: p.status || "active",
+      availableDates: p.availableDates || [],
+      availableTimes: p.availableTimes || [],
+      bookingLimitPerSlot: p.bookingLimitPerSlot || 5,
+      translations: p.translations || {},
+    });
     setPkgCurImages(p.images || []);
     setPkgImgFiles([]);
-    setNewDate(''); setNewTime(''); setPkgMsg(''); setPkgModal(true);
+    setNewDate("");
+    setNewTime("");
+    setPkgMsg("");
+    setPkgModal(true);
   };
-  const closePkg = () => { setPkgModal(false); setPkgMsg(''); setPkgImgFiles([]); setPkgCurImages([]); };
-  const setP = (k) => (e) => setPkgForm((prev) => ({ ...prev, [k]: e.target.value }));
+  const closePkg = () => {
+    setPkgModal(false);
+    setPkgMsg("");
+    setPkgImgFiles([]);
+    setPkgCurImages([]);
+  };
+  const setP = (k) => (e) =>
+    setPkgForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const autoTranslatePkg = async () => {
     if (!pkgForm.name && !pkgForm.description) {
-      setPkgMsg('❌ Name болон Description оруулна уу.');
+      setPkgMsg("❌ Name болон Description оруулна уу.");
       return;
     }
     setPkgTranslating(true);
-    setPkgMsg('⏳ Орчуулж байна...');
+    setPkgMsg("⏳ Орчуулж байна...");
     try {
       const features = pkgForm.features
-        ? pkgForm.features.split(',').map((s) => s.trim()).filter(Boolean)
+        ? pkgForm.features
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
       const texts = {};
-      if (pkgForm.name)        texts.name        = pkgForm.name;
+      if (pkgForm.name) texts.name = pkgForm.name;
       if (pkgForm.description) texts.description = pkgForm.description;
       if (pkgForm.destination) texts.destination = pkgForm.destination;
-      if (features.length)     texts.features    = features;
+      if (features.length) texts.features = features;
       const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setPkgForm((p) => ({ ...p, translations: res.data.translations }));
-        setPkgMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+        setPkgMsg("✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.");
       }
     } catch (err) {
-      setPkgMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+      setPkgMsg(
+        "❌ Орчуулахад алдаа гарлаа: " +
+          (err.response?.data?.message || err.message),
+      );
     } finally {
       setPkgTranslating(false);
     }
   };
 
-  const addDate = () => { if (newDate && !pkgForm.availableDates.includes(newDate)) { setPkgForm((p) => ({ ...p, availableDates: [...p.availableDates, newDate].sort() })); setNewDate(''); } };
-  const removeDate = (d) => setPkgForm((p) => ({ ...p, availableDates: p.availableDates.filter((x) => x !== d) }));
-  const addTime = () => { if (newTime && !pkgForm.availableTimes.includes(newTime)) { setPkgForm((p) => ({ ...p, availableTimes: [...p.availableTimes, newTime].sort() })); setNewTime(''); } };
-  const removeTime = (t) => setPkgForm((p) => ({ ...p, availableTimes: p.availableTimes.filter((x) => x !== t) }));
+  const addDate = () => {
+    if (newDate && !pkgForm.availableDates.includes(newDate)) {
+      setPkgForm((p) => ({
+        ...p,
+        availableDates: [...p.availableDates, newDate].sort(),
+      }));
+      setNewDate("");
+    }
+  };
+  const removeDate = (d) =>
+    setPkgForm((p) => ({
+      ...p,
+      availableDates: p.availableDates.filter((x) => x !== d),
+    }));
+  const addTime = () => {
+    if (newTime && !pkgForm.availableTimes.includes(newTime)) {
+      setPkgForm((p) => ({
+        ...p,
+        availableTimes: [...p.availableTimes, newTime].sort(),
+      }));
+      setNewTime("");
+    }
+  };
+  const removeTime = (t) =>
+    setPkgForm((p) => ({
+      ...p,
+      availableTimes: p.availableTimes.filter((x) => x !== t),
+    }));
 
   const savePkg = async (e) => {
-    e.preventDefault(); setPkgSaving(true); setPkgMsg('');
-    const payload = { ...pkgForm, price: parseFloat(pkgForm.price), features: pkgForm.features.split(',').map((s) => s.trim()).filter(Boolean), images: pkgCurImages };
+    e.preventDefault();
+    setPkgSaving(true);
+    setPkgMsg("");
+    const payload = {
+      ...pkgForm,
+      price: parseFloat(pkgForm.price),
+      features: pkgForm.features
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      images: pkgCurImages,
+    };
     try {
       let savedId = pkgEdit;
       if (pkgEdit) {
         const res = await adminService.updatePackage(pkgEdit, payload);
         const updated = res.data.package || res.data;
-        setPackages((prev) => prev.map((x) => x._id === pkgEdit ? updated : x));
-        setPkgMsg('✅ Package updated!');
+        setPackages((prev) =>
+          prev.map((x) => (x._id === pkgEdit ? updated : x)),
+        );
+        setPkgMsg("✅ Package updated!");
       } else {
         const res = await adminService.createPackage(payload);
         const created = res.data.package || res.data;
         savedId = created._id;
         setPackages((prev) => [created, ...prev]);
-        setPkgMsg('✅ Package created!');
+        setPkgMsg("✅ Package created!");
         setPkgForm(EMPTY_PKG);
       }
       // Upload new image files if any
       if (pkgImgFiles.length > 0 && savedId) {
         const fd = new FormData();
-        pkgImgFiles.forEach((f) => fd.append('images', f));
+        pkgImgFiles.forEach((f) => fd.append("images", f));
         const upRes = await adminService.uploadPackageImages(savedId, fd);
         const updatedImages = upRes.data.images || [];
-        setPackages((prev) => prev.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setPackages((prev) =>
+          prev.map((x) =>
+            x._id === savedId ? { ...x, images: updatedImages } : x,
+          ),
+        );
         setPkgImgFiles([]);
       }
       setTimeout(closePkg, 900);
-    } catch (err) { setPkgMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setPkgSaving(false); }
+    } catch (err) {
+      setPkgMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setPkgSaving(false);
+    }
   };
   const deletePkg = async (id) => {
-    if (!window.confirm('Delete this package?')) return;
-    try { await adminService.deletePackage(id); setPackages((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this package?")) return;
+    try {
+      await adminService.deletePackage(id);
+      setPackages((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
 
   /* ── Package image helpers ── */
   const removePkgCurImage = async (imgUrl) => {
     setPkgCurImages((prev) => prev.filter((x) => x !== imgUrl));
     if (pkgEdit) {
-      try { await adminService.deletePackageImage(pkgEdit, imgUrl); } catch { /* ignore */ }
+      try {
+        await adminService.deletePackageImage(pkgEdit, imgUrl);
+      } catch {
+        /* ignore */
+      }
     }
   };
   const onPkgFileChange = (e) => {
     const files = Array.from(e.target.files);
     const total = pkgCurImages.length + pkgImgFiles.length + files.length;
-    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    if (total > 10) {
+      alert("Хамгийн ихдээ 10 зураг байж болно!");
+      return;
+    }
     setPkgImgFiles((prev) => [...prev, ...files].slice(0, 10));
-    e.target.value = '';
+    e.target.value = "";
   };
-  const removePkgNewFile = (idx) => setPkgImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removePkgNewFile = (idx) =>
+    setPkgImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   /* ── Itinerary helpers ── */
-  const openItinCreate = () => { setItinEdit(null); setItinForm(EMPTY_ITIN); setItinCurImages([]); setItinImgFiles([]); setItinMsg(''); setItinModal(true); };
+  const openItinCreate = () => {
+    setItinEdit(null);
+    setItinForm(EMPTY_ITIN);
+    setItinCurImages([]);
+    setItinImgFiles([]);
+    setItinMsg("");
+    setItinModal(true);
+  };
   const openItinEdit = (it) => {
     setItinEdit(it._id);
-    setItinForm({ title: it.title, description: it.description, duration: it.duration || '', locations: it.locations || '', difficulty: it.difficulty || 'moderate', price: it.price || '', order: it.order || 0, isActive: it.isActive ?? true });
+    setItinForm({
+      title: it.title,
+      description: it.description,
+      duration: it.duration || "",
+      locations: it.locations || "",
+      difficulty: it.difficulty || "moderate",
+      price: it.price || "",
+      order: it.order || 0,
+      isActive: it.isActive ?? true,
+    });
     setItinCurImages(it.images || []);
     setItinImgFiles([]);
-    setItinMsg(''); setItinModal(true);
+    setItinMsg("");
+    setItinModal(true);
   };
-  const closeItin = () => { setItinModal(false); setItinMsg(''); setItinImgFiles([]); setItinCurImages([]); };
-  const setI = (k) => (e) => setItinForm((prev) => ({ ...prev, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const closeItin = () => {
+    setItinModal(false);
+    setItinMsg("");
+    setItinImgFiles([]);
+    setItinCurImages([]);
+  };
+  const setI = (k) => (e) =>
+    setItinForm((prev) => ({
+      ...prev,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const saveItin = async (e) => {
-    e.preventDefault(); setItinSaving(true); setItinMsg('');
-    const payload = { ...itinForm, price: itinForm.price ? parseFloat(itinForm.price) : undefined, order: parseInt(itinForm.order) || 0 };
+    e.preventDefault();
+    setItinSaving(true);
+    setItinMsg("");
+    const payload = {
+      ...itinForm,
+      price: itinForm.price ? parseFloat(itinForm.price) : undefined,
+      order: parseInt(itinForm.order) || 0,
+    };
     try {
       let savedId = itinEdit;
       if (itinEdit) {
         const res = await adminService.updateItinerary(itinEdit, payload);
         const updated = res.data.itinerary || res.data;
-        setItineraries((prev) => prev.map((x) => x._id === itinEdit ? { ...updated, images: itinCurImages } : x));
-        setItinMsg('✅ Itinerary updated!');
+        setItineraries((prev) =>
+          prev.map((x) =>
+            x._id === itinEdit ? { ...updated, images: itinCurImages } : x,
+          ),
+        );
+        setItinMsg("✅ Itinerary updated!");
       } else {
         const res = await adminService.createItinerary(payload);
         const created = res.data.itinerary || res.data;
         savedId = created._id;
         setItineraries((prev) => [created, ...prev]);
-        setItinMsg('✅ Itinerary created!');
+        setItinMsg("✅ Itinerary created!");
         setItinForm(EMPTY_ITIN);
       }
       if (itinImgFiles.length > 0 && savedId) {
         const fd = new FormData();
-        itinImgFiles.forEach((f) => fd.append('images', f));
+        itinImgFiles.forEach((f) => fd.append("images", f));
         const upRes = await adminService.uploadItineraryImages(savedId, fd);
         const updatedImages = upRes.data.images || [];
-        setItineraries((prev) => prev.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setItineraries((prev) =>
+          prev.map((x) =>
+            x._id === savedId ? { ...x, images: updatedImages } : x,
+          ),
+        );
         setItinImgFiles([]);
       }
       setTimeout(closeItin, 900);
-    } catch (err) { setItinMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setItinSaving(false); }
+    } catch (err) {
+      setItinMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setItinSaving(false);
+    }
   };
   const deleteItin = async (id) => {
-    if (!window.confirm('Delete this itinerary?')) return;
-    try { await adminService.deleteItinerary(id); setItineraries((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this itinerary?")) return;
+    try {
+      await adminService.deleteItinerary(id);
+      setItineraries((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
   const removeItinCurImage = async (imgUrl) => {
     setItinCurImages((prev) => prev.filter((x) => x !== imgUrl));
-    if (itinEdit) { try { await adminService.deleteItineraryImage(itinEdit, imgUrl); } catch { /* ignore */ } }
+    if (itinEdit) {
+      try {
+        await adminService.deleteItineraryImage(itinEdit, imgUrl);
+      } catch {
+        /* ignore */
+      }
+    }
   };
   const onItinFileChange = (e) => {
     const files = Array.from(e.target.files);
     const total = itinCurImages.length + itinImgFiles.length + files.length;
-    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    if (total > 10) {
+      alert("Хамгийн ихдээ 10 зураг байж болно!");
+      return;
+    }
     setItinImgFiles((prev) => [...prev, ...files].slice(0, 10));
-    e.target.value = '';
+    e.target.value = "";
   };
-  const removeItinNewFile = (idx) => setItinImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeItinNewFile = (idx) =>
+    setItinImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   /* ── Destination helpers ── */
-  const openDestCreate = () => { setDestEdit(null); setDestForm(EMPTY_DEST); setDestCurImages([]); setDestImgFiles([]); setDestMsg(''); setDestMapSearch(''); setDestMapPreview(''); setDestModal(true); };
+  const openDestCreate = () => {
+    setDestEdit(null);
+    setDestForm(EMPTY_DEST);
+    setDestCurImages([]);
+    setDestImgFiles([]);
+    setDestMsg("");
+    setDestMapSearch("");
+    setDestMapPreview("");
+    setDestModal(true);
+  };
   const openDestEdit = (d) => {
     setDestEdit(d._id);
-    setDestForm({ name: d.name, city: d.city||'', country: d.country||'', category: d.category, image: d.image||'', images: d.images||[], location: d.location||'', tagline: d.tagline||'', description: d.description||'', culturalInfo: d.culturalInfo||'', highlights: (d.highlights||[]).join('\n'), bestTime: d.bestTime||'', avgCost: d.avgCost||'', readMore: d.readMore||'', isActive: d.isActive??true, translations: d.translations || {} });
-    setDestCurImages(d.images || []); setDestImgFiles([]);
-    setDestMapSearch(d.location || '');
-    setDestMapPreview(d.location ? buildMapEmbedUrl(d.location) : '');
-    setDestMsg(''); setDestModal(true);
+    setDestForm({
+      name: d.name,
+      city: d.city || "",
+      country: d.country || "",
+      category: d.category,
+      image: d.image || "",
+      images: d.images || [],
+      location: d.location || "",
+      tagline: d.tagline || "",
+      description: d.description || "",
+      culturalInfo: d.culturalInfo || "",
+      highlights: (d.highlights || []).join("\n"),
+      bestTime: d.bestTime || "",
+      avgCost: d.avgCost || "",
+      readMore: d.readMore || "",
+      isActive: d.isActive ?? true,
+      translations: d.translations || {},
+    });
+    setDestCurImages(d.images || []);
+    setDestImgFiles([]);
+    setDestMapSearch(d.location || "");
+    setDestMapPreview(d.location ? buildMapEmbedUrl(d.location) : "");
+    setDestMsg("");
+    setDestModal(true);
   };
-  const closeDest = () => { setDestModal(false); setDestMsg(''); setDestImgFiles([]); setDestCurImages([]); setDestMapSearch(''); setDestMapPreview(''); };
-  const setD = (k) => (e) => setDestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const closeDest = () => {
+    setDestModal(false);
+    setDestMsg("");
+    setDestImgFiles([]);
+    setDestCurImages([]);
+    setDestMapSearch("");
+    setDestMapPreview("");
+  };
+  const setD = (k) => (e) =>
+    setDestForm((p) => ({
+      ...p,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const autoTranslateDest = async () => {
     if (!destForm.name && !destForm.description) {
-      setDestMsg('❌ Name болон Description оруулна уу.');
+      setDestMsg("❌ Name болон Description оруулна уу.");
       return;
     }
     setDestTranslating(true);
-    setDestMsg('⏳ Орчуулж байна...');
+    setDestMsg("⏳ Орчуулж байна...");
     try {
       const texts = {};
-      if (destForm.name)        texts.name        = destForm.name;
-      if (destForm.tagline)     texts.tagline     = destForm.tagline;
+      if (destForm.name) texts.name = destForm.name;
+      if (destForm.tagline) texts.tagline = destForm.tagline;
       if (destForm.description) texts.description = destForm.description;
-      if (destForm.readMore)    texts.readMore    = destForm.readMore;
+      if (destForm.readMore) texts.readMore = destForm.readMore;
       if (destForm.culturalInfo) texts.culturalInfo = destForm.culturalInfo;
       const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setDestForm((p) => ({ ...p, translations: res.data.translations }));
-        setDestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+        setDestMsg("✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.");
       }
     } catch (err) {
-      setDestMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
+      setDestMsg(
+        "❌ Орчуулахад алдаа гарлаа: " +
+          (err.response?.data?.message || err.message),
+      );
     } finally {
       setDestTranslating(false);
     }
@@ -544,93 +939,167 @@ const Admin = () => {
     setDestForm((p) => ({ ...p, location: embedUrl }));
   };
   const clearMapLocation = () => {
-    setDestForm((p) => ({ ...p, location: '' }));
-    setDestMapPreview('');
-    setDestMapSearch('');
+    setDestForm((p) => ({ ...p, location: "" }));
+    setDestMapPreview("");
+    setDestMapSearch("");
   };
   const saveDest = async (e) => {
-    e.preventDefault(); setDestSaving(true); setDestMsg('');
-    const payload = { ...destForm, highlights: destForm.highlights.split('\n').map((s) => s.trim()).filter(Boolean), images: destCurImages };
+    e.preventDefault();
+    setDestSaving(true);
+    setDestMsg("");
+    const payload = {
+      ...destForm,
+      highlights: destForm.highlights
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      images: destCurImages,
+    };
     try {
       let savedId = destEdit;
       if (destEdit) {
         const r = await adminService.updateDestination(destEdit, payload);
         const updated = r.data.destination || r.data;
-        setDestinations((p) => p.map((x) => x._id === destEdit ? updated : x));
-        setDestMsg('✅ Updated!');
+        setDestinations((p) =>
+          p.map((x) => (x._id === destEdit ? updated : x)),
+        );
+        setDestMsg("✅ Updated!");
       } else {
         const r = await adminService.createDestination(payload);
         const created = r.data.destination || r.data;
         savedId = created._id;
         setDestinations((p) => [created, ...p]);
-        setDestMsg('✅ Created!'); setDestForm(EMPTY_DEST);
+        setDestMsg("✅ Created!");
+        setDestForm(EMPTY_DEST);
       }
       if (destImgFiles.length > 0 && savedId) {
         const fd = new FormData();
-        destImgFiles.forEach((f) => fd.append('images', f));
+        destImgFiles.forEach((f) => fd.append("images", f));
         const upRes = await adminService.uploadDestinationImages(savedId, fd);
         const updatedImages = upRes.data.images || [];
-        setDestinations((p) => p.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setDestinations((p) =>
+          p.map((x) =>
+            x._id === savedId ? { ...x, images: updatedImages } : x,
+          ),
+        );
         setDestImgFiles([]);
       }
       setTimeout(closeDest, 900);
-    } catch (err) { setDestMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setDestSaving(false); }
+    } catch (err) {
+      setDestMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setDestSaving(false);
+    }
   };
   const deleteDest = async (id) => {
-    if (!window.confirm('Delete this destination?')) return;
-    try { await adminService.deleteDestination(id); setDestinations((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this destination?")) return;
+    try {
+      await adminService.deleteDestination(id);
+      setDestinations((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
   /* ── Destination image helpers ── */
   const removeDestCurImage = async (imgUrl) => {
     setDestCurImages((prev) => prev.filter((x) => x !== imgUrl));
-    if (destEdit) { try { await adminService.deleteDestinationImage(destEdit, imgUrl); } catch { /* ignore */ } }
+    if (destEdit) {
+      try {
+        await adminService.deleteDestinationImage(destEdit, imgUrl);
+      } catch {
+        /* ignore */
+      }
+    }
   };
   const onDestFileChange = (e) => {
     const files = Array.from(e.target.files);
     const total = destCurImages.length + destImgFiles.length + files.length;
-    if (total > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    if (total > 10) {
+      alert("Хамгийн ихдээ 10 зураг байж болно!");
+      return;
+    }
     setDestImgFiles((prev) => [...prev, ...files].slice(0, 10));
-    e.target.value = '';
+    e.target.value = "";
   };
-  const removeDestNewFile = (idx) => setDestImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeDestNewFile = (idx) =>
+    setDestImgFiles((prev) => prev.filter((_, i) => i !== idx));
 
   const toggleDestActive = async (d) => {
-    try { const r = await adminService.updateDestination(d._id, { isActive: !d.isActive }); setDestinations((p) => p.map((x) => x._id === d._id ? (r.data.destination || r.data) : x)); }
-    catch { alert('Update failed.'); }
+    try {
+      const r = await adminService.updateDestination(d._id, {
+        isActive: !d.isActive,
+      });
+      setDestinations((p) =>
+        p.map((x) => (x._id === d._id ? r.data.destination || r.data : x)),
+      );
+    } catch {
+      alert("Update failed.");
+    }
   };
 
   /* ── Destinations Hero helpers ── */
-  const openHeroCreate = () => { setDestHeroEdit(null); setDestHeroForm(EMPTY_HERO); setDestHeroBgFile(null); setDestHeroMsg(''); setDestHeroModal(true); };
-  const openHeroEdit   = (h) => {
-    setDestHeroEdit(h._id);
-    setDestHeroForm({ title: h.title||'', subtitle: h.subtitle||h.text||'', eyebrow: h.eyebrow||'', imageUrl: h.imageUrl||h.image||'', validFrom: h.validFrom ? new Date(h.validFrom).toISOString().slice(0,10) : '', isActive: h.isActive??true });
-    setDestHeroBgFile(null); setDestHeroMsg(''); setDestHeroModal(true);
+  const openHeroCreate = () => {
+    setDestHeroEdit(null);
+    setDestHeroForm(EMPTY_HERO);
+    setDestHeroBgFile(null);
+    setDestHeroMsg("");
+    setDestHeroModal(true);
   };
-  const closeHero = () => { setDestHeroModal(false); setDestHeroMsg(''); setDestHeroBgFile(null); };
-  const setH = (k) => (e) => setDestHeroForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const openHeroEdit = (h) => {
+    setDestHeroEdit(h._id);
+    setDestHeroForm({
+      title: h.title || "",
+      subtitle: h.subtitle || h.text || "",
+      eyebrow: h.eyebrow || "",
+      imageUrl: h.imageUrl || h.image || "",
+      validFrom: h.validFrom
+        ? new Date(h.validFrom).toISOString().slice(0, 10)
+        : "",
+      isActive: h.isActive ?? true,
+    });
+    setDestHeroBgFile(null);
+    setDestHeroMsg("");
+    setDestHeroModal(true);
+  };
+  const closeHero = () => {
+    setDestHeroModal(false);
+    setDestHeroMsg("");
+    setDestHeroBgFile(null);
+  };
+  const setH = (k) => (e) =>
+    setDestHeroForm((p) => ({
+      ...p,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const uploadHeroBg = async () => {
     if (!destHeroBgFile) return destHeroForm.imageUrl;
     setDestHeroBgUploading(true);
     try {
-      const fd = new FormData(); fd.append('image', destHeroBgFile);
+      const fd = new FormData();
+      fd.append("image", destHeroBgFile);
       const res = await adminService.uploadContentImage(fd);
-      const url = res.data.imageUrl || res.data.path || '';
+      const url = res.data.imageUrl || res.data.path || "";
       setDestHeroForm((p) => ({ ...p, imageUrl: url }));
       setDestHeroBgFile(null);
       return url;
-    } catch { setDestHeroMsg('❌ Image upload failed.'); return destHeroForm.imageUrl; }
-    finally { setDestHeroBgUploading(false); }
+    } catch {
+      setDestHeroMsg("❌ Image upload failed.");
+      return destHeroForm.imageUrl;
+    } finally {
+      setDestHeroBgUploading(false);
+    }
   };
 
   const saveHero = async (e) => {
-    e.preventDefault(); setDestHeroSaving(true); setDestHeroMsg('');
+    e.preventDefault();
+    setDestHeroSaving(true);
+    setDestHeroMsg("");
     let imageUrl = destHeroForm.imageUrl;
     if (destHeroBgFile) imageUrl = await uploadHeroBg();
     const uniqueKey = destHeroEdit
-      ? destHeroList.find((h) => h._id === destHeroEdit)?.key || `destinations_hero_${Date.now()}`
+      ? destHeroList.find((h) => h._id === destHeroEdit)?.key ||
+        `destinations_hero_${Date.now()}`
       : `destinations_hero_${Date.now()}`;
     const payload = {
       key: uniqueKey,
@@ -639,7 +1108,7 @@ const Admin = () => {
       eyebrow: destHeroForm.eyebrow,
       text: destHeroForm.subtitle,
       imageUrl,
-      section: 'destinations_hero',
+      section: "destinations_hero",
       isActive: destHeroForm.isActive,
       validFrom: destHeroForm.validFrom || null,
     };
@@ -647,152 +1116,335 @@ const Admin = () => {
       if (destHeroEdit) {
         const r = await adminService.updateContent(destHeroEdit, payload);
         const updated = r.data.content || r.data;
-        setDestHeroList((p) => p.map((x) => x._id === destHeroEdit ? updated : x));
-        setDestHeroMsg('✅ Hero updated!');
+        setDestHeroList((p) =>
+          p.map((x) => (x._id === destHeroEdit ? updated : x)),
+        );
+        setDestHeroMsg("✅ Hero updated!");
       } else {
         const r = await adminService.createContent(payload);
         const created = r.data.content || r.data;
         setDestHeroList((p) => [created, ...p]);
-        setDestHeroMsg('✅ Hero created!');
+        setDestHeroMsg("✅ Hero created!");
       }
       setTimeout(closeHero, 900);
-    } catch (err) { setDestHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setDestHeroSaving(false); }
+    } catch (err) {
+      setDestHeroMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setDestHeroSaving(false);
+    }
   };
 
   const deleteHero = async (id) => {
-    if (!window.confirm('Delete this hero entry?')) return;
-    try { await adminService.deleteContent(id); setDestHeroList((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this hero entry?")) return;
+    try {
+      await adminService.deleteContent(id);
+      setDestHeroList((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
 
   const toggleHeroActive = async (h) => {
     try {
-      const r = await adminService.updateContent(h._id, { ...h, imageUrl: h.imageUrl || h.image, isActive: !h.isActive });
-      setDestHeroList((p) => p.map((x) => x._id === h._id ? (r.data.content || r.data) : x));
-    } catch { alert('Update failed.'); }
+      const r = await adminService.updateContent(h._id, {
+        ...h,
+        imageUrl: h.imageUrl || h.image,
+        isActive: !h.isActive,
+      });
+      setDestHeroList((p) =>
+        p.map((x) => (x._id === h._id ? r.data.content || r.data : x)),
+      );
+    } catch {
+      alert("Update failed.");
+    }
   };
 
   /* ── Generic Page Hero helpers ── */
   const openPageHeroCreate = (section) => {
-    setPageHeroEdit(null); setPageHeroForm(EMPTY_HERO); setPageHeroBgFile(null); setPageHeroMsg(''); setPageHeroModal(section);
+    setPageHeroEdit(null);
+    setPageHeroForm(EMPTY_HERO);
+    setPageHeroBgFile(null);
+    setPageHeroMsg("");
+    setPageHeroModal(section);
   };
   const openPageHeroEdit = (section, h) => {
     setPageHeroEdit(h._id);
-    setPageHeroForm({ title: h.title||'', subtitle: h.subtitle||h.text||'', eyebrow: h.eyebrow||'', imageUrl: h.imageUrl||h.image||'', validFrom: h.validFrom ? new Date(h.validFrom).toISOString().slice(0,10) : '', isActive: h.isActive??true });
-    setPageHeroBgFile(null); setPageHeroMsg(''); setPageHeroModal(section);
+    setPageHeroForm({
+      title: h.title || "",
+      subtitle: h.subtitle || h.text || "",
+      eyebrow: h.eyebrow || "",
+      imageUrl: h.imageUrl || h.image || "",
+      validFrom: h.validFrom
+        ? new Date(h.validFrom).toISOString().slice(0, 10)
+        : "",
+      isActive: h.isActive ?? true,
+    });
+    setPageHeroBgFile(null);
+    setPageHeroMsg("");
+    setPageHeroModal(section);
   };
-  const closePageHero = () => { setPageHeroModal(null); setPageHeroMsg(''); setPageHeroBgFile(null); };
-  const setPH = (k) => (e) => setPageHeroForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const closePageHero = () => {
+    setPageHeroModal(null);
+    setPageHeroMsg("");
+    setPageHeroBgFile(null);
+  };
+  const setPH = (k) => (e) =>
+    setPageHeroForm((p) => ({
+      ...p,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const uploadPageHeroBg = async () => {
     if (!pageHeroBgFile) return pageHeroForm.imageUrl;
     setPageHeroBgUploading(true);
     try {
-      const fd = new FormData(); fd.append('image', pageHeroBgFile);
+      const fd = new FormData();
+      fd.append("image", pageHeroBgFile);
       const res = await adminService.uploadContentImage(fd);
-      const url = res.data.imageUrl || res.data.path || '';
+      const url = res.data.imageUrl || res.data.path || "";
       setPageHeroForm((p) => ({ ...p, imageUrl: url }));
       setPageHeroBgFile(null);
       return url;
-    } catch { setPageHeroMsg('❌ Image upload failed.'); return pageHeroForm.imageUrl; }
-    finally { setPageHeroBgUploading(false); }
+    } catch {
+      setPageHeroMsg("❌ Image upload failed.");
+      return pageHeroForm.imageUrl;
+    } finally {
+      setPageHeroBgUploading(false);
+    }
   };
 
   const savePageHero = async (e) => {
-    e.preventDefault(); setPageHeroSaving(true); setPageHeroMsg('');
+    e.preventDefault();
+    setPageHeroSaving(true);
+    setPageHeroMsg("");
     const section = pageHeroModal;
     let imageUrl = pageHeroForm.imageUrl;
     if (pageHeroBgFile) imageUrl = await uploadPageHeroBg();
     const list = pageHeroes[section] || [];
     const uniqueKey = pageHeroEdit
-      ? list.find((h) => h._id === pageHeroEdit)?.key || `${section}_${Date.now()}`
+      ? list.find((h) => h._id === pageHeroEdit)?.key ||
+        `${section}_${Date.now()}`
       : `${section}_${Date.now()}`;
     const payload = {
-      key: uniqueKey, title: pageHeroForm.title, subtitle: pageHeroForm.subtitle,
-      eyebrow: pageHeroForm.eyebrow, text: pageHeroForm.subtitle, imageUrl,
-      section, isActive: pageHeroForm.isActive, validFrom: pageHeroForm.validFrom || null,
+      key: uniqueKey,
+      title: pageHeroForm.title,
+      subtitle: pageHeroForm.subtitle,
+      eyebrow: pageHeroForm.eyebrow,
+      text: pageHeroForm.subtitle,
+      imageUrl,
+      section,
+      isActive: pageHeroForm.isActive,
+      validFrom: pageHeroForm.validFrom || null,
     };
     try {
       if (pageHeroEdit) {
         const r = await adminService.updateContent(pageHeroEdit, payload);
         const updated = r.data.content || r.data;
-        setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).map((x) => x._id === pageHeroEdit ? updated : x) }));
-        setPageHeroMsg('✅ Hero updated!');
+        setPageHeroes((p) => ({
+          ...p,
+          [section]: (p[section] || []).map((x) =>
+            x._id === pageHeroEdit ? updated : x,
+          ),
+        }));
+        setPageHeroMsg("✅ Hero updated!");
       } else {
         const r = await adminService.createContent(payload);
         const created = r.data.content || r.data;
-        setPageHeroes((p) => ({ ...p, [section]: [created, ...(p[section]||[])] }));
-        setPageHeroMsg('✅ Hero created!');
+        setPageHeroes((p) => ({
+          ...p,
+          [section]: [created, ...(p[section] || [])],
+        }));
+        setPageHeroMsg("✅ Hero created!");
       }
       setTimeout(closePageHero, 900);
-    } catch (err) { setPageHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setPageHeroSaving(false); }
+    } catch (err) {
+      setPageHeroMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setPageHeroSaving(false);
+    }
   };
 
   const deletePageHero = async (section, id) => {
-    if (!window.confirm('Delete this hero entry?')) return;
-    try { await adminService.deleteContent(id); setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).filter((x) => x._id !== id) })); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this hero entry?")) return;
+    try {
+      await adminService.deleteContent(id);
+      setPageHeroes((p) => ({
+        ...p,
+        [section]: (p[section] || []).filter((x) => x._id !== id),
+      }));
+    } catch {
+      alert("Delete failed.");
+    }
   };
 
   const togglePageHeroActive = async (section, h) => {
     try {
-      const r = await adminService.updateContent(h._id, { ...h, imageUrl: h.imageUrl || h.image, isActive: !h.isActive });
-      setPageHeroes((p) => ({ ...p, [section]: (p[section]||[]).map((x) => x._id === h._id ? (r.data.content || r.data) : x) }));
-    } catch { alert('Update failed.'); }
+      const r = await adminService.updateContent(h._id, {
+        ...h,
+        imageUrl: h.imageUrl || h.image,
+        isActive: !h.isActive,
+      });
+      setPageHeroes((p) => ({
+        ...p,
+        [section]: (p[section] || []).map((x) =>
+          x._id === h._id ? r.data.content || r.data : x,
+        ),
+      }));
+    } catch {
+      alert("Update failed.");
+    }
   };
 
   /* Helper: render hero management block (reused in each tab) */
   const renderPageHeroBlock = (section, label) => {
     const list = pageHeroes[section] || [];
     return (
-      <div style={{marginBottom:32,background:'var(--bg-alt)',borderRadius:14,padding:'20px 24px',border:'1px solid var(--border)'}}>
-        <div className={styles.tabToolbar} style={{marginBottom:16}}>
+      <div
+        style={{
+          marginBottom: 32,
+          background: "var(--bg-alt)",
+          borderRadius: 14,
+          padding: "20px 24px",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <div className={styles.tabToolbar} style={{ marginBottom: 16 }}>
           <div>
-            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>
-              <i className="fas fa-image" style={{marginRight:8,color:'var(--primary)'}}/>
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>
+              <i
+                className="fas fa-image"
+                style={{ marginRight: 8, color: "var(--primary)" }}
+              />
               {label}
             </h3>
-            <p style={{fontSize:12,color:'var(--text-muted)',margin:'4px 0 0'}}>Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг огноогоор удирдах</p>
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--text-muted)",
+                margin: "4px 0 0",
+              }}
+            >
+              Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг огноогоор удирдах
+            </p>
           </div>
-          <button className="btn btn-primary btn-sm" onClick={() => openPageHeroCreate(section)}>
-            <i className="fas fa-plus"/> Add Hero Entry
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => openPageHeroCreate(section)}
+          >
+            <i className="fas fa-plus" /> Add Hero Entry
           </button>
         </div>
         {list.length === 0 ? (
-          <p style={{color:'var(--text-muted)',fontSize:13,textAlign:'center',padding:'12px 0'}}>No hero entries yet — click "Add Hero Entry" to set a custom page header.</p>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: 13,
+              textAlign: "center",
+              padding: "12px 0",
+            }}
+          >
+            No hero entries yet — click "Add Hero Entry" to set a custom page
+            header.
+          </p>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
-              <thead><tr><th>BG Image</th><th>Title</th><th>Subtitle</th><th>Valid From</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>BG Image</th>
+                  <th>Title</th>
+                  <th>Subtitle</th>
+                  <th>Valid From</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
                 {list.map((h) => (
                   <tr key={h._id}>
                     <td>
-                      {(h.imageUrl || h.image)
-                        ? <img src={h.imageUrl||h.image} alt="" style={{width:64,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        : <div style={{width:64,height:40,background:'var(--bg)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:16}}><i className="fas fa-image"/></div>}
+                      {h.imageUrl || h.image ? (
+                        <img
+                          src={h.imageUrl || h.image}
+                          alt=""
+                          style={{
+                            width: 64,
+                            height: 40,
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 64,
+                            height: 40,
+                            background: "var(--bg)",
+                            borderRadius: 6,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "var(--text-muted)",
+                            fontSize: 16,
+                          }}
+                        >
+                          <i className="fas fa-image" />
+                        </div>
+                      )}
                     </td>
-                    <td style={{fontWeight:600}}>{h.title||'—'}</td>
-                    <td style={{fontSize:12,color:'var(--text-muted)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{h.subtitle||h.text||'—'}</td>
-                    <td style={{fontSize:12}}>
+                    <td style={{ fontWeight: 600 }}>{h.title || "—"}</td>
+                    <td
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-muted)",
+                        maxWidth: 180,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h.subtitle || h.text || "—"}
+                    </td>
+                    <td style={{ fontSize: 12 }}>
                       {h.validFrom ? (
-                        <span style={{color:'var(--primary)',fontWeight:600}}>
-                          <i className="fas fa-calendar-day" style={{marginRight:4}}/>
+                        <span
+                          style={{ color: "var(--primary)", fontWeight: 600 }}
+                        >
+                          <i
+                            className="fas fa-calendar-day"
+                            style={{ marginRight: 4 }}
+                          />
                           {new Date(h.validFrom).toLocaleDateString()}
                         </span>
-                      ) : <span style={{color:'var(--text-muted)'}}>Always</span>}
+                      ) : (
+                        <span style={{ color: "var(--text-muted)" }}>
+                          Always
+                        </span>
+                      )}
                     </td>
                     <td>
-                      <button onClick={()=>togglePageHeroActive(section,h)} className={`${styles.toggleBtn} ${h.isActive?styles.toggleOn:styles.toggleOff}`}>
-                        {h.isActive?'Active':'Hidden'}
+                      <button
+                        onClick={() => togglePageHeroActive(section, h)}
+                        className={`${styles.toggleBtn} ${h.isActive ? styles.toggleOn : styles.toggleOff}`}
+                      >
+                        {h.isActive ? "Active" : "Hidden"}
                       </button>
                     </td>
                     <td>
                       <div className={styles.actions}>
-                        <button className={styles.btnEdit} onClick={()=>openPageHeroEdit(section,h)}><i className="fas fa-pen"/></button>
-                        <button className={styles.btnDel} onClick={()=>deletePageHero(section,h._id)}><i className="fas fa-trash"/></button>
+                        <button
+                          className={styles.btnEdit}
+                          onClick={() => openPageHeroEdit(section, h)}
+                        >
+                          <i className="fas fa-pen" />
+                        </button>
+                        <button
+                          className={styles.btnDel}
+                          onClick={() => deletePageHero(section, h._id)}
+                        >
+                          <i className="fas fa-trash" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -806,34 +1458,49 @@ const Admin = () => {
   };
 
   /* ── Home Hero helpers ── */
-  const setHH = (k) => (e) => setHomeHeroForm((p) => ({ ...p, [k]: e.target.value }));
+  const setHH = (k) => (e) =>
+    setHomeHeroForm((p) => ({ ...p, [k]: e.target.value }));
 
   const uploadHomeImg = async (file) => {
-    const fd = new FormData(); fd.append('image', file);
+    const fd = new FormData();
+    fd.append("image", file);
     const res = await adminService.uploadContentImage(fd);
-    return res.data.imageUrl || res.data.path || '';
+    return res.data.imageUrl || res.data.path || "";
   };
 
   const uploadHomeVideo = async (file) => {
-    const fd = new FormData(); fd.append('video', file);
+    const fd = new FormData();
+    fd.append("video", file);
     const res = await adminService.uploadContentVideo(fd);
-    return res.data.videoUrl || res.data.path || '';
+    return res.data.videoUrl || res.data.path || "";
   };
 
   const upsertHomeKey = async (key, payload) => {
     const existing = homeHeroItems.find((c) => c.key === key);
     if (existing) {
-      const r = await adminService.updateContent(existing._id, { ...payload, key, section: 'hero', isActive: true });
+      const r = await adminService.updateContent(existing._id, {
+        ...payload,
+        key,
+        section: "hero",
+        isActive: true,
+      });
       return r.data.content || r.data;
     } else {
-      const r = await adminService.createContent({ ...payload, key, section: 'hero', isActive: true });
+      const r = await adminService.createContent({
+        ...payload,
+        key,
+        section: "hero",
+        isActive: true,
+      });
       return r.data.content || r.data;
     }
   };
 
   const saveHomeHero = async (e) => {
     e.preventDefault();
-    setHomeHeroSaving(true); setHomeHeroUploading(false); setHomeHeroMsg('');
+    setHomeHeroSaving(true);
+    setHomeHeroUploading(false);
+    setHomeHeroMsg("");
     try {
       let bgUrl = homeHeroForm.imageUrl;
       let frontUrl = homeHeroForm.frontImageUrl;
@@ -859,141 +1526,270 @@ const Admin = () => {
       setHomeHeroUploading(false);
 
       const results = await Promise.all([
-        upsertHomeKey('home_slogan',     { title: homeHeroForm.slogan, text: homeHeroForm.slogan }),
-        upsertHomeKey('home_intro',      { text: homeHeroForm.intro }),
-        upsertHomeKey('home_image',      { imageUrl: bgUrl, image: bgUrl }),
-        upsertHomeKey('home_front_type', { text: homeHeroForm.frontType }),
-        upsertHomeKey('home_front_text', { text: homeHeroForm.frontText }),
-        upsertHomeKey('home_front_image',{ imageUrl: frontUrl, image: frontUrl }),
-        upsertHomeKey('home_front_overlay_text', { text: homeHeroForm.frontOverlayText }),
-        upsertHomeKey('home_front_video', { text: frontVideoUrl, image: frontVideoUrl }),
+        upsertHomeKey("home_slogan", {
+          title: homeHeroForm.slogan,
+          text: homeHeroForm.slogan,
+        }),
+        upsertHomeKey("home_intro", { text: homeHeroForm.intro }),
+        upsertHomeKey("home_image", { imageUrl: bgUrl, image: bgUrl }),
+        upsertHomeKey("home_front_type", { text: homeHeroForm.frontType }),
+        upsertHomeKey("home_front_text", { text: homeHeroForm.frontText }),
+        upsertHomeKey("home_front_image", {
+          imageUrl: frontUrl,
+          image: frontUrl,
+        }),
+        upsertHomeKey("home_front_overlay_text", {
+          text: homeHeroForm.frontOverlayText,
+        }),
+        upsertHomeKey("home_front_video", {
+          text: frontVideoUrl,
+          image: frontVideoUrl,
+        }),
       ]);
       // Refresh hero items in state
       setHomeHeroItems((prev) => {
         const merged = [...prev];
         results.forEach((r) => {
           const idx = merged.findIndex((x) => x._id === r._id);
-          if (idx >= 0) merged[idx] = r; else merged.push(r);
+          if (idx >= 0) merged[idx] = r;
+          else merged.push(r);
         });
         return merged;
       });
-      setHomeHeroMsg('✅ Home hero saved! Refresh the live site to see changes.');
+      setHomeHeroMsg(
+        "✅ Home hero saved! Refresh the live site to see changes.",
+      );
     } catch (err) {
-      setHomeHeroMsg('❌ ' + (err.response?.data?.message || 'Save failed.'));
+      setHomeHeroMsg("❌ " + (err.response?.data?.message || "Save failed."));
     } finally {
-      setHomeHeroSaving(false); setHomeHeroUploading(false);
+      setHomeHeroSaving(false);
+      setHomeHeroUploading(false);
     }
   };
 
   /* ── Festival helpers ── */
-  const openFestCreate = () => { setFestEdit(null); setFestForm(EMPTY_FEST); setFestCurImages([]); setFestImgFiles([]); setFestMsg(''); setFestModal(true); };
-  const openFestEdit   = (f) => {
-    setFestEdit(f._id);
-    setFestForm({ name: f.name||'', description: f.description||'', date: f.date||'', location: f.location||'', image: f.image||'', images: f.images||[], category: f.category||'culture', link: f.link||'', isActive: f.isActive??true, translations: f.translations||{} });
-    setFestCurImages(f.images || []); setFestImgFiles([]); setFestMsg(''); setFestModal(true);
+  const openFestCreate = () => {
+    setFestEdit(null);
+    setFestForm(EMPTY_FEST);
+    setFestCurImages([]);
+    setFestImgFiles([]);
+    setFestMsg("");
+    setFestModal(true);
   };
-  const closeFest = () => { setFestModal(false); setFestMsg(''); setFestImgFiles([]); setFestCurImages([]); };
-  const setF = (k) => (e) => setFestForm((p) => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const openFestEdit = (f) => {
+    setFestEdit(f._id);
+    setFestForm({
+      name: f.name || "",
+      description: f.description || "",
+      date: f.date || "",
+      location: f.location || "",
+      image: f.image || "",
+      images: f.images || [],
+      category: f.category || "culture",
+      link: f.link || "",
+      isActive: f.isActive ?? true,
+      translations: f.translations || {},
+    });
+    setFestCurImages(f.images || []);
+    setFestImgFiles([]);
+    setFestMsg("");
+    setFestModal(true);
+  };
+  const closeFest = () => {
+    setFestModal(false);
+    setFestMsg("");
+    setFestImgFiles([]);
+    setFestCurImages([]);
+  };
+  const setF = (k) => (e) =>
+    setFestForm((p) => ({
+      ...p,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const autoTranslateFest = async () => {
-    if (!festForm.name && !festForm.description) { setFestMsg('❌ Name болон Description оруулна уу.'); return; }
-    setFestTranslating(true); setFestMsg('⏳ Орчуулж байна...');
+    if (!festForm.name && !festForm.description) {
+      setFestMsg("❌ Name болон Description оруулна уу.");
+      return;
+    }
+    setFestTranslating(true);
+    setFestMsg("⏳ Орчуулж байна...");
     try {
       const texts = {};
-      if (festForm.name)        texts.name        = festForm.name;
+      if (festForm.name) texts.name = festForm.name;
       if (festForm.description) texts.description = festForm.description;
       const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setFestForm((p) => ({ ...p, translations: res.data.translations }));
-        setFestMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+        setFestMsg("✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.");
       }
     } catch (err) {
-      setFestMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
-    } finally { setFestTranslating(false); }
+      setFestMsg(
+        "❌ Орчуулахад алдаа гарлаа: " +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setFestTranslating(false);
+    }
   };
 
   const saveFest = async (e) => {
-    e.preventDefault(); setFestSaving(true); setFestMsg('');
+    e.preventDefault();
+    setFestSaving(true);
+    setFestMsg("");
     const payload = { ...festForm, images: festCurImages };
     try {
       let savedId = festEdit;
       if (festEdit) {
         const r = await adminService.updateFestival(festEdit, payload);
         const updated = r.data.festival || r.data;
-        setFestivals((p) => p.map((x) => x._id === festEdit ? updated : x));
-        setFestMsg('✅ Updated!');
+        setFestivals((p) => p.map((x) => (x._id === festEdit ? updated : x)));
+        setFestMsg("✅ Updated!");
       } else {
         const r = await adminService.createFestival(payload);
         const created = r.data.festival || r.data;
         savedId = created._id;
         setFestivals((p) => [created, ...p]);
-        setFestMsg('✅ Created!'); setFestForm(EMPTY_FEST);
+        setFestMsg("✅ Created!");
+        setFestForm(EMPTY_FEST);
       }
       if (festImgFiles.length > 0 && savedId) {
         const fd = new FormData();
-        festImgFiles.forEach((f) => fd.append('images', f));
+        festImgFiles.forEach((f) => fd.append("images", f));
         const upRes = await adminService.uploadFestivalImages(savedId, fd);
         const updatedImages = upRes.data.images || [];
-        setFestivals((p) => p.map((x) => x._id === savedId ? { ...x, images: updatedImages } : x));
+        setFestivals((p) =>
+          p.map((x) =>
+            x._id === savedId ? { ...x, images: updatedImages } : x,
+          ),
+        );
         setFestImgFiles([]);
       }
       setTimeout(closeFest, 900);
-    } catch (err) { setFestMsg('❌ ' + (err.response?.data?.message || 'Save failed.')); }
-    finally { setFestSaving(false); }
+    } catch (err) {
+      setFestMsg("❌ " + (err.response?.data?.message || "Save failed."));
+    } finally {
+      setFestSaving(false);
+    }
   };
   const deleteFest = async (id) => {
-    if (!window.confirm('Delete this festival?')) return;
-    try { await adminService.deleteFestival(id); setFestivals((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this festival?")) return;
+    try {
+      await adminService.deleteFestival(id);
+      setFestivals((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
   const removeFestCurImage = async (imgUrl) => {
     setFestCurImages((prev) => prev.filter((x) => x !== imgUrl));
-    if (festEdit) { try { await adminService.deleteFestivalImage(festEdit, imgUrl); } catch { /* ignore */ } }
+    if (festEdit) {
+      try {
+        await adminService.deleteFestivalImage(festEdit, imgUrl);
+      } catch {
+        /* ignore */
+      }
+    }
   };
   const onFestFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (festCurImages.length + festImgFiles.length + files.length > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    if (festCurImages.length + festImgFiles.length + files.length > 10) {
+      alert("Хамгийн ихдээ 10 зураг байж болно!");
+      return;
+    }
     setFestImgFiles((prev) => [...prev, ...files].slice(0, 10));
-    e.target.value = '';
+    e.target.value = "";
   };
-  const removeFestNewFile = (idx) => setFestImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeFestNewFile = (idx) =>
+    setFestImgFiles((prev) => prev.filter((_, i) => i !== idx));
   const toggleFestActive = async (f) => {
-    try { const r = await adminService.updateFestival(f._id, { isActive: !f.isActive }); setFestivals((p) => p.map((x) => x._id === f._id ? (r.data.festival || r.data) : x)); }
-    catch { alert('Update failed.'); }
+    try {
+      const r = await adminService.updateFestival(f._id, {
+        isActive: !f.isActive,
+      });
+      setFestivals((p) =>
+        p.map((x) => (x._id === f._id ? r.data.festival || r.data : x)),
+      );
+    } catch {
+      alert("Update failed.");
+    }
   };
 
   /* ── About Mongolia helpers ── */
-  const setA = (field) => (e) => setAboutForm((p) => ({ ...p, [field]: field === 'isActive' ? e.target.checked : e.target.value }));
-  const openAboutCreate = () => { setAboutEdit(null); setAboutForm(EMPTY_ABOUT); setAboutCurImages([]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
-  const openAboutEdit = (a) => { setAboutEdit(a._id); setAboutForm({ title: a.title||'', description: a.description||'', readMore: a.readMore||'', image: a.image||'', images: a.images||[], category: a.category||'misc', order: a.order||0, isActive: a.isActive!==false, translations: a.translations||{} }); setAboutCurImages(a.images||[]); setAboutImgFiles([]); setAboutMsg(''); setAboutModal(true); };
-  const closeAbout = () => { setAboutModal(false); setAboutMsg(''); };
+  const setA = (field) => (e) =>
+    setAboutForm((p) => ({
+      ...p,
+      [field]: field === "isActive" ? e.target.checked : e.target.value,
+    }));
+  const openAboutCreate = () => {
+    setAboutEdit(null);
+    setAboutForm(EMPTY_ABOUT);
+    setAboutCurImages([]);
+    setAboutImgFiles([]);
+    setAboutMsg("");
+    setAboutModal(true);
+  };
+  const openAboutEdit = (a) => {
+    setAboutEdit(a._id);
+    setAboutForm({
+      title: a.title || "",
+      description: a.description || "",
+      readMore: a.readMore || "",
+      image: a.image || "",
+      images: a.images || [],
+      category: a.category || "misc",
+      order: a.order || 0,
+      isActive: a.isActive !== false,
+      translations: a.translations || {},
+    });
+    setAboutCurImages(a.images || []);
+    setAboutImgFiles([]);
+    setAboutMsg("");
+    setAboutModal(true);
+  };
+  const closeAbout = () => {
+    setAboutModal(false);
+    setAboutMsg("");
+  };
 
   const autoTranslateAbout = async () => {
-    if (!aboutForm.title && !aboutForm.description) { setAboutMsg('❌ Title болон Description оруулна уу.'); return; }
-    setAboutTranslating(true); setAboutMsg('⏳ Орчуулж байна...');
+    if (!aboutForm.title && !aboutForm.description) {
+      setAboutMsg("❌ Title болон Description оруулна уу.");
+      return;
+    }
+    setAboutTranslating(true);
+    setAboutMsg("⏳ Орчуулж байна...");
     try {
       const texts = {};
-      if (aboutForm.title)       texts.title       = aboutForm.title;
+      if (aboutForm.title) texts.title = aboutForm.title;
       if (aboutForm.description) texts.description = aboutForm.description;
-      if (aboutForm.readMore)    texts.readMore    = aboutForm.readMore;
+      if (aboutForm.readMore) texts.readMore = aboutForm.readMore;
       const res = await adminService.translate(texts, detectSourceLang(texts));
       if (res.data.success) {
         setAboutForm((p) => ({ ...p, translations: res.data.translations }));
-        setAboutMsg('✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.');
+        setAboutMsg("✅ Орчуулга амжилттай! Хадгалах товчийг дарна уу.");
       }
     } catch (err) {
-      setAboutMsg('❌ Орчуулахад алдаа гарлаа: ' + (err.response?.data?.message || err.message));
-    } finally { setAboutTranslating(false); }
+      setAboutMsg(
+        "❌ Орчуулахад алдаа гарлаа: " +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setAboutTranslating(false);
+    }
   };
   const saveAbout = async (e) => {
     e.preventDefault();
-    setAboutSaving(true); setAboutMsg('');
+    setAboutSaving(true);
+    setAboutMsg("");
     try {
       const payload = { ...aboutForm, images: aboutCurImages };
       let savedId;
       if (aboutEdit) {
         const r = await adminService.updateAbout(aboutEdit, payload);
-        setAboutItems((p) => p.map((x) => x._id === aboutEdit ? (r.data.item || r.data) : x));
+        setAboutItems((p) =>
+          p.map((x) => (x._id === aboutEdit ? r.data.item || r.data : x)),
+        );
         savedId = aboutEdit;
       } else {
         const r = await adminService.createAbout(payload);
@@ -1003,37 +1799,63 @@ const Admin = () => {
       }
       if (aboutImgFiles.length > 0) {
         const fd = new FormData();
-        aboutImgFiles.forEach((f) => fd.append('images', f));
+        aboutImgFiles.forEach((f) => fd.append("images", f));
         const upRes = await adminService.uploadAboutImages(savedId, fd);
         const updated = upRes.data.item || upRes.data;
-        setAboutItems((p) => p.map((x) => x._id === savedId ? updated : x));
+        setAboutItems((p) => p.map((x) => (x._id === savedId ? updated : x)));
         setAboutCurImages(updated.images || []);
         setAboutImgFiles([]);
       }
-      setAboutMsg('Saved!');
+      setAboutMsg("Saved!");
       setTimeout(closeAbout, 900);
-    } catch { setAboutMsg('Save failed.'); }
-    finally { setAboutSaving(false); }
+    } catch {
+      setAboutMsg("Save failed.");
+    } finally {
+      setAboutSaving(false);
+    }
   };
   const deleteAboutItem = async (id) => {
-    if (!window.confirm('Delete this item?')) return;
-    try { await adminService.deleteAbout(id); setAboutItems((p) => p.filter((x) => x._id !== id)); }
-    catch { alert('Delete failed.'); }
+    if (!window.confirm("Delete this item?")) return;
+    try {
+      await adminService.deleteAbout(id);
+      setAboutItems((p) => p.filter((x) => x._id !== id));
+    } catch {
+      alert("Delete failed.");
+    }
   };
   const removeAboutCurImage = async (imgUrl) => {
     setAboutCurImages((prev) => prev.filter((x) => x !== imgUrl));
-    if (aboutEdit) { try { await adminService.deleteAboutImage(aboutEdit, imgUrl); } catch { /* ignore */ } }
+    if (aboutEdit) {
+      try {
+        await adminService.deleteAboutImage(aboutEdit, imgUrl);
+      } catch {
+        /* ignore */
+      }
+    }
   };
   const onAboutFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (aboutCurImages.length + aboutImgFiles.length + files.length > 10) { alert('Хамгийн ихдээ 10 зураг байж болно!'); return; }
+    if (aboutCurImages.length + aboutImgFiles.length + files.length > 10) {
+      alert("Хамгийн ихдээ 10 зураг байж болно!");
+      return;
+    }
     setAboutImgFiles((prev) => [...prev, ...files].slice(0, 10));
-    e.target.value = '';
+    e.target.value = "";
   };
-  const removeAboutNewFile = (idx) => setAboutImgFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeAboutNewFile = (idx) =>
+    setAboutImgFiles((prev) => prev.filter((_, i) => i !== idx));
   const toggleAboutActive = async (a) => {
-    try { const r = await adminService.updateAbout(a._id, { ...a, isActive: !a.isActive }); setAboutItems((p) => p.map((x) => x._id === a._id ? (r.data.item || r.data) : x)); }
-    catch { alert('Update failed.'); }
+    try {
+      const r = await adminService.updateAbout(a._id, {
+        ...a,
+        isActive: !a.isActive,
+      });
+      setAboutItems((p) =>
+        p.map((x) => (x._id === a._id ? r.data.item || r.data : x)),
+      );
+    } catch {
+      alert("Update failed.");
+    }
   };
 
   return (
@@ -1046,664 +1868,2206 @@ const Admin = () => {
           </div>
         </div>
 
-        {loading && <div className="page-loader" style={{ minHeight: 300 }}><span className="spinner spinner-dark" /> Loading…</div>}
-        {error   && <div className="alert alert-error"><i className="fas fa-exclamation-circle" /> {error}</div>}
-
-        {!loading && !error && (<>
-
-          {/* ── Tabs ── */}
-          <div className={styles.tabs}>
-            {TABS.map((t) => (
-              <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
-                <i className={`fas ${
-                  t==='overview'?'fa-chart-bar':
-                  t==='bookings'?'fa-calendar-check':
-                  t==='packages'?'fa-box-open':
-                  t==='itineraries'?'fa-route':
-                  t==='destinations'?'fa-globe':
-                  t==='festivals'?'fa-drum':
-                  t==='about'?'fa-mountain':
-                  t==='admins'?'fa-user-shield':
-                  t==='home'?'fa-home':
-                  'fa-users'
-                }`} />
-                {' '}{t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
+        {loading && (
+          <div className="page-loader" style={{ minHeight: 300 }}>
+            <span className="spinner spinner-dark" /> Loading…
           </div>
+        )}
+        {error && (
+          <div className="alert alert-error">
+            <i className="fas fa-exclamation-circle" /> {error}
+          </div>
+        )}
 
-          {/* ── Overview ── */}
-          {tab === 'overview' && stats && (
-            <div className={styles.statsGrid}>
-              {[
-                { icon: 'fa-users',          label: 'Total Users',    val: stats.totalUsers    ?? '—' },
-                { icon: 'fa-calendar-check', label: 'Total Bookings', val: stats.totalBookings ?? '—' },
-                { icon: 'fa-dollar-sign',    label: 'Total Revenue',  val: stats.totalRevenue  ? `$${Number(stats.totalRevenue).toLocaleString()}` : '—' },
-                { icon: 'fa-box-open',       label: 'Packages',       val: packages.length },
-              ].map(({ icon, label, val }) => (
-                <div key={label} className={styles.statCard}>
-                  <div className={styles.statIcon}><i className={`fas ${icon}`} /></div>
-                  <div><strong>{val}</strong><span>{label}</span></div>
-                </div>
+        {!loading && !error && (
+          <>
+            {/* ── Tabs ── */}
+            <div className={styles.tabs}>
+              {TABS.map((t) => (
+                <button
+                  key={t}
+                  className={`${styles.tab} ${tab === t ? styles.tabActive : ""}`}
+                  onClick={() => setTab(t)}
+                >
+                  <i
+                    className={`fas ${
+                      t === "overview"
+                        ? "fa-chart-bar"
+                        : t === "bookings"
+                          ? "fa-calendar-check"
+                          : t === "packages"
+                            ? "fa-box-open"
+                            : t === "itineraries"
+                              ? "fa-route"
+                              : t === "destinations"
+                                ? "fa-globe"
+                                : t === "festivals"
+                                  ? "fa-drum"
+                                  : t === "about"
+                                    ? "fa-mountain"
+                                    : t === "admins"
+                                      ? "fa-user-shield"
+                                      : t === "home"
+                                        ? "fa-home"
+                                        : "fa-users"
+                    }`}
+                  />{" "}
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
               ))}
             </div>
-          )}
 
-          {/* ── Bookings ── */}
-          {tab === 'bookings' && (
-            <div>
-              <div className={styles.filterBar}>
-                <span className={styles.filterLabel}>Filter:</span>
-                {['all', ...BOOKING_STATUSES].map((s) => (
-                  <button key={s} onClick={() => setBFilter(s)} className={`${styles.filterBtn} ${bFilter===s?styles.filterActive:''}`}>
-                    {s.charAt(0).toUpperCase()+s.slice(1)}
-                    <span className={styles.filterCount}>{s==='all'?bookings.length:bookings.filter((b)=>b.status===s).length}</span>
-                  </button>
+            {/* ── Overview ── */}
+            {tab === "overview" && stats && (
+              <div className={styles.statsGrid}>
+                {[
+                  {
+                    icon: "fa-users",
+                    label: "Total Users",
+                    val: stats.totalUsers ?? "—",
+                  },
+                  {
+                    icon: "fa-calendar-check",
+                    label: "Total Bookings",
+                    val: stats.totalBookings ?? "—",
+                  },
+                  {
+                    icon: "fa-dollar-sign",
+                    label: "Total Revenue",
+                    val: stats.totalRevenue
+                      ? `$${Number(stats.totalRevenue).toLocaleString()}`
+                      : "—",
+                  },
+                  {
+                    icon: "fa-box-open",
+                    label: "Packages",
+                    val: packages.length,
+                  },
+                ].map(({ icon, label, val }) => (
+                  <div key={label} className={styles.statCard}>
+                    <div className={styles.statIcon}>
+                      <i className={`fas ${icon}`} />
+                    </div>
+                    <div>
+                      <strong>{val}</strong>
+                      <span>{label}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Date</th><th>People</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {filteredBookings.length === 0 && <tr><td colSpan={8} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No bookings found</td></tr>}
-                    {filteredBookings.map((b) => (
-                      <tr key={b._id}>
-                        <td><code style={{fontSize:12}}>{b.bookingId||b._id.slice(-6)}</code></td>
-                        <td><div style={{fontWeight:600}}>{b.fullName||'—'}</div><div style={{fontSize:12,color:'var(--text-muted)'}}>{b.email}</div></td>
-                        <td>{b.serviceName||b.packageName||'—'}</td>
-                        <td>{b.bookingDate||b.travelDate?new Date(b.bookingDate||b.travelDate).toLocaleDateString():'—'}</td>
-                        <td style={{textAlign:'center'}}>{b.numberOfPeople||b.numberOfGuests||1}</td>
-                        <td style={{fontWeight:600}}>{b.totalPrice?`$${Number(b.totalPrice).toLocaleString()}`:b.price?`$${Number(b.price).toLocaleString()}`:'—'}</td>
-                        <td>
-                          <span className={`badge badge-${b.status==='approved'?'success':b.status==='cancelled'?'error':b.status==='completed'?'primary':'accent'}`}>{b.status}</span>
-                        </td>
-                        <td>
-                          <div className={styles.actions}>
-                            {b.status==='pending'&&<><button className={styles.btnApprove} title="Approve & email user" onClick={()=>approveBook(b._id)}><i className="fas fa-check"/>Approve</button><button className={styles.btnDecline} title="Decline & email user" onClick={()=>declineBook(b._id)}><i className="fas fa-times"/>Decline</button></>}
-                            <button className={styles.btnView} onClick={()=>setBDetail(b)}><i className="fas fa-eye"/></button>
-                            <button className={styles.btnDel} onClick={()=>deleteBooking(b._id)}><i className="fas fa-trash"/></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Packages ── */}
-          {tab === 'packages' && (
-            <div>
-              {renderPageHeroBlock('packages_hero', 'Packages Page Header')}
-              <div className={styles.tabToolbar}>
-                <span>{packages.length} package{packages.length!==1?'s':''}</span>
-                <button className="btn btn-primary btn-sm" onClick={openPkgCreate}><i className="fas fa-plus"/> Add Package</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Name</th><th>Destination</th><th>Duration</th><th>Price</th><th>Category</th><th>Dates</th><th>Max Guests/Slot</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {packages.length===0&&<tr><td colSpan={10} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No packages yet — click "Add Package"</td></tr>}
-                    {packages.map((p) => (
-                      <tr key={p._id}>
-                        <td>
-                          {(p.images?.[0] || p.image)
-                            ? <div style={{position:'relative',display:'inline-block'}}>
-                                <img src={p.images?.[0] || p.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
-                                {(p.images||[]).length > 1 && <span style={{position:'absolute',bottom:2,right:2,background:'rgba(0,0,0,0.6)',color:'#fff',fontSize:9,padding:'1px 4px',borderRadius:4}}>{(p.images||[]).length}</span>}
-                              </div>
-                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-image"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{p.name}</div><div style={{fontSize:12,color:'var(--text-muted)'}}>{(p.features||[]).slice(0,2).join(' · ')}</div></td>
-                        <td>{p.destination}</td>
-                        <td>{p.duration}</td>
-                        <td style={{fontWeight:600}}>${Number(p.price).toLocaleString()}</td>
-                        <td><span className="badge badge-accent">{p.category}</span></td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{(p.availableDates||[]).length>0?`${(p.availableDates||[]).length} date(s)`:'Any date'}</td>
-                        <td style={{fontSize:12,textAlign:'center'}}>
-                          <span style={{fontWeight:700,color:'var(--primary)',fontSize:16}}>{p.bookingLimitPerSlot||5}</span>
-                          <span style={{display:'block',color:'var(--text-muted)',fontSize:10}}>per slot</span>
-                        </td>
-                        <td><span className={`badge badge-${p.status==='active'?'success':'error'}`}>{p.status}</span></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openPkgEdit(p)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deletePkg(p._id)}><i className="fas fa-trash"/></button></div></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ── Itineraries ── */}
-          {tab === 'itineraries' && (
-            <div>
-              {renderPageHeroBlock('itineraries_hero', 'Itineraries Page Header')}
-              <div className={styles.tabToolbar}>
-                <span>{itineraries.length} itinerar{itineraries.length!==1?'ies':'y'}</span>
-                <button className="btn btn-primary btn-sm" onClick={openItinCreate}><i className="fas fa-plus"/> Add Itinerary</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Images</th><th>Title</th><th>Locations</th><th>Duration</th><th>Difficulty</th><th>Price</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {itineraries.length===0&&<tr><td colSpan={9} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No itineraries yet — click "Add Itinerary"</td></tr>}
-                    {itineraries.map((it) => (
-                      <tr key={it._id}>
-                        <td>
-                          {(it.images?.[0] || it.image)
-                            ? <div style={{position:'relative',display:'inline-block'}}>
-                                <img src={it.images?.[0] || it.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
-                                {(it.images||[]).length > 1 && <span style={{position:'absolute',bottom:2,right:2,background:'rgba(0,0,0,0.6)',color:'#fff',fontSize:9,padding:'1px 4px',borderRadius:4}}>{(it.images||[]).length}</span>}
-                              </div>
-                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-route"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{it.title}</div></td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{it.locations||'—'}</td>
-                        <td>{it.duration||'—'}</td>
-                        <td><span className={`badge badge-${it.difficulty==='easy'?'success':it.difficulty==='challenging'?'error':'accent'}`}>{it.difficulty||'moderate'}</span></td>
-                        <td style={{fontWeight:600}}>{it.price?`$${Number(it.price).toLocaleString()}`:'—'}</td>
-                        <td style={{textAlign:'center'}}>{it.order||0}</td>
-                        <td><span className={`badge badge-${it.isActive?'success':'error'}`}>{it.isActive?'Active':'Hidden'}</span></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openItinEdit(it)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteItin(it._id)}><i className="fas fa-trash"/></button></div></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ── Destinations ── */}
-          {tab === 'destinations' && (
-            <div>
-              {/* ── Page Hero / Header Scheduling ── */}
-              <div style={{marginBottom:32,background:'var(--bg-alt)',borderRadius:14,padding:'20px 24px',border:'1px solid var(--border)'}}>
-                <div className={styles.tabToolbar} style={{marginBottom:16}}>
-                  <div>
-                    <h3 style={{fontSize:15,fontWeight:700,margin:0}}>
-                      <i className="fas fa-image" style={{marginRight:8,color:'var(--primary)'}}/>
-                      Destinations Page Header
-                    </h3>
-                    <p style={{fontSize:12,color:'var(--text-muted)',margin:'4px 0 0'}}>
-                      Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг огноогоор удирдах
-                    </p>
-                  </div>
-                  <button className="btn btn-primary btn-sm" onClick={openHeroCreate}>
-                    <i className="fas fa-plus"/> Add Hero Entry
-                  </button>
+            {/* ── Bookings ── */}
+            {tab === "bookings" && (
+              <div>
+                <div className={styles.filterBar}>
+                  <span className={styles.filterLabel}>Filter:</span>
+                  {["all", ...BOOKING_STATUSES].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setBFilter(s)}
+                      className={`${styles.filterBtn} ${bFilter === s ? styles.filterActive : ""}`}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                      <span className={styles.filterCount}>
+                        {s === "all"
+                          ? bookings.length
+                          : bookings.filter((b) => b.status === s).length}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                {destHeroList.length === 0 ? (
-                  <p style={{color:'var(--text-muted)',fontSize:13,textAlign:'center',padding:'12px 0'}}>
-                    No hero entries yet — click "Add Hero Entry" to set a custom page header.
-                  </p>
-                ) : (
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead><tr><th>BG Image</th><th>Title</th><th>Subtitle</th><th>Valid From</th><th>Status</th><th>Actions</th></tr></thead>
-                      <tbody>
-                        {destHeroList.map((h) => (
-                          <tr key={h._id}>
-                            <td>
-                              {(h.imageUrl || h.image)
-                                ? <img src={h.imageUrl||h.image} alt="" style={{width:64,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                                : <div style={{width:64,height:40,background:'var(--bg)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:16}}><i className="fas fa-image"/></div>}
-                            </td>
-                            <td style={{fontWeight:600}}>{h.title||'—'}</td>
-                            <td style={{fontSize:12,color:'var(--text-muted)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{h.subtitle||h.text||'—'}</td>
-                            <td style={{fontSize:12}}>
-                              {h.validFrom ? (
-                                <span style={{color:'var(--primary)',fontWeight:600}}>
-                                  <i className="fas fa-calendar-day" style={{marginRight:4}}/>
-                                  {new Date(h.validFrom).toLocaleDateString()}
-                                </span>
-                              ) : <span style={{color:'var(--text-muted)'}}>Always</span>}
-                            </td>
-                            <td>
-                              <button onClick={()=>toggleHeroActive(h)} className={`${styles.toggleBtn} ${h.isActive?styles.toggleOn:styles.toggleOff}`}>
-                                {h.isActive?'Active':'Hidden'}
-                              </button>
-                            </td>
-                            <td>
-                              <div className={styles.actions}>
-                                <button className={styles.btnEdit} onClick={()=>openHeroEdit(h)}><i className="fas fa-pen"/></button>
-                                <button className={styles.btnDel} onClick={()=>deleteHero(h._id)}><i className="fas fa-trash"/></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Destinations List ── */}
-              <div className={styles.tabToolbar}>
-                <span>{destinations.length} destination{destinations.length!==1?'s':''}</span>
-                <button className="btn btn-primary btn-sm" onClick={openDestCreate}><i className="fas fa-plus"/> Add Destination</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Name</th><th>Location</th><th>Category</th><th>Tagline</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {destinations.length===0&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No destinations yet — click "Add Destination"</td></tr>}
-                    {destinations.map((d) => (
-                      <tr key={d._id}>
-                        <td>
-                          {d.image
-                            ? <img src={d.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>{e.target.style.display='none'}}/>
-                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-mountain"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{d.name}</div></td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{[d.city,d.country].filter(Boolean).join(', ')||'—'}</td>
-                        <td><span className="badge badge-accent">{d.category}</span></td>
-                        <td style={{fontSize:12,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.tagline||'—'}</td>
-                        <td><button onClick={()=>toggleDestActive(d)} className={`${styles.toggleBtn} ${d.isActive?styles.toggleOn:styles.toggleOff}`}>{d.isActive?'Active':'Hidden'}</button></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openDestEdit(d)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteDest(d._id)}><i className="fas fa-trash"/></button></div></td>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>People</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ── About Mongolia ── */}
-          {tab === 'about' && (
-            <div>
-              {renderPageHeroBlock('about_hero', 'About Mongolia Page Header')}
-              <div className={styles.tabToolbar}>
-                <span>{aboutItems.length} item{aboutItems.length!==1?'s':''}</span>
-                <button className="btn btn-primary btn-sm" onClick={openAboutCreate}><i className="fas fa-plus"/> Add Item</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Title</th><th>Category</th><th>Order</th><th>Read More</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {aboutItems.length===0&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No items yet — click "Add Item"</td></tr>}
-                    {aboutItems.map((a) => (
-                      <tr key={a._id}>
-                        <td>
-                          {(a.images?.[0]||a.image)
-                            ? <img src={a.images?.[0]||a.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                            : <div style={{width:56,height:40,background:'var(--surface)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-mountain"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{a.title}</div>{a.images?.length>1&&<div style={{fontSize:11,color:'var(--text-muted)'}}><i className="fas fa-images"/> {a.images.length} imgs</div>}</td>
-                        <td><span className="badge badge-accent" style={{textTransform:'capitalize'}}>{a.category||'—'}</span></td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{a.order??0}</td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{a.readMore ? <span style={{color:'var(--primary)'}}>✓ Yes</span> : '—'}</td>
-                        <td><button onClick={()=>toggleAboutActive(a)} className={`${styles.toggleBtn} ${a.isActive?styles.toggleOn:styles.toggleOff}`}>{a.isActive?'Active':'Hidden'}</button></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openAboutEdit(a)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteAboutItem(a._id)}><i className="fas fa-trash"/></button></div></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ── Users ── */}
-          {tab === 'users' && (
-            <div>
-              <div className={styles.tabToolbar}>
-                <span>{filteredUsers.length} {t('admin_users_count_label')}</span>
-                <div className={styles.usersToolbarControls}>
-                  <input
-                    className={`form-input ${styles.usersSearchInput}`}
-                    placeholder={t('admin_users_search_placeholder')}
-                    value={userEmailQuery}
-                    onChange={(e) => setUserEmailQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-              {adminActionMsg && (
-                <div className={`alert ${adminActionTone === 'error' ? 'alert-error' : 'alert-info'}`} style={{marginBottom:12}}>
-                  <i className={`fas ${adminActionTone === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`}/> {adminActionMsg}
-                </div>
-              )}
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                    <thead><tr><th>{t('contact_name')}</th><th>{t('contact_email')}</th><th>{t('admin_users_role')}</th><th>{t('admin_users_joined')}</th><th>{t('admin_users_actions')}</th></tr></thead>
+                    </thead>
                     <tbody>
-                      {filteredUsers.length === 0 && (
-                        <tr><td colSpan={5} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>{t('admin_users_no_users')}</td></tr>
+                      {filteredBookings.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={8}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No bookings found
+                          </td>
+                        </tr>
                       )}
-                      {filteredUsers.map((u)=>(
-                        <tr key={u._id}>
-                          <td>{u.name}</td>
-                          <td>{u.email}</td>
-                          <td><span className={`badge ${u.role==='admin'?'badge-primary':'badge-accent'}`}>{u.role}</span></td>
-                          <td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td>
+                      {filteredBookings.map((b) => (
+                        <tr key={b._id}>
                           <td>
-                            <div className={styles.userActionGroup}>
-                              {u.role !== 'admin' && (
-                                <button className={`${styles.userActionBtn} ${styles.userActionMake}`} onClick={() => makeAdmin(u.email)} disabled={adminActionLoading}>
-                                  <i className="fas fa-user-shield"/> {t('admin_users_make_admin')}
-                                </button>
+                            <code style={{ fontSize: 12 }}>
+                              {b.bookingId || b._id.slice(-6)}
+                            </code>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>
+                              {b.fullName || "—"}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: "var(--text-muted)",
+                              }}
+                            >
+                              {b.email}
+                            </div>
+                          </td>
+                          <td>{b.serviceName || b.packageName || "—"}</td>
+                          <td>
+                            {b.bookingDate || b.travelDate
+                              ? new Date(
+                                  b.bookingDate || b.travelDate,
+                                ).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {b.numberOfPeople || b.numberOfGuests || 1}
+                          </td>
+                          <td style={{ fontWeight: 600 }}>
+                            {b.totalPrice
+                              ? `$${Number(b.totalPrice).toLocaleString()}`
+                              : b.price
+                                ? `$${Number(b.price).toLocaleString()}`
+                                : "—"}
+                          </td>
+                          <td>
+                            <span
+                              className={`badge badge-${b.status === "approved" ? "success" : b.status === "cancelled" ? "error" : b.status === "completed" ? "primary" : "accent"}`}
+                            >
+                              {b.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              {b.status === "pending" && (
+                                <>
+                                  <button
+                                    className={styles.btnApprove}
+                                    title="Approve & email user"
+                                    onClick={() => approveBook(b._id)}
+                                  >
+                                    <i className="fas fa-check" />
+                                    Approve
+                                  </button>
+                                  <button
+                                    className={styles.btnDecline}
+                                    title="Decline & email user"
+                                    onClick={() => declineBook(b._id)}
+                                  >
+                                    <i className="fas fa-times" />
+                                    Decline
+                                  </button>
+                                </>
                               )}
-                              <button className={`${styles.userActionBtn} ${styles.userActionDelete}`} title={t('admin_users_delete_user')} onClick={() => deleteUser(u)} disabled={adminActionLoading}>
-                                <i className="fas fa-trash"/> {t('admin_users_delete_user')}
+                              <button
+                                className={styles.btnView}
+                                onClick={() => setBDetail(b)}
+                              >
+                                <i className="fas fa-eye" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deleteBooking(b._id)}
+                              >
+                                <i className="fas fa-trash" />
                               </button>
                             </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Admins ── */}
-          {tab === 'admins' && (
-            <div>
-              <div className={styles.tabToolbar}>
-                <span>{filteredAdmins.length} {t('admin_users_admins_label')}</span>
-                <div className={styles.usersToolbarControls}>
-                  <input
-                    className={`form-input ${styles.usersSearchInput}`}
-                    placeholder={t('admin_users_search_admin_placeholder')}
-                    value={adminEmailQuery}
-                    onChange={(e) => setAdminEmailQuery(e.target.value)}
-                  />
-                  <button className={`${styles.userActionBtn} ${styles.userActionMake}`} onClick={() => makeAdmin(adminEmailQuery)} disabled={adminActionLoading}>
-                    <i className="fas fa-user-shield"/> {t('admin_users_make_admin')}
+            {/* ── Packages ── */}
+            {tab === "packages" && (
+              <div>
+                {renderPageHeroBlock("packages_hero", "Packages Page Header")}
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {packages.length} package{packages.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={openPkgCreate}
+                  >
+                    <i className="fas fa-plus" /> Add Package
                   </button>
                 </div>
-              </div>
-              {adminActionMsg && (
-                <div className={`alert ${adminActionTone === 'error' ? 'alert-error' : 'alert-info'}`} style={{marginBottom:12}}>
-                  <i className={`fas ${adminActionTone === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`}/> {adminActionMsg}
-                </div>
-              )}
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                    <thead><tr><th>{t('contact_name')}</th><th>{t('contact_email')}</th><th>{t('admin_users_role')}</th><th>{t('admin_users_joined')}</th><th>{t('admin_users_actions')}</th></tr></thead>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Destination</th>
+                        <th>Duration</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Dates</th>
+                        <th>Max Guests/Slot</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {filteredAdmins.length === 0 && (
-                        <tr><td colSpan={5} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>{t('admin_users_no_admins')}</td></tr>
+                      {packages.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={10}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No packages yet — click "Add Package"
+                          </td>
+                        </tr>
                       )}
-                      {filteredAdmins.map((u)=>(
+                      {packages.map((p) => (
+                        <tr key={p._id}>
+                          <td>
+                            {p.images?.[0] || p.image ? (
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-block",
+                                }}
+                              >
+                                <img
+                                  src={p.images?.[0] || p.image}
+                                  alt=""
+                                  style={{
+                                    width: 56,
+                                    height: 40,
+                                    objectFit: "cover",
+                                    borderRadius: 6,
+                                  }}
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                  }}
+                                />
+                                {(p.images || []).length > 1 && (
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      bottom: 2,
+                                      right: 2,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      fontSize: 9,
+                                      padding: "1px 4px",
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    {(p.images || []).length}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  background: "var(--bg-alt)",
+                                  borderRadius: 6,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--text-muted)",
+                                  fontSize: 18,
+                                }}
+                              >
+                                <i className="fas fa-image" />
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{p.name}</div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: "var(--text-muted)",
+                              }}
+                            >
+                              {(p.features || []).slice(0, 2).join(" · ")}
+                            </div>
+                          </td>
+                          <td>{p.destination}</td>
+                          <td>{p.duration}</td>
+                          <td style={{ fontWeight: 600 }}>
+                            ${Number(p.price).toLocaleString()}
+                          </td>
+                          <td>
+                            <span className="badge badge-accent">
+                              {p.category}
+                            </span>
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {(p.availableDates || []).length > 0
+                              ? `${(p.availableDates || []).length} date(s)`
+                              : "Any date"}
+                          </td>
+                          <td style={{ fontSize: 12, textAlign: "center" }}>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                color: "var(--primary)",
+                                fontSize: 16,
+                              }}
+                            >
+                              {p.bookingLimitPerSlot || 5}
+                            </span>
+                            <span
+                              style={{
+                                display: "block",
+                                color: "var(--text-muted)",
+                                fontSize: 10,
+                              }}
+                            >
+                              per slot
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className={`badge badge-${p.status === "active" ? "success" : "error"}`}
+                            >
+                              {p.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnEdit}
+                                onClick={() => openPkgEdit(p)}
+                              >
+                                <i className="fas fa-pen" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deletePkg(p._id)}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Itineraries ── */}
+            {tab === "itineraries" && (
+              <div>
+                {renderPageHeroBlock(
+                  "itineraries_hero",
+                  "Itineraries Page Header",
+                )}
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {itineraries.length} itinerar
+                    {itineraries.length !== 1 ? "ies" : "y"}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={openItinCreate}
+                  >
+                    <i className="fas fa-plus" /> Add Itinerary
+                  </button>
+                </div>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Images</th>
+                        <th>Title</th>
+                        <th>Locations</th>
+                        <th>Duration</th>
+                        <th>Difficulty</th>
+                        <th>Price</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itineraries.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={9}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No itineraries yet — click "Add Itinerary"
+                          </td>
+                        </tr>
+                      )}
+                      {itineraries.map((it) => (
+                        <tr key={it._id}>
+                          <td>
+                            {it.images?.[0] || it.image ? (
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-block",
+                                }}
+                              >
+                                <img
+                                  src={it.images?.[0] || it.image}
+                                  alt=""
+                                  style={{
+                                    width: 56,
+                                    height: 40,
+                                    objectFit: "cover",
+                                    borderRadius: 6,
+                                  }}
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                  }}
+                                />
+                                {(it.images || []).length > 1 && (
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      bottom: 2,
+                                      right: 2,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      fontSize: 9,
+                                      padding: "1px 4px",
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    {(it.images || []).length}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  background: "var(--bg-alt)",
+                                  borderRadius: 6,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--text-muted)",
+                                  fontSize: 18,
+                                }}
+                              >
+                                <i className="fas fa-route" />
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{it.title}</div>
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {it.locations || "—"}
+                          </td>
+                          <td>{it.duration || "—"}</td>
+                          <td>
+                            <span
+                              className={`badge badge-${it.difficulty === "easy" ? "success" : it.difficulty === "challenging" ? "error" : "accent"}`}
+                            >
+                              {it.difficulty || "moderate"}
+                            </span>
+                          </td>
+                          <td style={{ fontWeight: 600 }}>
+                            {it.price
+                              ? `$${Number(it.price).toLocaleString()}`
+                              : "—"}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {it.order || 0}
+                          </td>
+                          <td>
+                            <span
+                              className={`badge badge-${it.isActive ? "success" : "error"}`}
+                            >
+                              {it.isActive ? "Active" : "Hidden"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnEdit}
+                                onClick={() => openItinEdit(it)}
+                              >
+                                <i className="fas fa-pen" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deleteItin(it._id)}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Destinations ── */}
+            {tab === "destinations" && (
+              <div>
+                {/* ── Page Hero / Header Scheduling ── */}
+                <div
+                  style={{
+                    marginBottom: 32,
+                    background: "var(--bg-alt)",
+                    borderRadius: 14,
+                    padding: "20px 24px",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <div
+                    className={styles.tabToolbar}
+                    style={{ marginBottom: 16 }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>
+                        <i
+                          className="fas fa-image"
+                          style={{ marginRight: 8, color: "var(--primary)" }}
+                        />
+                        Destinations Page Header
+                      </h3>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: "var(--text-muted)",
+                          margin: "4px 0 0",
+                        }}
+                      >
+                        Хуудасны гарчиг, дэд гарчиг, ар дэвсгэр зургийг
+                        огноогоор удирдах
+                      </p>
+                    </div>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={openHeroCreate}
+                    >
+                      <i className="fas fa-plus" /> Add Hero Entry
+                    </button>
+                  </div>
+                  {destHeroList.length === 0 ? (
+                    <p
+                      style={{
+                        color: "var(--text-muted)",
+                        fontSize: 13,
+                        textAlign: "center",
+                        padding: "12px 0",
+                      }}
+                    >
+                      No hero entries yet — click "Add Hero Entry" to set a
+                      custom page header.
+                    </p>
+                  ) : (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>BG Image</th>
+                            <th>Title</th>
+                            <th>Subtitle</th>
+                            <th>Valid From</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {destHeroList.map((h) => (
+                            <tr key={h._id}>
+                              <td>
+                                {h.imageUrl || h.image ? (
+                                  <img
+                                    src={h.imageUrl || h.image}
+                                    alt=""
+                                    style={{
+                                      width: 64,
+                                      height: 40,
+                                      objectFit: "cover",
+                                      borderRadius: 6,
+                                    }}
+                                    onError={(e) =>
+                                      (e.target.style.display = "none")
+                                    }
+                                  />
+                                ) : (
+                                  <div
+                                    style={{
+                                      width: 64,
+                                      height: 40,
+                                      background: "var(--bg)",
+                                      borderRadius: 6,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "var(--text-muted)",
+                                      fontSize: 16,
+                                    }}
+                                  >
+                                    <i className="fas fa-image" />
+                                  </div>
+                                )}
+                              </td>
+                              <td style={{ fontWeight: 600 }}>
+                                {h.title || "—"}
+                              </td>
+                              <td
+                                style={{
+                                  fontSize: 12,
+                                  color: "var(--text-muted)",
+                                  maxWidth: 180,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {h.subtitle || h.text || "—"}
+                              </td>
+                              <td style={{ fontSize: 12 }}>
+                                {h.validFrom ? (
+                                  <span
+                                    style={{
+                                      color: "var(--primary)",
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    <i
+                                      className="fas fa-calendar-day"
+                                      style={{ marginRight: 4 }}
+                                    />
+                                    {new Date(h.validFrom).toLocaleDateString()}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "var(--text-muted)" }}>
+                                    Always
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <button
+                                  onClick={() => toggleHeroActive(h)}
+                                  className={`${styles.toggleBtn} ${h.isActive ? styles.toggleOn : styles.toggleOff}`}
+                                >
+                                  {h.isActive ? "Active" : "Hidden"}
+                                </button>
+                              </td>
+                              <td>
+                                <div className={styles.actions}>
+                                  <button
+                                    className={styles.btnEdit}
+                                    onClick={() => openHeroEdit(h)}
+                                  >
+                                    <i className="fas fa-pen" />
+                                  </button>
+                                  <button
+                                    className={styles.btnDel}
+                                    onClick={() => deleteHero(h._id)}
+                                  >
+                                    <i className="fas fa-trash" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Destinations List ── */}
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {destinations.length} destination
+                    {destinations.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={openDestCreate}
+                  >
+                    <i className="fas fa-plus" /> Add Destination
+                  </button>
+                </div>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Tagline</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {destinations.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No destinations yet — click "Add Destination"
+                          </td>
+                        </tr>
+                      )}
+                      {destinations.map((d) => (
+                        <tr key={d._id}>
+                          <td>
+                            {d.image ? (
+                              <img
+                                src={d.image}
+                                alt=""
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  objectFit: "cover",
+                                  borderRadius: 6,
+                                }}
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  background: "var(--bg-alt)",
+                                  borderRadius: 6,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--text-muted)",
+                                  fontSize: 18,
+                                }}
+                              >
+                                <i className="fas fa-mountain" />
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{d.name}</div>
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {[d.city, d.country].filter(Boolean).join(", ") ||
+                              "—"}
+                          </td>
+                          <td>
+                            <span className="badge badge-accent">
+                              {d.category}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              fontSize: 12,
+                              maxWidth: 160,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {d.tagline || "—"}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => toggleDestActive(d)}
+                              className={`${styles.toggleBtn} ${d.isActive ? styles.toggleOn : styles.toggleOff}`}
+                            >
+                              {d.isActive ? "Active" : "Hidden"}
+                            </button>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnEdit}
+                                onClick={() => openDestEdit(d)}
+                              >
+                                <i className="fas fa-pen" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deleteDest(d._id)}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── About Mongolia ── */}
+            {tab === "about" && (
+              <div>
+                {renderPageHeroBlock(
+                  "about_hero",
+                  "About Mongolia Page Header",
+                )}
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {aboutItems.length} item{aboutItems.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={openAboutCreate}
+                  >
+                    <i className="fas fa-plus" /> Add Item
+                  </button>
+                </div>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Order</th>
+                        <th>Read More</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {aboutItems.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No items yet — click "Add Item"
+                          </td>
+                        </tr>
+                      )}
+                      {aboutItems.map((a) => (
+                        <tr key={a._id}>
+                          <td>
+                            {a.images?.[0] || a.image ? (
+                              <img
+                                src={a.images?.[0] || a.image}
+                                alt=""
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  objectFit: "cover",
+                                  borderRadius: 6,
+                                }}
+                                onError={(e) =>
+                                  (e.target.style.display = "none")
+                                }
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  background: "var(--surface)",
+                                  borderRadius: 6,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--text-muted)",
+                                  fontSize: 18,
+                                }}
+                              >
+                                <i className="fas fa-mountain" />
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{a.title}</div>
+                            {a.images?.length > 1 && (
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "var(--text-muted)",
+                                }}
+                              >
+                                <i className="fas fa-images" />{" "}
+                                {a.images.length} imgs
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span
+                              className="badge badge-accent"
+                              style={{ textTransform: "capitalize" }}
+                            >
+                              {a.category || "—"}
+                            </span>
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {a.order ?? 0}
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {a.readMore ? (
+                              <span style={{ color: "var(--primary)" }}>
+                                ✓ Yes
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => toggleAboutActive(a)}
+                              className={`${styles.toggleBtn} ${a.isActive ? styles.toggleOn : styles.toggleOff}`}
+                            >
+                              {a.isActive ? "Active" : "Hidden"}
+                            </button>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnEdit}
+                                onClick={() => openAboutEdit(a)}
+                              >
+                                <i className="fas fa-pen" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deleteAboutItem(a._id)}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Users ── */}
+            {tab === "users" && (
+              <div>
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {filteredUsers.length} {t("admin_users_count_label")}
+                  </span>
+                  <div className={styles.usersToolbarControls}>
+                    <input
+                      className={`form-input ${styles.usersSearchInput}`}
+                      placeholder={t("admin_users_search_placeholder")}
+                      value={userEmailQuery}
+                      onChange={(e) => setUserEmailQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {adminActionMsg && (
+                  <div
+                    className={`alert ${adminActionTone === "error" ? "alert-error" : "alert-info"}`}
+                    style={{ marginBottom: 12 }}
+                  >
+                    <i
+                      className={`fas ${adminActionTone === "error" ? "fa-exclamation-circle" : "fa-info-circle"}`}
+                    />{" "}
+                    {adminActionMsg}
+                  </div>
+                )}
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>{t("contact_name")}</th>
+                        <th>{t("contact_email")}</th>
+                        <th>{t("admin_users_role")}</th>
+                        <th>{t("admin_users_joined")}</th>
+                        <th>{t("admin_users_actions")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            {t("admin_users_no_users")}
+                          </td>
+                        </tr>
+                      )}
+                      {filteredUsers.map((u) => (
                         <tr key={u._id}>
                           <td>{u.name}</td>
                           <td>{u.email}</td>
-                          <td><span className="badge badge-primary">{u.role}</span></td>
-                          <td>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td>
                           <td>
-                            <button className={`${styles.userActionBtn} ${styles.userActionRemove}`} onClick={() => removeAdmin(u.email)} disabled={adminActionLoading}>
-                              <i className="fas fa-user-minus"/> {t('admin_users_remove_admin')}
+                            <span
+                              className={`badge ${u.role === "admin" ? "badge-primary" : "badge-accent"}`}
+                            >
+                              {u.role}
+                            </span>
+                          </td>
+                          <td>
+                            {u.createdAt
+                              ? new Date(u.createdAt).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td>
+                            <div className={styles.userActionGroup}>
+                              {u.role !== "admin" && (
+                                <button
+                                  className={`${styles.userActionBtn} ${styles.userActionMake}`}
+                                  onClick={() => makeAdmin(u.email)}
+                                  disabled={adminActionLoading}
+                                >
+                                  <i className="fas fa-user-shield" />{" "}
+                                  {t("admin_users_make_admin")}
+                                </button>
+                              )}
+                              <button
+                                className={`${styles.userActionBtn} ${styles.userActionDelete}`}
+                                title={t("admin_users_delete_user")}
+                                onClick={() => deleteUser(u)}
+                                disabled={adminActionLoading}
+                              >
+                                <i className="fas fa-trash" />{" "}
+                                {t("admin_users_delete_user")}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Admins ── */}
+            {tab === "admins" && (
+              <div>
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {filteredAdmins.length} {t("admin_users_admins_label")}
+                  </span>
+                  <div className={styles.usersToolbarControls}>
+                    <input
+                      className={`form-input ${styles.usersSearchInput}`}
+                      placeholder={t("admin_users_search_admin_placeholder")}
+                      value={adminEmailQuery}
+                      onChange={(e) => setAdminEmailQuery(e.target.value)}
+                    />
+                    <button
+                      className={`${styles.userActionBtn} ${styles.userActionMake}`}
+                      onClick={() => makeAdmin(adminEmailQuery)}
+                      disabled={adminActionLoading}
+                    >
+                      <i className="fas fa-user-shield" />{" "}
+                      {t("admin_users_make_admin")}
+                    </button>
+                  </div>
+                </div>
+                {adminActionMsg && (
+                  <div
+                    className={`alert ${adminActionTone === "error" ? "alert-error" : "alert-info"}`}
+                    style={{ marginBottom: 12 }}
+                  >
+                    <i
+                      className={`fas ${adminActionTone === "error" ? "fa-exclamation-circle" : "fa-info-circle"}`}
+                    />{" "}
+                    {adminActionMsg}
+                  </div>
+                )}
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>{t("contact_name")}</th>
+                        <th>{t("contact_email")}</th>
+                        <th>{t("admin_users_role")}</th>
+                        <th>{t("admin_users_joined")}</th>
+                        <th>{t("admin_users_actions")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAdmins.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            {t("admin_users_no_admins")}
+                          </td>
+                        </tr>
+                      )}
+                      {filteredAdmins.map((u) => (
+                        <tr key={u._id}>
+                          <td>{u.name}</td>
+                          <td>{u.email}</td>
+                          <td>
+                            <span className="badge badge-primary">
+                              {u.role}
+                            </span>
+                          </td>
+                          <td>
+                            {u.createdAt
+                              ? new Date(u.createdAt).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td>
+                            <button
+                              className={`${styles.userActionBtn} ${styles.userActionRemove}`}
+                              onClick={() => removeAdmin(u.email)}
+                              disabled={adminActionLoading}
+                            >
+                              <i className="fas fa-user-minus" />{" "}
+                              {t("admin_users_remove_admin")}
                             </button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Festivals ── */}
-          {tab === 'festivals' && (
-            <div>
-              {renderPageHeroBlock('festivals_hero', 'Festivals Page Header')}
-              <div className={styles.tabToolbar}>
-                <span>{festivals.length} festival{festivals.length!==1?'s':''}</span>
-                <button className="btn btn-primary btn-sm" onClick={openFestCreate}><i className="fas fa-plus"/> Add Festival</button>
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead><tr><th>Image</th><th>Name</th><th>Date</th><th>Location</th><th>Category</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {festivals.length===0&&<tr><td colSpan={8} style={{textAlign:'center',color:'var(--text-muted)',padding:32}}>No festivals yet — click "Add Festival"</td></tr>}
-                    {festivals.map((f) => (
-                      <tr key={f._id}>
-                        <td>
-                          {(f.images?.[0]||f.image)
-                            ? <img src={f.images?.[0]||f.image} alt="" style={{width:56,height:40,objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                            : <div style={{width:56,height:40,background:'var(--bg-alt)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:18}}><i className="fas fa-drum"/></div>}
-                        </td>
-                        <td><div style={{fontWeight:600}}>{f.name}</div>{f.images?.length>1&&<div style={{fontSize:11,color:'var(--text-muted)'}}><i className="fas fa-images"/> {f.images.length} imgs</div>}</td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{f.date||'—'}</td>
-                        <td style={{fontSize:12,color:'var(--text-muted)'}}>{f.location||'—'}</td>
-                        <td><span className="badge badge-accent" style={{textTransform:'capitalize'}}>{f.category||'—'}</span></td>
-                        <td style={{fontSize:12}}>
-                          {f.link
-                            ? <a href={f.link} target="_blank" rel="noopener noreferrer" style={{color:'var(--primary)',textDecoration:'underline',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:'block'}}><i className="fas fa-external-link-alt"/> Link</a>
-                            : <span style={{color:'var(--text-muted)'}}>—</span>}
-                        </td>
-                        <td><button onClick={()=>toggleFestActive(f)} className={`${styles.toggleBtn} ${f.isActive?styles.toggleOn:styles.toggleOff}`}>{f.isActive?'Active':'Hidden'}</button></td>
-                        <td><div className={styles.actions}><button className={styles.btnEdit} onClick={()=>openFestEdit(f)}><i className="fas fa-pen"/></button><button className={styles.btnDel} onClick={()=>deleteFest(f._id)}><i className="fas fa-trash"/></button></div></td>
+            {/* ── Festivals ── */}
+            {tab === "festivals" && (
+              <div>
+                {renderPageHeroBlock("festivals_hero", "Festivals Page Header")}
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {festivals.length} festival
+                    {festivals.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={openFestCreate}
+                  >
+                    <i className="fas fa-plus" /> Add Festival
+                  </button>
+                </div>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Link</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {festivals.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={8}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No festivals yet — click "Add Festival"
+                          </td>
+                        </tr>
+                      )}
+                      {festivals.map((f) => (
+                        <tr key={f._id}>
+                          <td>
+                            {f.images?.[0] || f.image ? (
+                              <img
+                                src={f.images?.[0] || f.image}
+                                alt=""
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  objectFit: "cover",
+                                  borderRadius: 6,
+                                }}
+                                onError={(e) =>
+                                  (e.target.style.display = "none")
+                                }
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 56,
+                                  height: 40,
+                                  background: "var(--bg-alt)",
+                                  borderRadius: 6,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--text-muted)",
+                                  fontSize: 18,
+                                }}
+                              >
+                                <i className="fas fa-drum" />
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{f.name}</div>
+                            {f.images?.length > 1 && (
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "var(--text-muted)",
+                                }}
+                              >
+                                <i className="fas fa-images" />{" "}
+                                {f.images.length} imgs
+                              </div>
+                            )}
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {f.date || "—"}
+                          </td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {f.location || "—"}
+                          </td>
+                          <td>
+                            <span
+                              className="badge badge-accent"
+                              style={{ textTransform: "capitalize" }}
+                            >
+                              {f.category || "—"}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 12 }}>
+                            {f.link ? (
+                              <a
+                                href={f.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: "var(--primary)",
+                                  textDecoration: "underline",
+                                  maxWidth: 120,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  display: "block",
+                                }}
+                              >
+                                <i className="fas fa-external-link-alt" /> Link
+                              </a>
+                            ) : (
+                              <span style={{ color: "var(--text-muted)" }}>
+                                —
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => toggleFestActive(f)}
+                              className={`${styles.toggleBtn} ${f.isActive ? styles.toggleOn : styles.toggleOff}`}
+                            >
+                              {f.isActive ? "Active" : "Hidden"}
+                            </button>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnEdit}
+                                onClick={() => openFestEdit(f)}
+                              >
+                                <i className="fas fa-pen" />
+                              </button>
+                              <button
+                                className={styles.btnDel}
+                                onClick={() => deleteFest(f._id)}
+                              >
+                                <i className="fas fa-trash" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── Home Hero (nuur huudas) ── */}
-          {tab === 'home' && (
-            <div>
-              <div className={styles.tabToolbar} style={{marginBottom:24}}>
-                <span style={{fontSize:15,fontWeight:600}}><i className="fas fa-home" style={{marginRight:8,color:'var(--primary)'}}/>Home Page Hero Section</span>
-              </div>
-
-              {/* Live preview strip */}
-              {(homeHeroForm.imageUrl || homeHeroForm.frontImageUrl) && (
-                <div style={{borderRadius:12,overflow:'hidden',marginBottom:24,position:'relative',height:160,background:'#0a1628'}}>
-                  <img
-                    src={homeHeroForm.imageUrl}
-                    alt="bg preview"
-                    style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:0.5}}
-                    onError={(e)=>e.target.style.display='none'}
-                  />
-                  <div style={{position:'relative',zIndex:1,padding:'20px 24px'}}>
-                    <p style={{color:'#fff',fontWeight:700,fontSize:18,margin:0}}>{homeHeroForm.slogan||'Slogan preview...'}</p>
-                    <p style={{color:'rgba(255,255,255,.7)',fontSize:12,margin:'4px 0 0'}}>{homeHeroForm.intro||'Intro text preview...'}</p>
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={saveHomeHero} style={{maxWidth:680}}>
-                {/* Slogan */}
-                <div className={styles.formGroup}>
-                  <label><i className="fas fa-heading" style={{marginRight:6,color:'var(--primary)'}}/>Hero Slogan (гарчиг)</label>
-                  <input className="form-input" value={homeHeroForm.slogan} onChange={setHH('slogan')} placeholder="e.g. Discover Mongolia, Explore the World"/>
+            {/* ── Home Hero (nuur huudas) ── */}
+            {tab === "home" && (
+              <div>
+                <div className={styles.tabToolbar} style={{ marginBottom: 24 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>
+                    <i
+                      className="fas fa-home"
+                      style={{ marginRight: 8, color: "var(--primary)" }}
+                    />
+                    Home Page Hero Section
+                  </span>
                 </div>
 
-                {/* Intro */}
-                <div className={styles.formGroup}>
-                  <label><i className="fas fa-align-left" style={{marginRight:6,color:'var(--primary)'}}/>Intro Text (дэд гарчиг)</label>
-                  <textarea className="form-input" rows={2} value={homeHeroForm.intro} onChange={setHH('intro')} placeholder="Short tagline shown below the hero media…" style={{resize:'vertical'}}/>
-                </div>
-
-                {/* Background image */}
-                <div className={styles.formGroup}>
-                  <label><i className="fas fa-image" style={{marginRight:6,color:'var(--primary)'}}/>Background Image (арын зураг)</label>
-                  <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
-                    <i className="fas fa-cloud-upload-alt"/>
-                    <span>{homeHeroImgFile ? homeHeroImgFile.name : 'Upload background image'}</span>
-                    <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroImgFile(f);e.target.value='';}}/>
-                  </label>
-                  {homeHeroImgFile && (
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                      <img src={URL.createObjectURL(homeHeroImgFile)} alt="" style={{width:140,height:80,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>setHomeHeroImgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                {/* Live preview strip */}
+                {(homeHeroForm.imageUrl || homeHeroForm.frontImageUrl) && (
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      marginBottom: 24,
+                      position: "relative",
+                      height: 160,
+                      background: "#0a1628",
+                    }}
+                  >
+                    <img
+                      src={homeHeroForm.imageUrl}
+                      alt="bg preview"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        opacity: 0.5,
+                      }}
+                      onError={(e) => (e.target.style.display = "none")}
+                    />
+                    <div
+                      style={{
+                        position: "relative",
+                        zIndex: 1,
+                        padding: "20px 24px",
+                      }}
+                    >
+                      <p
+                        style={{
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 18,
+                          margin: 0,
+                        }}
+                      >
+                        {homeHeroForm.slogan || "Slogan preview..."}
+                      </p>
+                      <p
+                        style={{
+                          color: "rgba(255,255,255,.7)",
+                          fontSize: 12,
+                          margin: "4px 0 0",
+                        }}
+                      >
+                        {homeHeroForm.intro || "Intro text preview..."}
+                      </p>
                     </div>
-                  )}
-                  <input className="form-input" value={homeHeroForm.imageUrl} onChange={setHH('imageUrl')} placeholder="Or paste URL: https://…"/>
-                  {!homeHeroImgFile && homeHeroForm.imageUrl && (
-                    <img src={homeHeroForm.imageUrl} alt="bg preview" style={{marginTop:8,width:'100%',maxHeight:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Front panel type */}
-                <div className={styles.formGroup}>
-                  <label><i className="fas fa-th-large" style={{marginRight:6,color:'var(--primary)'}}/>Front Panel (төвийн блок)</label>
-                  <div style={{display:'flex',gap:12,marginBottom:12}}>
-                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='image'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='image'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
-                      <input type="radio" name="frontType" value="image" checked={homeHeroForm.frontType==='image'} onChange={setHH('frontType')} style={{display:'none'}}/>
-                      <i className="fas fa-image" style={{color:homeHeroForm.frontType==='image'?'var(--primary)':'var(--text-muted)'}}/> Зураг (Image)
+                <form onSubmit={saveHomeHero} style={{ maxWidth: 680 }}>
+                  {/* Slogan */}
+                  <div className={styles.formGroup}>
+                    <label>
+                      <i
+                        className="fas fa-heading"
+                        style={{ marginRight: 6, color: "var(--primary)" }}
+                      />
+                      Hero Slogan (гарчиг)
                     </label>
-                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='video'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='video'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
-                      <input type="radio" name="frontType" value="video" checked={homeHeroForm.frontType==='video'} onChange={setHH('frontType')} style={{display:'none'}}/>
-                      <i className="fas fa-video" style={{color:homeHeroForm.frontType==='video'?'var(--primary)':'var(--text-muted)'}}/> Видео (Video)
-                    </label>
-                    <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',padding:'8px 16px',borderRadius:8,border:`2px solid ${homeHeroForm.frontType==='text'?'var(--primary)':'var(--border)'}`,background:homeHeroForm.frontType==='text'?'var(--primary-soft, rgba(37,99,235,.1))':'transparent'}}>
-                      <input type="radio" name="frontType" value="text" checked={homeHeroForm.frontType==='text'} onChange={setHH('frontType')} style={{display:'none'}}/>
-                      <i className="fas fa-font" style={{color:homeHeroForm.frontType==='text'?'var(--primary)':'var(--text-muted)'}}/> Бичлэг (Text)
-                    </label>
+                    <input
+                      className="form-input"
+                      value={homeHeroForm.slogan}
+                      onChange={setHH("slogan")}
+                      placeholder="e.g. Discover Mongolia, Explore the World"
+                    />
                   </div>
 
-                  {homeHeroForm.frontType === 'image' && (
-                    <div>                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
-                        <i className="fas fa-cloud-upload-alt"/>
-                        <span>{homeHeroFrontFile ? homeHeroFrontFile.name : 'Upload front image (optional, defaults to bg image)'}</span>
-                        <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroFrontFile(f);e.target.value='';}}/>
+                  {/* Intro */}
+                  <div className={styles.formGroup}>
+                    <label>
+                      <i
+                        className="fas fa-align-left"
+                        style={{ marginRight: 6, color: "var(--primary)" }}
+                      />
+                      Intro Text (дэд гарчиг)
+                    </label>
+                    <textarea
+                      className="form-input"
+                      rows={2}
+                      value={homeHeroForm.intro}
+                      onChange={setHH("intro")}
+                      placeholder="Short tagline shown below the hero media…"
+                      style={{ resize: "vertical" }}
+                    />
+                  </div>
+
+                  {/* Background image */}
+                  <div className={styles.formGroup}>
+                    <label>
+                      <i
+                        className="fas fa-image"
+                        style={{ marginRight: 6, color: "var(--primary)" }}
+                      />
+                      Background Image (арын зураг)
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        cursor: "pointer",
+                        color: "var(--primary)",
+                        fontSize: 13,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <i className="fas fa-cloud-upload-alt" />
+                      <span>
+                        {homeHeroImgFile
+                          ? homeHeroImgFile.name
+                          : "Upload background image"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const f = e.target.files[0];
+                          if (f) setHomeHeroImgFile(f);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {homeHeroImgFile && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <img
+                          src={URL.createObjectURL(homeHeroImgFile)}
+                          alt=""
+                          style={{
+                            width: 140,
+                            height: 80,
+                            objectFit: "cover",
+                            borderRadius: 8,
+                            border: "2px dashed var(--primary)",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setHomeHeroImgFile(null)}
+                          style={{
+                            background: "#ef4444",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            cursor: "pointer",
+                            fontSize: 12,
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      className="form-input"
+                      value={homeHeroForm.imageUrl}
+                      onChange={setHH("imageUrl")}
+                      placeholder="Or paste URL: https://…"
+                    />
+                    {!homeHeroImgFile && homeHeroForm.imageUrl && (
+                      <img
+                        src={homeHeroForm.imageUrl}
+                        alt="bg preview"
+                        style={{
+                          marginTop: 8,
+                          width: "100%",
+                          maxHeight: 140,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                        onError={(e) => (e.target.style.display = "none")}
+                      />
+                    )}
+                  </div>
+
+                  {/* Front panel type */}
+                  <div className={styles.formGroup}>
+                    <label>
+                      <i
+                        className="fas fa-th-large"
+                        style={{ marginRight: 6, color: "var(--primary)" }}
+                      />
+                      Front Panel (төвийн блок)
+                    </label>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          cursor: "pointer",
+                          padding: "8px 16px",
+                          borderRadius: 8,
+                          border: `2px solid ${homeHeroForm.frontType === "image" ? "var(--primary)" : "var(--border)"}`,
+                          background:
+                            homeHeroForm.frontType === "image"
+                              ? "var(--primary-soft, rgba(37,99,235,.1))"
+                              : "transparent",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="frontType"
+                          value="image"
+                          checked={homeHeroForm.frontType === "image"}
+                          onChange={setHH("frontType")}
+                          style={{ display: "none" }}
+                        />
+                        <i
+                          className="fas fa-image"
+                          style={{
+                            color:
+                              homeHeroForm.frontType === "image"
+                                ? "var(--primary)"
+                                : "var(--text-muted)",
+                          }}
+                        />{" "}
+                        Зураг (Image)
                       </label>
-                      {homeHeroFrontFile && (
-                        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                          <img src={URL.createObjectURL(homeHeroFrontFile)} alt="" style={{width:140,height:80,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
-                          <button type="button" onClick={()=>setHomeHeroFrontFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
-                        </div>
-                      )}
-                      <input className="form-input" value={homeHeroForm.frontImageUrl} onChange={setHH('frontImageUrl')} placeholder="Or paste front image URL: https://…"/>
-                      {!homeHeroFrontFile && homeHeroForm.frontImageUrl && (
-                        <img src={homeHeroForm.frontImageUrl} alt="front preview" style={{marginTop:8,width:'100%',maxHeight:140,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
-                      )}
-                      <div style={{marginTop:12}}>
-                        <label style={{display:'block',marginBottom:4,fontSize:13,color:'var(--text-muted)'}}>
-                          <i className="fas fa-comment-alt" style={{marginRight:6,color:'var(--primary)'}}/>
-                          Зурган дээрх бичлэг (overlay text) <span style={{fontWeight:400}}>— зурагны дэргэд харагдана</span>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          cursor: "pointer",
+                          padding: "8px 16px",
+                          borderRadius: 8,
+                          border: `2px solid ${homeHeroForm.frontType === "video" ? "var(--primary)" : "var(--border)"}`,
+                          background:
+                            homeHeroForm.frontType === "video"
+                              ? "var(--primary-soft, rgba(37,99,235,.1))"
+                              : "transparent",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="frontType"
+                          value="video"
+                          checked={homeHeroForm.frontType === "video"}
+                          onChange={setHH("frontType")}
+                          style={{ display: "none" }}
+                        />
+                        <i
+                          className="fas fa-video"
+                          style={{
+                            color:
+                              homeHeroForm.frontType === "video"
+                                ? "var(--primary)"
+                                : "var(--text-muted)",
+                          }}
+                        />{" "}
+                        Видео (Video)
+                      </label>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          cursor: "pointer",
+                          padding: "8px 16px",
+                          borderRadius: 8,
+                          border: `2px solid ${homeHeroForm.frontType === "text" ? "var(--primary)" : "var(--border)"}`,
+                          background:
+                            homeHeroForm.frontType === "text"
+                              ? "var(--primary-soft, rgba(37,99,235,.1))"
+                              : "transparent",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="frontType"
+                          value="text"
+                          checked={homeHeroForm.frontType === "text"}
+                          onChange={setHH("frontType")}
+                          style={{ display: "none" }}
+                        />
+                        <i
+                          className="fas fa-font"
+                          style={{
+                            color:
+                              homeHeroForm.frontType === "text"
+                                ? "var(--primary)"
+                                : "var(--text-muted)",
+                          }}
+                        />{" "}
+                        Бичлэг (Text)
+                      </label>
+                    </div>
+
+                    {homeHeroForm.frontType === "image" && (
+                      <div>
+                        {" "}
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            cursor: "pointer",
+                            color: "var(--primary)",
+                            fontSize: 13,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <i className="fas fa-cloud-upload-alt" />
+                          <span>
+                            {homeHeroFrontFile
+                              ? homeHeroFrontFile.name
+                              : "Upload front image (optional, defaults to bg image)"}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              const f = e.target.files[0];
+                              if (f) setHomeHeroFrontFile(f);
+                              e.target.value = "";
+                            }}
+                          />
                         </label>
-                        <textarea className="form-input" rows={3} value={homeHeroForm.frontOverlayText} onChange={setHH('frontOverlayText')} placeholder="Жишээ: Welcome to Mongolia! (хоосон бол overlay гарахгүй)" style={{resize:'vertical'}}/>
-                        {homeHeroForm.frontOverlayText && (
-                          <div style={{marginTop:6,padding:'10px 14px',borderRadius:8,background:'rgba(0,0,0,.55)',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',fontSize:13,whiteSpace:'pre-wrap'}}>
-                            {homeHeroForm.frontOverlayText}
+                        {homeHeroFrontFile && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <img
+                              src={URL.createObjectURL(homeHeroFrontFile)}
+                              alt=""
+                              style={{
+                                width: 140,
+                                height: 80,
+                                objectFit: "cover",
+                                borderRadius: 8,
+                                border: "2px dashed var(--primary)",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setHomeHeroFrontFile(null)}
+                              style={{
+                                background: "#ef4444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                                fontSize: 12,
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                        <input
+                          className="form-input"
+                          value={homeHeroForm.frontImageUrl}
+                          onChange={setHH("frontImageUrl")}
+                          placeholder="Or paste front image URL: https://…"
+                        />
+                        {!homeHeroFrontFile && homeHeroForm.frontImageUrl && (
+                          <img
+                            src={homeHeroForm.frontImageUrl}
+                            alt="front preview"
+                            style={{
+                              marginTop: 8,
+                              width: "100%",
+                              maxHeight: 140,
+                              objectFit: "cover",
+                              borderRadius: 8,
+                            }}
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div style={{ marginTop: 12 }}>
+                          <label
+                            style={{
+                              display: "block",
+                              marginBottom: 4,
+                              fontSize: 13,
+                              color: "var(--text-muted)",
+                            }}
+                          >
+                            <i
+                              className="fas fa-comment-alt"
+                              style={{
+                                marginRight: 6,
+                                color: "var(--primary)",
+                              }}
+                            />
+                            Зурган дээрх бичлэг (overlay text){" "}
+                            <span style={{ fontWeight: 400 }}>
+                              — зурагны дэргэд харагдана
+                            </span>
+                          </label>
+                          <textarea
+                            className="form-input"
+                            rows={3}
+                            value={homeHeroForm.frontOverlayText}
+                            onChange={setHH("frontOverlayText")}
+                            placeholder="Жишээ: Welcome to Mongolia! (хоосон бол overlay гарахгүй)"
+                            style={{ resize: "vertical" }}
+                          />
+                          {homeHeroForm.frontOverlayText && (
+                            <div
+                              style={{
+                                marginTop: 6,
+                                padding: "10px 14px",
+                                borderRadius: 8,
+                                background: "rgba(0,0,0,.55)",
+                                backdropFilter: "blur(6px)",
+                                border: "1px solid rgba(255,255,255,.18)",
+                                color: "#fff",
+                                fontSize: 13,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {homeHeroForm.frontOverlayText}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {homeHeroForm.frontType === "video" && (
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: 6,
+                            fontSize: 13,
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          <i
+                            className="fas fa-film"
+                            style={{ marginRight: 6, color: "var(--primary)" }}
+                          />
+                          Видео файл upload (mp4, webm, mov — max 100 MB)
+                        </label>
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            cursor: "pointer",
+                            color: "var(--primary)",
+                            fontSize: 13,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <i className="fas fa-cloud-upload-alt" />
+                          <span>
+                            {homeHeroFrontVideoFile
+                              ? homeHeroFrontVideoFile.name
+                              : "Upload video file"}
+                          </span>
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/quicktime,video/*"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              const f = e.target.files[0];
+                              if (f) setHomeHeroFrontVideoFile(f);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                        {homeHeroFrontVideoFile && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <video
+                              src={URL.createObjectURL(homeHeroFrontVideoFile)}
+                              style={{
+                                width: 200,
+                                height: 90,
+                                objectFit: "cover",
+                                borderRadius: 8,
+                                border: "2px dashed var(--primary)",
+                              }}
+                              muted
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setHomeHeroFrontVideoFile(null)}
+                              style={{
+                                background: "#ef4444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                                fontSize: 12,
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                        <input
+                          className="form-input"
+                          value={homeHeroForm.frontVideoUrl}
+                          onChange={setHH("frontVideoUrl")}
+                          placeholder="Эсвэл видео URL оруулна уу: https://…mp4"
+                        />
+                        {!homeHeroFrontVideoFile &&
+                          homeHeroForm.frontVideoUrl && (
+                            <video
+                              src={homeHeroForm.frontVideoUrl}
+                              style={{
+                                marginTop: 8,
+                                width: "100%",
+                                maxHeight: 160,
+                                borderRadius: 8,
+                                objectFit: "cover",
+                              }}
+                              controls
+                              muted
+                              onError={(e) => (e.target.style.display = "none")}
+                            />
+                          )}
+                      </div>
+                    )}
+
+                    {homeHeroForm.frontType === "text" && (
+                      <div className={styles.formGroup} style={{ margin: 0 }}>
+                        <label
+                          style={{
+                            marginBottom: 4,
+                            display: "block",
+                            fontSize: 12,
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          Front block text content{" "}
+                          <span style={{ fontWeight: 400 }}>
+                            (shown instead of image)
+                          </span>
+                        </label>
+                        <textarea
+                          className="form-input"
+                          rows={5}
+                          value={homeHeroForm.frontText}
+                          onChange={setHH("frontText")}
+                          placeholder="Write featured content, a welcome message, or highlights that appear in the centre panel of the hero…"
+                          style={{ resize: "vertical" }}
+                        />
+                        {homeHeroForm.frontText && (
+                          <div
+                            style={{
+                              marginTop: 8,
+                              padding: "16px 20px",
+                              borderRadius: 10,
+                              background: "rgba(255,255,255,.08)",
+                              backdropFilter: "blur(8px)",
+                              border: "1px solid rgba(255,255,255,.15)",
+                              color: "#fff",
+                            }}
+                          >
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: 13,
+                                lineHeight: 1.7,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {homeHeroForm.frontText}
+                            </p>
                           </div>
                         )}
                       </div>
-                    </div>
+                    )}
+                  </div>
+
+                  {homeHeroMsg && (
+                    <p className={styles.formMsg} style={{ marginTop: 8 }}>
+                      {homeHeroMsg}
+                    </p>
                   )}
-
-                  {homeHeroForm.frontType === 'video' && (
-                    <div>
-                      <label style={{display:'block',marginBottom:6,fontSize:13,color:'var(--text-muted)'}}>
-                        <i className="fas fa-film" style={{marginRight:6,color:'var(--primary)'}}/>
-                        Видео файл upload (mp4, webm, mov — max 100 MB)
-                      </label>
-                      <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
-                        <i className="fas fa-cloud-upload-alt"/>
-                        <span>{homeHeroFrontVideoFile ? homeHeroFrontVideoFile.name : 'Upload video file'}</span>
-                        <input type="file" accept="video/mp4,video/webm,video/quicktime,video/*" style={{display:'none'}} onChange={(e)=>{const f=e.target.files[0];if(f)setHomeHeroFrontVideoFile(f);e.target.value='';}} />
-                      </label>
-                      {homeHeroFrontVideoFile && (
-                        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                          <video src={URL.createObjectURL(homeHeroFrontVideoFile)} style={{width:200,height:90,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}} muted />
-                          <button type="button" onClick={()=>setHomeHeroFrontVideoFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
-                        </div>
+                  <div style={{ marginTop: 16 }}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={homeHeroSaving || homeHeroUploading}
+                    >
+                      {homeHeroSaving || homeHeroUploading ? (
+                        <>
+                          <span className="spinner" /> Saving…
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-save" /> Save Home Hero
+                        </>
                       )}
-                      <input className="form-input" value={homeHeroForm.frontVideoUrl} onChange={setHH('frontVideoUrl')} placeholder="Эсвэл видео URL оруулна уу: https://…mp4"/>
-                      {!homeHeroFrontVideoFile && homeHeroForm.frontVideoUrl && (
-                        <video src={homeHeroForm.frontVideoUrl} style={{marginTop:8,width:'100%',maxHeight:160,borderRadius:8,objectFit:'cover'}} controls muted onError={(e)=>e.target.style.display='none'}/>
-                      )}
-                    </div>
-                  )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
-                  {homeHeroForm.frontType === 'text' && (
-                    <div className={styles.formGroup} style={{margin:0}}>
-                      <label style={{marginBottom:4,display:'block',fontSize:12,color:'var(--text-muted)'}}>Front block text content <span style={{fontWeight:400}}>(shown instead of image)</span></label>
-                      <textarea className="form-input" rows={5} value={homeHeroForm.frontText} onChange={setHH('frontText')} placeholder="Write featured content, a welcome message, or highlights that appear in the centre panel of the hero…" style={{resize:'vertical'}}/>
-                      {homeHeroForm.frontText && (
-                        <div style={{marginTop:8,padding:'16px 20px',borderRadius:10,background:'rgba(255,255,255,.08)',backdropFilter:'blur(8px)',border:'1px solid rgba(255,255,255,.15)',color:'#fff'}}>
-                          <p style={{margin:0,fontSize:13,lineHeight:1.7,whiteSpace:'pre-wrap'}}>{homeHeroForm.frontText}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {homeHeroMsg && <p className={styles.formMsg} style={{marginTop:8}}>{homeHeroMsg}</p>}
-                <div style={{marginTop:16}}>
-                  <button type="submit" className="btn btn-primary" disabled={homeHeroSaving||homeHeroUploading}>
-                    {(homeHeroSaving||homeHeroUploading)?<><span className="spinner"/> Saving…</>:<><i className="fas fa-save"/> Save Home Hero</>}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* ── Pages (Shop & Contact) Hero ── */}
-          {tab === 'pages' && (
-            <div>
-              {renderPageHeroBlock('shop_hero', 'Shop Page Header')}
-              {renderPageHeroBlock('contact_hero', 'Contact Page Header')}
-            </div>
-          )}
-
-        </>)}
+            {/* ── Pages (Shop & Contact) Hero ── */}
+            {tab === "pages" && (
+              <div>
+                {renderPageHeroBlock("shop_hero", "Shop Page Header")}
+                {renderPageHeroBlock("contact_hero", "Contact Page Header")}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* ── Booking Detail Modal ── */}
       {bDetail && (
-        <Modal title="Booking Details" onClose={()=>setBDetail(null)}>
+        <Modal title="Booking Details" onClose={() => setBDetail(null)}>
           <div className={styles.detailGrid}>
-            {[['Booking ID',bDetail.bookingId||bDetail._id],['Customer',bDetail.fullName||'—'],['Email',bDetail.email||'—'],['Phone',bDetail.phone||'—'],['Service',bDetail.serviceName||bDetail.packageName||'—'],['Duration',bDetail.duration||'—'],['Date',bDetail.bookingDate||bDetail.travelDate?new Date(bDetail.bookingDate||bDetail.travelDate).toLocaleDateString():'—'],['Time',bDetail.bookingTime||'—'],['People',bDetail.numberOfPeople||bDetail.numberOfGuests||1],['Total',bDetail.totalPrice?`$${Number(bDetail.totalPrice).toLocaleString()}`:bDetail.price?`$${Number(bDetail.price).toLocaleString()}`:'—'],['Notes',bDetail.notes||bDetail.specialRequests||'—']].map(([label,val])=>(
-              <div key={label} className={styles.detailRow}><span className={styles.detailLabel}>{label}</span><span className={styles.detailVal}>{String(val)}</span></div>
+            {[
+              ["Booking ID", bDetail.bookingId || bDetail._id],
+              ["Customer", bDetail.fullName || "—"],
+              ["Email", bDetail.email || "—"],
+              ["Phone", bDetail.phone || "—"],
+              ["Service", bDetail.serviceName || bDetail.packageName || "—"],
+              ["Duration", bDetail.duration || "—"],
+              [
+                "Date",
+                bDetail.bookingDate || bDetail.travelDate
+                  ? new Date(
+                      bDetail.bookingDate || bDetail.travelDate,
+                    ).toLocaleDateString()
+                  : "—",
+              ],
+              ["Time", bDetail.bookingTime || "—"],
+              ["People", bDetail.numberOfPeople || bDetail.numberOfGuests || 1],
+              [
+                "Total",
+                bDetail.totalPrice
+                  ? `$${Number(bDetail.totalPrice).toLocaleString()}`
+                  : bDetail.price
+                    ? `$${Number(bDetail.price).toLocaleString()}`
+                    : "—",
+              ],
+              ["Notes", bDetail.notes || bDetail.specialRequests || "—"],
+            ].map(([label, val]) => (
+              <div key={label} className={styles.detailRow}>
+                <span className={styles.detailLabel}>{label}</span>
+                <span className={styles.detailVal}>{String(val)}</span>
+              </div>
             ))}
-            <div className={styles.detailRow}><span className={styles.detailLabel}>Status</span>
-              <span className={`badge badge-${bDetail.status==='approved'?'success':bDetail.status==='cancelled'?'error':bDetail.status==='completed'?'primary':'accent'}`}>{bDetail.status}</span>
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>Status</span>
+              <span
+                className={`badge badge-${bDetail.status === "approved" ? "success" : bDetail.status === "cancelled" ? "error" : bDetail.status === "completed" ? "primary" : "accent"}`}
+              >
+                {bDetail.status}
+              </span>
             </div>
           </div>
           <div className={styles.modalFooter}>
-            <button className="btn btn-outline btn-sm" onClick={()=>setBDetail(null)}>Close</button>
-            {bDetail.status==='pending'&&(
-              <><button className="btn btn-sm" style={{background:'#10b981',color:'#fff'}} onClick={()=>approveBook(bDetail._id)}><i className="fas fa-check"/> Approve</button>
-              <button className="btn btn-sm" style={{background:'#ef4444',color:'#fff'}} onClick={()=>declineBook(bDetail._id)}><i className="fas fa-times"/> Decline</button></>
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => setBDetail(null)}
+            >
+              Close
+            </button>
+            {bDetail.status === "pending" && (
+              <>
+                <button
+                  className="btn btn-sm"
+                  style={{ background: "#10b981", color: "#fff" }}
+                  onClick={() => approveBook(bDetail._id)}
+                >
+                  <i className="fas fa-check" /> Approve
+                </button>
+                <button
+                  className="btn btn-sm"
+                  style={{ background: "#ef4444", color: "#fff" }}
+                  onClick={() => declineBook(bDetail._id)}
+                >
+                  <i className="fas fa-times" /> Decline
+                </button>
+              </>
             )}
-            {bDetail.status==='approved'&&(
-              <button className="btn btn-sm" style={{background:'var(--primary)',color:'#fff'}} onClick={()=>updateStatus(bDetail._id,'completed')}><i className="fas fa-flag-checkered"/> Mark Completed</button>
+            {bDetail.status === "approved" && (
+              <button
+                className="btn btn-sm"
+                style={{ background: "var(--primary)", color: "#fff" }}
+                onClick={() => updateStatus(bDetail._id, "completed")}
+              >
+                <i className="fas fa-flag-checkered" /> Mark Completed
+              </button>
             )}
-            <button className="btn btn-error btn-sm" onClick={()=>deleteBooking(bDetail._id)}><i className="fas fa-trash"/> Delete</button>
+            <button
+              className="btn btn-error btn-sm"
+              onClick={() => deleteBooking(bDetail._id)}
+            >
+              <i className="fas fa-trash" /> Delete
+            </button>
           </div>
         </Modal>
       )}
 
       {/* ── Package Create/Edit Modal ── */}
       {pkgModal && (
-        <Modal title={pkgEdit?'Edit Package':'Add Package'} onClose={closePkg}>
+        <Modal
+          title={pkgEdit ? "Edit Package" : "Add Package"}
+          onClose={closePkg}
+        >
           <form onSubmit={savePkg} className={styles.itinForm}>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Package Name *</label>
-                <input className="form-input" value={pkgForm.name} onChange={setP('name')} required placeholder="e.g. Bali Explorer"/>
+                <input
+                  className="form-input"
+                  value={pkgForm.name}
+                  onChange={setP("name")}
+                  required
+                  placeholder="e.g. Bali Explorer"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Category *</label>
-                <select className="form-input" value={pkgForm.category} onChange={setP('category')}>
-                  {CATEGORIES.map((c)=><option key={c} value={c}>{c}</option>)}
+                <select
+                  className="form-input"
+                  value={pkgForm.category}
+                  onChange={setP("category")}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Destination *</label>
-                <input className="form-input" value={pkgForm.destination} onChange={setP('destination')} required placeholder="e.g. Bali, Indonesia"/>
+                <input
+                  className="form-input"
+                  value={pkgForm.destination}
+                  onChange={setP("destination")}
+                  required
+                  placeholder="e.g. Bali, Indonesia"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Duration *</label>
-                <input className="form-input" value={pkgForm.duration} onChange={setP('duration')} required placeholder="e.g. 7 Days"/>
+                <input
+                  className="form-input"
+                  value={pkgForm.duration}
+                  onChange={setP("duration")}
+                  required
+                  placeholder="e.g. 7 Days"
+                />
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Price (USD) *</label>
-                <input className="form-input" type="number" min="0" step="0.01" value={pkgForm.price} onChange={setP('price')} required placeholder="1299"/>
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={pkgForm.price}
+                  onChange={setP("price")}
+                  required
+                  placeholder="1299"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Status</label>
-                <select className="form-input" value={pkgForm.status} onChange={setP('status')}>
+                <select
+                  className="form-input"
+                  value={pkgForm.status}
+                  onChange={setP("status")}
+                >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
@@ -1711,22 +4075,68 @@ const Admin = () => {
             </div>
             <div className={styles.formGroup}>
               <label>
-                Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Утас/компьютерээс upload хийх (хамгийн ихдээ 10)</span>
+                Images{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Утас/компьютерээс upload хийх (хамгийн ихдээ 10)
+                </span>
               </label>
 
               {/* Existing saved images */}
               {pkgCurImages.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {pkgCurImages.map((src, i) => {
-                    const baseUrl = (typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL)
-                      ? import.meta.env.VITE_API_URL.replace('/api','')
-                      : '';
-                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    const baseUrl =
+                      typeof window !== "undefined" &&
+                      import.meta?.env?.VITE_API_URL
+                        ? import.meta.env.VITE_API_URL.replace("/api", "")
+                        : "";
+                    const resolved = src.startsWith("http")
+                      ? src
+                      : `${baseUrl}${src}`;
                     return (
-                      <div key={i} style={{position:'relative',width:72,height:52}}>
-                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        <button type="button" onClick={()=>removePkgCurImage(src)}
-                          style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                      <div
+                        key={i}
+                        style={{ position: "relative", width: 72, height: 52 }}
+                      >
+                        <img
+                          src={resolved}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePkgCurImage(src)}
+                          style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -6,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                        >
                           ×
                         </button>
                       </div>
@@ -1737,12 +4147,52 @@ const Admin = () => {
 
               {/* Pending new files */}
               {pkgImgFiles.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {pkgImgFiles.map((f, i) => (
-                    <div key={i} style={{position:'relative',width:72,height:52}}>
-                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>removePkgNewFile(i)}
-                        style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                    <div
+                      key={i}
+                      style={{ position: "relative", width: 72, height: 52 }}
+                    >
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          opacity: 0.75,
+                          border: "2px dashed var(--primary)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePkgNewFile(i)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#ef4444",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
                         ×
                       </button>
                     </div>
@@ -1751,66 +4201,163 @@ const Admin = () => {
               )}
 
               {/* File picker */}
-              {(pkgCurImages.length + pkgImgFiles.length) < 10 && (
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
-                  <i className="fas fa-cloud-upload-alt"/>
-                  <span>Зураг нэмэх ({pkgCurImages.length + pkgImgFiles.length}/10)</span>
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onPkgFileChange}/>
+              {pkgCurImages.length + pkgImgFiles.length < 10 && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: "var(--primary)",
+                    fontSize: 13,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  <span>
+                    Зураг нэмэх ({pkgCurImages.length + pkgImgFiles.length}/10)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onPkgFileChange}
+                  />
                 </label>
               )}
             </div>
             <div className={styles.formGroup}>
               <label>Description *</label>
-              <textarea className="form-input" rows={3} value={pkgForm.description} onChange={setP('description')} required placeholder="Describe the package…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={pkgForm.description}
+                onChange={setP("description")}
+                required
+                placeholder="Describe the package…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             {/* ── Auto Translate ── */}
             <div className={styles.formGroup}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-                <label style={{margin:0}}>
-                  <i className="fas fa-language" style={{marginRight:6,color:'var(--primary)'}}/>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <label style={{ margin: 0 }}>
+                  <i
+                    className="fas fa-language"
+                    style={{ marginRight: 6, color: "var(--primary)" }}
+                  />
                   Автомат Орчуулга
-                  <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span>
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--text-muted)",
+                      marginLeft: 6,
+                      fontSize: 12,
+                    }}
+                  >
+                    Монголоос 5 хэлрүү
+                  </span>
                 </label>
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
                   onClick={autoTranslatePkg}
                   disabled={pkgTranslating}
-                  style={{flexShrink:0}}
+                  style={{ flexShrink: 0 }}
                 >
-                  {pkgTranslating
-                    ? <><span className="spinner"/> Орчуулж байна…</>
-                    : <><i className="fas fa-globe"/> Орчуулах</>}
+                  {pkgTranslating ? (
+                    <>
+                      <span className="spinner" /> Орчуулж байна…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-globe" /> Орчуулах
+                    </>
+                  )}
                 </button>
               </div>
-              {pkgForm.translations && Object.keys(pkgForm.translations).length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {Object.entries(pkgForm.translations).map(([lang, t]) => t?.name && (
-                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>
-                      {lang.toUpperCase()} ✓
-                    </span>
-                  ))}
-                </div>
-              )}
+              {pkgForm.translations &&
+                Object.keys(pkgForm.translations).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Object.entries(pkgForm.translations).map(
+                      ([lang, t]) =>
+                        t?.name && (
+                          <span
+                            key={lang}
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 12,
+                              background:
+                                "var(--primary-soft,rgba(37,99,235,.1))",
+                              color: "var(--primary)",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lang.toUpperCase()} ✓
+                          </span>
+                        ),
+                    )}
+                  </div>
+                )}
             </div>
 
             <div className={styles.formGroup}>
-              <label>Features <span style={{fontWeight:400,color:'var(--text-muted)'}}>(comma separated)</span></label>
-              <input className="form-input" value={pkgForm.features} onChange={setP('features')} placeholder="Airport transfer, Hotel, Guide, Meals"/>
+              <label>
+                Features{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  (comma separated)
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={pkgForm.features}
+                onChange={setP("features")}
+                placeholder="Airport transfer, Hotel, Guide, Meals"
+              />
             </div>
 
             {/* Available Dates */}
             <div className={styles.formGroup}>
-              <label>Available Dates <span style={{fontWeight:400,color:'var(--text-muted)'}}>(leave empty = any date)</span></label>
+              <label>
+                Available Dates{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  (leave empty = any date)
+                </span>
+              </label>
               <div className={styles.dateRow}>
-                <input className="form-input" type="date" value={newDate} onChange={(e)=>setNewDate(e.target.value)} style={{flex:1}}/>
-                <button type="button" className="btn btn-primary btn-sm" onClick={addDate}><i className="fas fa-plus"/></button>
+                <input
+                  className="form-input"
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addDate}
+                >
+                  <i className="fas fa-plus" />
+                </button>
               </div>
-              {pkgForm.availableDates.length>0 && (
+              {pkgForm.availableDates.length > 0 && (
                 <div className={styles.tagList}>
-                  {pkgForm.availableDates.map((d)=>(
-                    <span key={d} className={styles.tag}>{d}<button type="button" onClick={()=>removeDate(d)}>×</button></span>
+                  {pkgForm.availableDates.map((d) => (
+                    <span key={d} className={styles.tag}>
+                      {d}
+                      <button type="button" onClick={() => removeDate(d)}>
+                        ×
+                      </button>
+                    </span>
                   ))}
                 </div>
               )}
@@ -1818,15 +4365,37 @@ const Admin = () => {
 
             {/* Available Times */}
             <div className={styles.formGroup}>
-              <label>Available Times <span style={{fontWeight:400,color:'var(--text-muted)'}}>(leave empty = any time)</span></label>
+              <label>
+                Available Times{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  (leave empty = any time)
+                </span>
+              </label>
               <div className={styles.dateRow}>
-                <input className="form-input" type="time" value={newTime} onChange={(e)=>setNewTime(e.target.value)} style={{flex:1}}/>
-                <button type="button" className="btn btn-primary btn-sm" onClick={addTime}><i className="fas fa-plus"/></button>
+                <input
+                  className="form-input"
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addTime}
+                >
+                  <i className="fas fa-plus" />
+                </button>
               </div>
-              {pkgForm.availableTimes.length>0 && (
+              {pkgForm.availableTimes.length > 0 && (
                 <div className={styles.tagList}>
-                  {pkgForm.availableTimes.map((t)=>(
-                    <span key={t} className={styles.tag}>{t}<button type="button" onClick={()=>removeTime(t)}>×</button></span>
+                  {pkgForm.availableTimes.map((t) => (
+                    <span key={t} className={styles.tag}>
+                      {t}
+                      <button type="button" onClick={() => removeTime(t)}>
+                        ×
+                      </button>
+                    </span>
                   ))}
                 </div>
               )}
@@ -1836,7 +4405,15 @@ const Admin = () => {
             <div className={styles.formGroup}>
               <label>
                 Max Guests per Slot
-                <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6}}>How many total people can book the same date+time</span>
+                <span
+                  style={{
+                    fontWeight: 400,
+                    color: "var(--text-muted)",
+                    marginLeft: 6,
+                  }}
+                >
+                  How many total people can book the same date+time
+                </span>
               </label>
               <input
                 className="form-input"
@@ -1844,16 +4421,34 @@ const Admin = () => {
                 min="1"
                 max="500"
                 value={pkgForm.bookingLimitPerSlot}
-                onChange={setP('bookingLimitPerSlot')}
+                onChange={setP("bookingLimitPerSlot")}
                 placeholder="5"
               />
             </div>
 
             {pkgMsg && <p className={styles.formMsg}>{pkgMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closePkg}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={pkgSaving}>
-                {pkgSaving?<><span className="spinner"/> Saving…</>:pkgEdit?'Save Changes':'Create Package'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closePkg}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={pkgSaving}
+              >
+                {pkgSaving ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : pkgEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Package"
+                )}
               </button>
             </div>
           </form>
@@ -1862,58 +4457,158 @@ const Admin = () => {
 
       {/* ── Itinerary Create/Edit Modal ── */}
       {itinModal && (
-        <Modal title={itinEdit?'Edit Itinerary':'Add Itinerary'} onClose={closeItin}>
+        <Modal
+          title={itinEdit ? "Edit Itinerary" : "Add Itinerary"}
+          onClose={closeItin}
+        >
           <form onSubmit={saveItin} className={styles.itinForm}>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Title *</label>
-                <input className="form-input" value={itinForm.title} onChange={setI('title')} required placeholder="e.g. Classic Bali 7-Day Tour"/>
+                <input
+                  className="form-input"
+                  value={itinForm.title}
+                  onChange={setI("title")}
+                  required
+                  placeholder="e.g. Classic Bali 7-Day Tour"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Difficulty</label>
-                <select className="form-input" value={itinForm.difficulty} onChange={setI('difficulty')}>
-                  {DIFFICULTIES.map((d)=><option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>)}
+                <select
+                  className="form-input"
+                  value={itinForm.difficulty}
+                  onChange={setI("difficulty")}
+                >
+                  {DIFFICULTIES.map((d) => (
+                    <option key={d} value={d}>
+                      {d.charAt(0).toUpperCase() + d.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Duration *</label>
-                <input className="form-input" value={itinForm.duration} onChange={setI('duration')} required placeholder="e.g. 7 Days"/>
+                <input
+                  className="form-input"
+                  value={itinForm.duration}
+                  onChange={setI("duration")}
+                  required
+                  placeholder="e.g. 7 Days"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Locations *</label>
-                <input className="form-input" value={itinForm.locations} onChange={setI('locations')} required placeholder="e.g. 4 Cities"/>
+                <input
+                  className="form-input"
+                  value={itinForm.locations}
+                  onChange={setI("locations")}
+                  required
+                  placeholder="e.g. 4 Cities"
+                />
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Price (USD/person)</label>
-                <input className="form-input" type="number" min="0" step="0.01" value={itinForm.price} onChange={setI('price')} placeholder="1299"/>
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={itinForm.price}
+                  onChange={setI("price")}
+                  placeholder="1299"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Display Order</label>
-                <input className="form-input" type="number" min="0" value={itinForm.order} onChange={setI('order')} placeholder="0"/>
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  value={itinForm.order}
+                  onChange={setI("order")}
+                  placeholder="0"
+                />
               </div>
             </div>
             <div className={styles.formGroup}>
               <label>Description *</label>
-              <textarea className="form-input" rows={3} value={itinForm.description} onChange={setI('description')} required placeholder="Describe the itinerary…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={itinForm.description}
+                onChange={setI("description")}
+                required
+                placeholder="Describe the itinerary…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             {/* Images upload */}
             <div className={styles.formGroup}>
-              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Утас/компьютерээс upload хийх (хамгийн ихдээ 10)</span></label>
+              <label>
+                Images{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Утас/компьютерээс upload хийх (хамгийн ихдээ 10)
+                </span>
+              </label>
               {itinCurImages.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {itinCurImages.map((src, i) => {
-                    const baseUrl = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
-                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    const baseUrl = (
+                      import.meta?.env?.VITE_API_URL || ""
+                    ).replace("/api", "");
+                    const resolved = src.startsWith("http")
+                      ? src
+                      : `${baseUrl}${src}`;
                     return (
-                      <div key={i} style={{position:'relative',width:72,height:52}}>
-                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        <button type="button" onClick={()=>removeItinCurImage(src)}
-                          style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                      <div
+                        key={i}
+                        style={{ position: "relative", width: 72, height: 52 }}
+                      >
+                        <img
+                          src={resolved}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItinCurImage(src)}
+                          style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -6,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                        >
                           ×
                         </button>
                       </div>
@@ -1922,37 +4617,117 @@ const Admin = () => {
                 </div>
               )}
               {itinImgFiles.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {itinImgFiles.map((f, i) => (
-                    <div key={i} style={{position:'relative',width:72,height:52}}>
-                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>removeItinNewFile(i)}
-                        style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>
+                    <div
+                      key={i}
+                      style={{ position: "relative", width: 72, height: 52 }}
+                    >
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          opacity: 0.75,
+                          border: "2px dashed var(--primary)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeItinNewFile(i)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#ef4444",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
                         ×
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-              {(itinCurImages.length + itinImgFiles.length) < 10 && (
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
-                  <i className="fas fa-cloud-upload-alt"/>
-                  <span>Зураг нэмэх ({itinCurImages.length + itinImgFiles.length}/10)</span>
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onItinFileChange}/>
+              {itinCurImages.length + itinImgFiles.length < 10 && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: "var(--primary)",
+                    fontSize: 13,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  <span>
+                    Зураг нэмэх ({itinCurImages.length + itinImgFiles.length}
+                    /10)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onItinFileChange}
+                  />
                 </label>
               )}
             </div>
 
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={itinForm.isActive} onChange={setI('isActive')}/>
+              <input
+                type="checkbox"
+                checked={itinForm.isActive}
+                onChange={setI("isActive")}
+              />
               <span>Visible to public (Active)</span>
             </label>
 
             {itinMsg && <p className={styles.formMsg}>{itinMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeItin}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={itinSaving}>
-                {itinSaving?<><span className="spinner"/> Saving…</>:itinEdit?'Save Changes':'Create Itinerary'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closeItin}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={itinSaving}
+              >
+                {itinSaving ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : itinEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Itinerary"
+                )}
               </button>
             </div>
           </form>
@@ -1961,116 +4736,331 @@ const Admin = () => {
 
       {/* ── Destination Create/Edit Modal ── */}
       {destModal && (
-        <Modal title={destEdit?'Edit Destination':'Add Destination'} onClose={closeDest}>
+        <Modal
+          title={destEdit ? "Edit Destination" : "Add Destination"}
+          onClose={closeDest}
+        >
           <form onSubmit={saveDest} className={styles.itinForm}>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Destination Name *</label>
-                <input className="form-input" value={destForm.name} onChange={setD('name')} required placeholder="e.g. Santorini"/>
+                <input
+                  className="form-input"
+                  value={destForm.name}
+                  onChange={setD("name")}
+                  required
+                  placeholder="e.g. Santorini"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Category *</label>
-                <select className="form-input" value={destForm.category} onChange={setD('category')}>
-                  {DEST_CATEGORIES.map((c)=><option key={c} value={c}>{c}</option>)}
+                <select
+                  className="form-input"
+                  value={destForm.category}
+                  onChange={setD("category")}
+                >
+                  {DEST_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>City</label>
-                <input className="form-input" value={destForm.city} onChange={setD('city')} placeholder="e.g. Thira"/>
+                <input
+                  className="form-input"
+                  value={destForm.city}
+                  onChange={setD("city")}
+                  placeholder="e.g. Thira"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Country</label>
-                <input className="form-input" value={destForm.country} onChange={setD('country')} placeholder="e.g. Greece"/>
+                <input
+                  className="form-input"
+                  value={destForm.country}
+                  onChange={setD("country")}
+                  placeholder="e.g. Greece"
+                />
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 images (5-second slideshow)</span></label>
+              <label>
+                Images{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Upload up to 10 images (5-second slideshow)
+                </span>
+              </label>
               {destCurImages.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {destCurImages.map((src, i) => {
-                    const baseUrl = (typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL) ? import.meta.env.VITE_API_URL.replace('/api','') : '';
-                    const resolved = src.startsWith('http') ? src : `${baseUrl}${src}`;
+                    const baseUrl =
+                      typeof window !== "undefined" &&
+                      import.meta?.env?.VITE_API_URL
+                        ? import.meta.env.VITE_API_URL.replace("/api", "")
+                        : "";
+                    const resolved = src.startsWith("http")
+                      ? src
+                      : `${baseUrl}${src}`;
                     return (
-                      <div key={i} style={{position:'relative',width:72,height:52}}>
-                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        <button type="button" onClick={()=>removeDestCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      <div
+                        key={i}
+                        style={{ position: "relative", width: 72, height: 52 }}
+                      >
+                        <img
+                          src={resolved}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeDestCurImage(src)}
+                          style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -6,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     );
                   })}
                 </div>
               )}
               {destImgFiles.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {destImgFiles.map((f, i) => (
-                    <div key={i} style={{position:'relative',width:72,height:52}}>
-                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>removeDestNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    <div
+                      key={i}
+                      style={{ position: "relative", width: 72, height: 52 }}
+                    >
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          opacity: 0.75,
+                          border: "2px dashed var(--primary)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeDestNewFile(i)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#ef4444",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
-              {(destCurImages.length + destImgFiles.length) < 10 && (
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
-                  <i className="fas fa-cloud-upload-alt"/>
-                  <span>Зураг нэмэх ({destCurImages.length + destImgFiles.length}/10)</span>
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onDestFileChange}/>
+              {destCurImages.length + destImgFiles.length < 10 && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: "var(--primary)",
+                    fontSize: 13,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  <span>
+                    Зураг нэмэх ({destCurImages.length + destImgFiles.length}
+                    /10)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onDestFileChange}
+                  />
                 </label>
               )}
             </div>
             <div className={styles.formGroup}>
-              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
-              <input className="form-input" value={destForm.image} onChange={setD('image')} placeholder="https://images.unsplash.com/..."/>
-              {destForm.image && <img src={destForm.image} alt="preview" style={{marginTop:8,width:'100%',height:100,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+              <label>
+                Fallback Image URL{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Used if no uploaded images
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={destForm.image}
+                onChange={setD("image")}
+                placeholder="https://images.unsplash.com/..."
+              />
+              {destForm.image && (
+                <img
+                  src={destForm.image}
+                  alt="preview"
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    height: 100,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>
-                <i className="fas fa-map-marked-alt" style={{marginRight:6,color:'var(--primary)'}}/>
+                <i
+                  className="fas fa-map-marked-alt"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
                 Location — Google Maps Picker
-                <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Газар хайж, харж, сонгоно уу</span>
+                <span
+                  style={{
+                    fontWeight: 400,
+                    color: "var(--text-muted)",
+                    marginLeft: 6,
+                    fontSize: 12,
+                  }}
+                >
+                  Газар хайж, харж, сонгоно уу
+                </span>
               </label>
 
               {/* Search row */}
-              <div style={{display:'flex',gap:8,marginBottom:8}}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input
                   className="form-input"
                   value={destMapSearch}
-                  onChange={(e)=>setDestMapSearch(e.target.value)}
-                  onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); handleMapSearch(); } }}
+                  onChange={(e) => setDestMapSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleMapSearch();
+                    }
+                  }}
                   placeholder="Газар хайх... e.g. Улаанбаатар, Монгол"
-                  style={{flex:1}}
+                  style={{ flex: 1 }}
                 />
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
                   onClick={handleMapSearch}
-                  style={{whiteSpace:'nowrap'}}
+                  style={{ whiteSpace: "nowrap" }}
                 >
-                  <i className="fas fa-search"/> Хайх
+                  <i className="fas fa-search" /> Хайх
                 </button>
               </div>
 
               {/* Live map preview — like the Google Maps app */}
               {destMapPreview && (
-                <div style={{borderRadius:12,overflow:'hidden',border:'2px solid var(--primary)',marginBottom:10,position:'relative',boxShadow:'0 4px 16px rgba(0,0,0,0.15)'}}>
+                <div
+                  style={{
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    border: "2px solid var(--primary)",
+                    marginBottom: 10,
+                    position: "relative",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                  }}
+                >
                   <iframe
                     src={destMapPreview}
                     title="Map Preview"
                     width="100%"
                     height="300"
-                    style={{border:0,display:'block'}}
+                    style={{ border: 0, display: "block" }}
                     allowFullScreen=""
                     loading="eager"
                     referrerPolicy="no-referrer-when-downgrade"
                   />
-                  <div style={{position:'absolute',bottom:12,left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      display: "flex",
+                      justifyContent: "center",
+                      pointerEvents: "none",
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={applyMapLocation}
-                      style={{pointerEvents:'auto',background:'var(--primary)',color:'#fff',border:'none',borderRadius:24,padding:'10px 22px',fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:7,boxShadow:'0 3px 12px rgba(0,0,0,0.35)',letterSpacing:0.3}}
+                      style={{
+                        pointerEvents: "auto",
+                        background: "var(--primary)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 24,
+                        padding: "10px 22px",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        boxShadow: "0 3px 12px rgba(0,0,0,0.35)",
+                        letterSpacing: 0.3,
+                      }}
                     >
-                      <i className="fas fa-map-pin"/> Энэ байршлыг сонгох
+                      <i className="fas fa-map-pin" /> Энэ байршлыг сонгох
                     </button>
                   </div>
                 </div>
@@ -2078,13 +5068,40 @@ const Admin = () => {
 
               {/* Currently saved location */}
               {destForm.location && (
-                <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:'var(--text-muted)',marginBottom:8,background:'var(--bg-alt)',borderRadius:8,padding:'6px 10px',flexWrap:'wrap'}}>
-                  <i className="fas fa-check-circle" style={{color:'#10b981',fontSize:14,flexShrink:0}}/>
-                  <span style={{wordBreak:'break-all',flex:1}}>{destForm.location}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 12,
+                    color: "var(--text-muted)",
+                    marginBottom: 8,
+                    background: "var(--bg-alt)",
+                    borderRadius: 8,
+                    padding: "6px 10px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <i
+                    className="fas fa-check-circle"
+                    style={{ color: "#10b981", fontSize: 14, flexShrink: 0 }}
+                  />
+                  <span style={{ wordBreak: "break-all", flex: 1 }}>
+                    {destForm.location}
+                  </span>
                   <button
                     type="button"
                     onClick={clearMapLocation}
-                    style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'2px 10px',fontSize:11,cursor:'pointer',flexShrink:0}}
+                    style={{
+                      background: "#ef4444",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "2px 10px",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
                   >
                     Устгах ×
                   </button>
@@ -2092,96 +5109,227 @@ const Admin = () => {
               )}
 
               {/* Manual paste fallback (collapsed by default) */}
-              <details style={{marginTop:2}}>
-                <summary style={{fontSize:12,color:'var(--text-muted)',cursor:'pointer',userSelect:'none'}}>
-                  <i className="fas fa-code" style={{marginRight:4}}/>
+              <details style={{ marginTop: 2 }}>
+                <summary
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    userSelect: "none",
+                  }}
+                >
+                  <i className="fas fa-code" style={{ marginRight: 4 }} />
                   Гараар URL / embed code оруулах
                 </summary>
                 <input
                   className="form-input"
-                  style={{marginTop:6}}
+                  style={{ marginTop: 6 }}
                   value={destForm.location}
-                  onChange={(e)=>{
-                    setD('location')(e);
+                  onChange={(e) => {
+                    setD("location")(e);
                     setDestMapSearch(e.target.value);
-                    if (e.target.value) setDestMapPreview(buildMapEmbedUrl(e.target.value));
-                    else setDestMapPreview('');
+                    if (e.target.value)
+                      setDestMapPreview(buildMapEmbedUrl(e.target.value));
+                    else setDestMapPreview("");
                   }}
                   placeholder="https://maps.google.com/?q=... эсвэл <iframe src=...>"
                 />
               </details>
             </div>
             <div className={styles.formGroup}>
-              <label>Tagline <span style={{fontWeight:400,color:'var(--text-muted)'}}>Short subtitle shown on card</span></label>
-              <input className="form-input" value={destForm.tagline} onChange={setD('tagline')} placeholder="Where azure cliffs meet turquoise sea"/>
+              <label>
+                Tagline{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Short subtitle shown on card
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={destForm.tagline}
+                onChange={setD("tagline")}
+                placeholder="Where azure cliffs meet turquoise sea"
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Description *</label>
-              <textarea className="form-input" rows={3} value={destForm.description} onChange={setD('description')} required placeholder="General overview…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={destForm.description}
+                onChange={setD("description")}
+                required
+                placeholder="General overview…"
+                style={{ resize: "vertical" }}
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Cultural &amp; Historical Info</label>
-              <textarea className="form-input" rows={4} value={destForm.culturalInfo} onChange={setD('culturalInfo')} placeholder="Rich cultural history, traditions, landmarks…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={4}
+                value={destForm.culturalInfo}
+                onChange={setD("culturalInfo")}
+                placeholder="Rich cultural history, traditions, landmarks…"
+                style={{ resize: "vertical" }}
+              />
             </div>
             <div className={styles.formGroup}>
-              <label>Read More <span style={{fontWeight:400,color:'var(--text-muted)'}}>Detailed text shown in the popup modal</span></label>
-              <textarea className="form-input" rows={4} value={destForm.readMore} onChange={setD('readMore')} placeholder="Extended details, stories, tips…" style={{resize:'vertical'}}/>
+              <label>
+                Read More{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Detailed text shown in the popup modal
+                </span>
+              </label>
+              <textarea
+                className="form-input"
+                rows={4}
+                value={destForm.readMore}
+                onChange={setD("readMore")}
+                placeholder="Extended details, stories, tips…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             {/* ── Auto Translate ── */}
             <div className={styles.formGroup}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-                <label style={{margin:0}}>
-                  <i className="fas fa-language" style={{marginRight:6,color:'var(--primary)'}}/>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <label style={{ margin: 0 }}>
+                  <i
+                    className="fas fa-language"
+                    style={{ marginRight: 6, color: "var(--primary)" }}
+                  />
                   Автомат Орчуулга
-                  <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span>
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--text-muted)",
+                      marginLeft: 6,
+                      fontSize: 12,
+                    }}
+                  >
+                    Монголоос 5 хэлрүү
+                  </span>
                 </label>
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
                   onClick={autoTranslateDest}
                   disabled={destTranslating}
-                  style={{flexShrink:0}}
+                  style={{ flexShrink: 0 }}
                 >
-                  {destTranslating
-                    ? <><span className="spinner"/> Орчуулж байна…</>
-                    : <><i className="fas fa-globe"/> Орчуулах</>}
+                  {destTranslating ? (
+                    <>
+                      <span className="spinner" /> Орчуулж байна…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-globe" /> Орчуулах
+                    </>
+                  )}
                 </button>
               </div>
-              {destForm.translations && Object.keys(destForm.translations).length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {Object.entries(destForm.translations).map(([lang, t]) => t?.name && (
-                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>
-                      {lang.toUpperCase()} ✓
-                    </span>
-                  ))}
-                </div>
-              )}
+              {destForm.translations &&
+                Object.keys(destForm.translations).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Object.entries(destForm.translations).map(
+                      ([lang, t]) =>
+                        t?.name && (
+                          <span
+                            key={lang}
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 12,
+                              background:
+                                "var(--primary-soft,rgba(37,99,235,.1))",
+                              color: "var(--primary)",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lang.toUpperCase()} ✓
+                          </span>
+                        ),
+                    )}
+                  </div>
+                )}
             </div>
 
             <div className={styles.formGroup}>
-              <label>Highlights <span style={{fontWeight:400,color:'var(--text-muted)'}}>One per line</span></label>
-              <textarea className="form-input" rows={4} value={destForm.highlights} onChange={setD('highlights')} placeholder={"Sunset views from Oia\nVolcanic beaches\nWorld-class dining"} style={{resize:'vertical'}}/>
+              <label>
+                Highlights{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  One per line
+                </span>
+              </label>
+              <textarea
+                className="form-input"
+                rows={4}
+                value={destForm.highlights}
+                onChange={setD("highlights")}
+                placeholder={
+                  "Sunset views from Oia\nVolcanic beaches\nWorld-class dining"
+                }
+                style={{ resize: "vertical" }}
+              />
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Best Time to Visit</label>
-                <input className="form-input" value={destForm.bestTime} onChange={setD('bestTime')} placeholder="April – October"/>
+                <input
+                  className="form-input"
+                  value={destForm.bestTime}
+                  onChange={setD("bestTime")}
+                  placeholder="April – October"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Average Cost</label>
-                <input className="form-input" value={destForm.avgCost} onChange={setD('avgCost')} placeholder="$150–$300 / day"/>
+                <input
+                  className="form-input"
+                  value={destForm.avgCost}
+                  onChange={setD("avgCost")}
+                  placeholder="$150–$300 / day"
+                />
               </div>
             </div>
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={destForm.isActive} onChange={setD('isActive')}/>
+              <input
+                type="checkbox"
+                checked={destForm.isActive}
+                onChange={setD("isActive")}
+              />
               <span>Visible to public (Active)</span>
             </label>
             {destMsg && <p className={styles.formMsg}>{destMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeDest}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={destSaving}>
-                {destSaving?<><span className="spinner"/> Saving…</>:destEdit?'Save Changes':'Create Destination'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closeDest}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={destSaving}
+              >
+                {destSaving ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : destEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Destination"
+                )}
               </button>
             </div>
           </form>
@@ -2190,116 +5338,382 @@ const Admin = () => {
 
       {/* ── Festival Create/Edit Modal ── */}
       {festModal && (
-        <Modal title={festEdit ? 'Edit Festival' : 'Add Festival'} onClose={closeFest}>
+        <Modal
+          title={festEdit ? "Edit Festival" : "Add Festival"}
+          onClose={closeFest}
+        >
           <form onSubmit={saveFest} className={styles.itinForm}>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Festival Name *</label>
-                <input className="form-input" value={festForm.name} onChange={setF('name')} required placeholder="e.g. Naadam Festival"/>
+                <input
+                  className="form-input"
+                  value={festForm.name}
+                  onChange={setF("name")}
+                  required
+                  placeholder="e.g. Naadam Festival"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Category</label>
-                <select className="form-input" value={festForm.category} onChange={setF('category')}>
-                  {FEST_CATEGORIES.map((c)=><option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+                <select
+                  className="form-input"
+                  value={festForm.category}
+                  onChange={setF("category")}
+                >
+                  {FEST_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Date</label>
-                <input className="form-input" value={festForm.date} onChange={setF('date')} placeholder="e.g. July 11–13"/>
+                <input
+                  className="form-input"
+                  value={festForm.date}
+                  onChange={setF("date")}
+                  placeholder="e.g. July 11–13"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Location</label>
-                <input className="form-input" value={festForm.location} onChange={setF('location')} placeholder="e.g. Ulaanbaatar"/>
+                <input
+                  className="form-input"
+                  value={festForm.location}
+                  onChange={setF("location")}
+                  placeholder="e.g. Ulaanbaatar"
+                />
               </div>
             </div>
 
             {/* Images */}
             <div className={styles.formGroup}>
-              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 (5s slideshow)</span></label>
+              <label>
+                Images{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Upload up to 10 (5s slideshow)
+                </span>
+              </label>
               {festCurImages.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {festCurImages.map((src, i) => {
-                    const base = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
-                    const resolved = src.startsWith('http') ? src : `${base}${src}`;
+                    const base = (import.meta?.env?.VITE_API_URL || "").replace(
+                      "/api",
+                      "",
+                    );
+                    const resolved = src.startsWith("http")
+                      ? src
+                      : `${base}${src}`;
                     return (
-                      <div key={i} style={{position:'relative',width:72,height:52}}>
-                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        <button type="button" onClick={()=>removeFestCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      <div
+                        key={i}
+                        style={{ position: "relative", width: 72, height: 52 }}
+                      >
+                        <img
+                          src={resolved}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFestCurImage(src)}
+                          style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -6,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     );
                   })}
                 </div>
               )}
               {festImgFiles.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {festImgFiles.map((f, i) => (
-                    <div key={i} style={{position:'relative',width:72,height:52}}>
-                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>removeFestNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    <div
+                      key={i}
+                      style={{ position: "relative", width: 72, height: 52 }}
+                    >
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          opacity: 0.75,
+                          border: "2px dashed var(--primary)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFestNewFile(i)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#ef4444",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
-              {(festCurImages.length + festImgFiles.length) < 10 && (
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
-                  <i className="fas fa-cloud-upload-alt"/>
-                  <span>Зураг нэмэх ({festCurImages.length + festImgFiles.length}/10)</span>
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onFestFileChange}/>
+              {festCurImages.length + festImgFiles.length < 10 && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: "var(--primary)",
+                    fontSize: 13,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  <span>
+                    Зураг нэмэх ({festCurImages.length + festImgFiles.length}
+                    /10)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onFestFileChange}
+                  />
                 </label>
               )}
             </div>
 
             <div className={styles.formGroup}>
-              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
-              <input className="form-input" value={festForm.image} onChange={setF('image')} placeholder="https://images.unsplash.com/..."/>
-              {festForm.image && <img src={festForm.image} alt="preview" style={{marginTop:8,width:'100%',height:90,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+              <label>
+                Fallback Image URL{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Used if no uploaded images
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={festForm.image}
+                onChange={setF("image")}
+                placeholder="https://images.unsplash.com/..."
+              />
+              {festForm.image && (
+                <img
+                  src={festForm.image}
+                  alt="preview"
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    height: 90,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label>
-                <i className="fas fa-external-link-alt" style={{marginRight:6,color:'var(--primary)'}}/>
-                External Link <span style={{fontWeight:400,color:'var(--text-muted)'}}>Дэлгэрэнгүй мэдээлэл авах холбоос (Wikipedia, нийтлэл гэх мэт)</span>
+                <i
+                  className="fas fa-external-link-alt"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                External Link{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Дэлгэрэнгүй мэдээлэл авах холбоос (Wikipedia, нийтлэл гэх мэт)
+                </span>
               </label>
-              <input className="form-input" value={festForm.link} onChange={setF('link')} placeholder="https://en.wikipedia.org/wiki/Naadam"/>
+              <input
+                className="form-input"
+                value={festForm.link}
+                onChange={setF("link")}
+                placeholder="https://en.wikipedia.org/wiki/Naadam"
+              />
               {festForm.link && (
-                <a href={festForm.link} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--primary)',marginTop:4,display:'inline-flex',alignItems:'center',gap:4}}>
-                  <i className="fas fa-external-link-alt"/> Preview link
+                <a
+                  href={festForm.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: 12,
+                    color: "var(--primary)",
+                    marginTop: 4,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <i className="fas fa-external-link-alt" /> Preview link
                 </a>
               )}
             </div>
 
             <div className={styles.formGroup}>
               <label>Description *</label>
-              <textarea className="form-input" rows={4} value={festForm.description} onChange={setF('description')} required placeholder="Describe the festival…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={4}
+                value={festForm.description}
+                onChange={setF("description")}
+                required
+                placeholder="Describe the festival…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             <div className={styles.formGroup}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-                <label style={{margin:0}}>Орчуулга <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span></label>
-                <button type="button" className="btn btn-primary btn-sm" onClick={autoTranslateFest} disabled={festTranslating} style={{flexShrink:0}}>
-                  {festTranslating?<><span className="spinner"/> Орчуулж байна…</>:<><i className="fas fa-globe"/> Орчуулах</>}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <label style={{ margin: 0 }}>
+                  Орчуулга{" "}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--text-muted)",
+                      marginLeft: 6,
+                      fontSize: 12,
+                    }}
+                  >
+                    Монголоос 5 хэлрүү
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={autoTranslateFest}
+                  disabled={festTranslating}
+                  style={{ flexShrink: 0 }}
+                >
+                  {festTranslating ? (
+                    <>
+                      <span className="spinner" /> Орчуулж байна…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-globe" /> Орчуулах
+                    </>
+                  )}
                 </button>
               </div>
-              {festForm.translations && Object.keys(festForm.translations).length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {Object.entries(festForm.translations).map(([lang, tr]) => tr?.name && (
-                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>{lang.toUpperCase()} ✓</span>
-                  ))}
-                </div>
-              )}
+              {festForm.translations &&
+                Object.keys(festForm.translations).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Object.entries(festForm.translations).map(
+                      ([lang, tr]) =>
+                        tr?.name && (
+                          <span
+                            key={lang}
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 12,
+                              background:
+                                "var(--primary-soft,rgba(37,99,235,.1))",
+                              color: "var(--primary)",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lang.toUpperCase()} ✓
+                          </span>
+                        ),
+                    )}
+                  </div>
+                )}
             </div>
 
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={festForm.isActive} onChange={setF('isActive')}/>
+              <input
+                type="checkbox"
+                checked={festForm.isActive}
+                onChange={setF("isActive")}
+              />
               <span>Visible to public (Active)</span>
             </label>
             {festMsg && <p className={styles.formMsg}>{festMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeFest}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={festSaving}>
-                {festSaving?<><span className="spinner"/> Saving…</>:festEdit?'Save Changes':'Create Festival'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closeFest}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={festSaving}
+              >
+                {festSaving ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : festEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Festival"
+                )}
               </button>
             </div>
           </form>
@@ -2308,107 +5722,360 @@ const Admin = () => {
 
       {/* ── About Mongolia Create/Edit Modal ── */}
       {aboutModal && (
-        <Modal title={aboutEdit ? 'Edit About Item' : 'Add About Item'} onClose={closeAbout}>
+        <Modal
+          title={aboutEdit ? "Edit About Item" : "Add About Item"}
+          onClose={closeAbout}
+        >
           <form onSubmit={saveAbout} className={styles.itinForm}>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Title *</label>
-                <input className="form-input" value={aboutForm.title} onChange={setA('title')} required placeholder="e.g. Nomadic Life"/>
+                <input
+                  className="form-input"
+                  value={aboutForm.title}
+                  onChange={setA("title")}
+                  required
+                  placeholder="e.g. Nomadic Life"
+                />
               </div>
               <div className={styles.formGroup}>
                 <label>Category</label>
-                <select className="form-input" value={aboutForm.category} onChange={setA('category')}>
-                  {ABOUT_CATEGORIES.map((c)=><option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+                <select
+                  className="form-input"
+                  value={aboutForm.category}
+                  onChange={setA("category")}
+                >
+                  {ABOUT_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label>Display Order</label>
-                <input className="form-input" type="number" min="0" value={aboutForm.order} onChange={setA('order')} placeholder="0"/>
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  value={aboutForm.order}
+                  onChange={setA("order")}
+                  placeholder="0"
+                />
               </div>
             </div>
 
             {/* Images */}
             <div className={styles.formGroup}>
-              <label>Images <span style={{fontWeight:400,color:'var(--text-muted)'}}>Upload up to 10 (5s slideshow)</span></label>
+              <label>
+                Images{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Upload up to 10 (5s slideshow)
+                </span>
+              </label>
               {aboutCurImages.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {aboutCurImages.map((src, i) => {
-                    const base = (import.meta?.env?.VITE_API_URL||'').replace('/api','');
-                    const resolved = src.startsWith('http') ? src : `${base}${src}`;
+                    const base = (import.meta?.env?.VITE_API_URL || "").replace(
+                      "/api",
+                      "",
+                    );
+                    const resolved = src.startsWith("http")
+                      ? src
+                      : `${base}${src}`;
                     return (
-                      <div key={i} style={{position:'relative',width:72,height:52}}>
-                        <img src={resolved} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6}} onError={(e)=>e.target.style.display='none'}/>
-                        <button type="button" onClick={()=>removeAboutCurImage(src)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                      <div
+                        key={i}
+                        style={{ position: "relative", width: 72, height: 52 }}
+                      >
+                        <img
+                          src={resolved}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeAboutCurImage(src)}
+                          style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -6,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     );
                   })}
                 </div>
               )}
               {aboutImgFiles.length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   {aboutImgFiles.map((f, i) => (
-                    <div key={i} style={{position:'relative',width:72,height:52}}>
-                      <img src={URL.createObjectURL(f)} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:6,opacity:0.75,border:'2px dashed var(--primary)'}}/>
-                      <button type="button" onClick={()=>removeAboutNewFile(i)} style={{position:'absolute',top:-6,right:-6,width:18,height:18,borderRadius:'50%',background:'#ef4444',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}>×</button>
+                    <div
+                      key={i}
+                      style={{ position: "relative", width: 72, height: 52 }}
+                    >
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          opacity: 0.75,
+                          border: "2px dashed var(--primary)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeAboutNewFile(i)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#ef4444",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                        }}
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
-              {(aboutCurImages.length + aboutImgFiles.length) < 10 && (
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',color:'var(--primary)',fontSize:13}}>
-                  <i className="fas fa-cloud-upload-alt"/>
-                  <span>Зураг нэмэх ({aboutCurImages.length + aboutImgFiles.length}/10)</span>
-                  <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={onAboutFileChange}/>
+              {aboutCurImages.length + aboutImgFiles.length < 10 && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    color: "var(--primary)",
+                    fontSize: 13,
+                  }}
+                >
+                  <i className="fas fa-cloud-upload-alt" />
+                  <span>
+                    Зураг нэмэх ({aboutCurImages.length + aboutImgFiles.length}
+                    /10)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onAboutFileChange}
+                  />
                 </label>
               )}
             </div>
 
             <div className={styles.formGroup}>
-              <label>Fallback Image URL <span style={{fontWeight:400,color:'var(--text-muted)'}}>Used if no uploaded images</span></label>
-              <input className="form-input" value={aboutForm.image} onChange={setA('image')} placeholder="https://images.unsplash.com/..."/>
-              {aboutForm.image && <img src={aboutForm.image} alt="preview" style={{marginTop:8,width:'100%',height:90,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>}
+              <label>
+                Fallback Image URL{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Used if no uploaded images
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={aboutForm.image}
+                onChange={setA("image")}
+                placeholder="https://images.unsplash.com/..."
+              />
+              {aboutForm.image && (
+                <img
+                  src={aboutForm.image}
+                  alt="preview"
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    height: 90,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label>Short Description *</label>
-              <textarea className="form-input" rows={3} value={aboutForm.description} onChange={setA('description')} required placeholder="Brief overview shown on the card…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={aboutForm.description}
+                onChange={setA("description")}
+                required
+                placeholder="Brief overview shown on the card…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             <div className={styles.formGroup}>
               <label>
-                <i className="fas fa-book-open" style={{marginRight:6,color:'var(--primary)'}}/>
-                Read More Content <span style={{fontWeight:400,color:'var(--text-muted)'}}>Full text shown when user clicks "Read More"</span>
+                <i
+                  className="fas fa-book-open"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                Read More Content{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Full text shown when user clicks "Read More"
+                </span>
               </label>
-              <textarea className="form-input" rows={6} value={aboutForm.readMore} onChange={setA('readMore')} placeholder="Detailed paragraphs, history, facts…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={6}
+                value={aboutForm.readMore}
+                onChange={setA("readMore")}
+                placeholder="Detailed paragraphs, history, facts…"
+                style={{ resize: "vertical" }}
+              />
             </div>
 
             <div className={styles.formGroup}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-                <label style={{margin:0}}>Орчуулга <span style={{fontWeight:400,color:'var(--text-muted)',marginLeft:6,fontSize:12}}>Монголоос 5 хэлрүү</span></label>
-                <button type="button" className="btn btn-primary btn-sm" onClick={autoTranslateAbout} disabled={aboutTranslating} style={{flexShrink:0}}>
-                  {aboutTranslating?<><span className="spinner"/> Орчуулж байна…</>:<><i className="fas fa-globe"/> Орчуулах</>}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 6,
+                }}
+              >
+                <label style={{ margin: 0 }}>
+                  Орчуулга{" "}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--text-muted)",
+                      marginLeft: 6,
+                      fontSize: 12,
+                    }}
+                  >
+                    Монголоос 5 хэлрүү
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={autoTranslateAbout}
+                  disabled={aboutTranslating}
+                  style={{ flexShrink: 0 }}
+                >
+                  {aboutTranslating ? (
+                    <>
+                      <span className="spinner" /> Орчуулж байна…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-globe" /> Орчуулах
+                    </>
+                  )}
                 </button>
               </div>
-              {aboutForm.translations && Object.keys(aboutForm.translations).length > 0 && (
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {Object.entries(aboutForm.translations).map(([lang, tr]) => tr?.title && (
-                    <span key={lang} style={{padding:'3px 10px',borderRadius:12,background:'var(--primary-soft,rgba(37,99,235,.1))',color:'var(--primary)',fontSize:12,fontWeight:600}}>{lang.toUpperCase()} ✓</span>
-                  ))}
-                </div>
-              )}
+              {aboutForm.translations &&
+                Object.keys(aboutForm.translations).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {Object.entries(aboutForm.translations).map(
+                      ([lang, tr]) =>
+                        tr?.title && (
+                          <span
+                            key={lang}
+                            style={{
+                              padding: "3px 10px",
+                              borderRadius: 12,
+                              background:
+                                "var(--primary-soft,rgba(37,99,235,.1))",
+                              color: "var(--primary)",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lang.toUpperCase()} ✓
+                          </span>
+                        ),
+                    )}
+                  </div>
+                )}
             </div>
 
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={aboutForm.isActive} onChange={setA('isActive')}/>
+              <input
+                type="checkbox"
+                checked={aboutForm.isActive}
+                onChange={setA("isActive")}
+              />
               <span>Visible to public (Active)</span>
             </label>
             {aboutMsg && <p className={styles.formMsg}>{aboutMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeAbout}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={aboutSaving}>
-                {aboutSaving?<><span className="spinner"/> Saving…</>:aboutEdit?'Save Changes':'Create Item'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closeAbout}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={aboutSaving}
+              >
+                {aboutSaving ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : aboutEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Item"
+                )}
               </button>
             </div>
           </form>
@@ -2424,55 +6091,185 @@ const Admin = () => {
           <form onSubmit={savePageHero} className={styles.itinForm}>
             <div className={styles.formGroup}>
               <label>Page Title *</label>
-              <input className="form-input" value={pageHeroForm.title} onChange={setPH('title')} required placeholder="e.g. Explore Packages"/>
+              <input
+                className="form-input"
+                value={pageHeroForm.title}
+                onChange={setPH("title")}
+                required
+                placeholder="e.g. Explore Packages"
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Subtitle / Description</label>
-              <textarea className="form-input" rows={2} value={pageHeroForm.subtitle} onChange={setPH('subtitle')} placeholder="A short subtitle shown below the title…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={2}
+                value={pageHeroForm.subtitle}
+                onChange={setPH("subtitle")}
+                placeholder="A short subtitle shown below the title…"
+                style={{ resize: "vertical" }}
+              />
             </div>
             <div className={styles.formGroup}>
-              <label>Eyebrow Label <span style={{fontWeight:400,color:'var(--text-muted)'}}>Small text above the title</span></label>
-              <input className="form-input" value={pageHeroForm.eyebrow} onChange={setPH('eyebrow')} placeholder="e.g. Discover The World"/>
+              <label>
+                Eyebrow Label{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Small text above the title
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={pageHeroForm.eyebrow}
+                onChange={setPH("eyebrow")}
+                placeholder="e.g. Discover The World"
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Background Image</label>
-              <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
-                <i className="fas fa-cloud-upload-alt"/>
-                <span>{pageHeroBgFile ? pageHeroBgFile.name : 'Upload background image (Cloudinary)'}</span>
-                <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{ const f=e.target.files[0]; if(f) setPageHeroBgFile(f); e.target.value=''; }}/>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                  color: "var(--primary)",
+                  fontSize: 13,
+                  marginBottom: 8,
+                }}
+              >
+                <i className="fas fa-cloud-upload-alt" />
+                <span>
+                  {pageHeroBgFile
+                    ? pageHeroBgFile.name
+                    : "Upload background image (Cloudinary)"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const f = e.target.files[0];
+                    if (f) setPageHeroBgFile(f);
+                    e.target.value = "";
+                  }}
+                />
               </label>
               {pageHeroBgFile && (
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                  <img src={URL.createObjectURL(pageHeroBgFile)} alt="" style={{width:120,height:70,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
-                  <button type="button" onClick={()=>setPageHeroBgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <img
+                    src={URL.createObjectURL(pageHeroBgFile)}
+                    alt=""
+                    style={{
+                      width: 120,
+                      height: 70,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      border: "2px dashed var(--primary)",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPageHeroBgFile(null)}
+                    style={{
+                      background: "#ef4444",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                  >
+                    Remove
+                  </button>
                 </div>
               )}
-              <input className="form-input" value={pageHeroForm.imageUrl} onChange={setPH('imageUrl')} placeholder="Or paste image URL: https://…"/>
+              <input
+                className="form-input"
+                value={pageHeroForm.imageUrl}
+                onChange={setPH("imageUrl")}
+                placeholder="Or paste image URL: https://…"
+              />
               {!pageHeroBgFile && pageHeroForm.imageUrl && (
-                <img src={pageHeroForm.imageUrl} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+                <img
+                  src={pageHeroForm.imageUrl}
+                  alt="preview"
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    height: 120,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
               )}
             </div>
             <div className={styles.formGroup}>
               <label>
-                Valid From Date{' '}
-                <span style={{fontWeight:400,color:'var(--text-muted)'}}>Leave empty = always active.</span>
+                Valid From Date{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Leave empty = always active.
+                </span>
               </label>
-              <input className="form-input" type="date" value={pageHeroForm.validFrom} onChange={setPH('validFrom')}/>
+              <input
+                className="form-input"
+                type="date"
+                value={pageHeroForm.validFrom}
+                onChange={setPH("validFrom")}
+              />
               {pageHeroForm.validFrom && (
-                <p style={{fontSize:12,color:'var(--primary)',marginTop:4}}>
-                  <i className="fas fa-info-circle"/> Active from {new Date(pageHeroForm.validFrom).toLocaleDateString()} onwards
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--primary)",
+                    marginTop: 4,
+                  }}
+                >
+                  <i className="fas fa-info-circle" /> Active from{" "}
+                  {new Date(pageHeroForm.validFrom).toLocaleDateString()}{" "}
+                  onwards
                 </p>
               )}
             </div>
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={pageHeroForm.isActive} onChange={setPH('isActive')}/>
+              <input
+                type="checkbox"
+                checked={pageHeroForm.isActive}
+                onChange={setPH("isActive")}
+              />
               <span>Visible (Active)</span>
             </label>
             {pageHeroMsg && <p className={styles.formMsg}>{pageHeroMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closePageHero}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={pageHeroSaving||pageHeroBgUploading}>
-                {(pageHeroSaving||pageHeroBgUploading) ? <><span className="spinner"/> Saving…</> : pageHeroEdit ? 'Save Changes' : 'Create Hero Entry'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closePageHero}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={pageHeroSaving || pageHeroBgUploading}
+              >
+                {pageHeroSaving || pageHeroBgUploading ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : pageHeroEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Hero Entry"
+                )}
               </button>
             </div>
           </form>
@@ -2481,68 +6278,199 @@ const Admin = () => {
 
       {/* ── Destination Hero Create/Edit Modal ── */}
       {destHeroModal && (
-        <Modal title={destHeroEdit ? 'Edit Hero Entry' : 'Add Hero Entry'} onClose={closeHero}>
+        <Modal
+          title={destHeroEdit ? "Edit Hero Entry" : "Add Hero Entry"}
+          onClose={closeHero}
+        >
           <form onSubmit={saveHero} className={styles.itinForm}>
             <div className={styles.formGroup}>
               <label>Page Title *</label>
-              <input className="form-input" value={destHeroForm.title} onChange={setH('title')} required placeholder="e.g. Explore Destinations"/>
+              <input
+                className="form-input"
+                value={destHeroForm.title}
+                onChange={setH("title")}
+                required
+                placeholder="e.g. Explore Destinations"
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Subtitle / Description</label>
-              <textarea className="form-input" rows={2} value={destHeroForm.subtitle} onChange={setH('subtitle')} placeholder="A short subtitle shown below the title…" style={{resize:'vertical'}}/>
+              <textarea
+                className="form-input"
+                rows={2}
+                value={destHeroForm.subtitle}
+                onChange={setH("subtitle")}
+                placeholder="A short subtitle shown below the title…"
+                style={{ resize: "vertical" }}
+              />
             </div>
             <div className={styles.formGroup}>
-              <label>Eyebrow Label <span style={{fontWeight:400,color:'var(--text-muted)'}}>Small text above the title</span></label>
-              <input className="form-input" value={destHeroForm.eyebrow} onChange={setH('eyebrow')} placeholder="e.g. Discover The World"/>
+              <label>
+                Eyebrow Label{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  Small text above the title
+                </span>
+              </label>
+              <input
+                className="form-input"
+                value={destHeroForm.eyebrow}
+                onChange={setH("eyebrow")}
+                placeholder="e.g. Discover The World"
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Background Image</label>
               {/* File upload for Cloudinary */}
-              <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',color:'var(--primary)',fontSize:13,marginBottom:8}}>
-                <i className="fas fa-cloud-upload-alt"/>
-                <span>{destHeroBgFile ? destHeroBgFile.name : 'Upload background image (Cloudinary)'}</span>
-                <input type="file" accept="image/*" style={{display:'none'}} onChange={(e)=>{ const f=e.target.files[0]; if(f) setDestHeroBgFile(f); e.target.value=''; }}/>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                  color: "var(--primary)",
+                  fontSize: 13,
+                  marginBottom: 8,
+                }}
+              >
+                <i className="fas fa-cloud-upload-alt" />
+                <span>
+                  {destHeroBgFile
+                    ? destHeroBgFile.name
+                    : "Upload background image (Cloudinary)"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const f = e.target.files[0];
+                    if (f) setDestHeroBgFile(f);
+                    e.target.value = "";
+                  }}
+                />
               </label>
               {destHeroBgFile && (
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                  <img src={URL.createObjectURL(destHeroBgFile)} alt="" style={{width:120,height:70,objectFit:'cover',borderRadius:8,border:'2px dashed var(--primary)'}}/>
-                  <button type="button" onClick={()=>setDestHeroBgFile(null)} style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontSize:12}}>Remove</button>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <img
+                    src={URL.createObjectURL(destHeroBgFile)}
+                    alt=""
+                    style={{
+                      width: 120,
+                      height: 70,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      border: "2px dashed var(--primary)",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setDestHeroBgFile(null)}
+                    style={{
+                      background: "#ef4444",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                  >
+                    Remove
+                  </button>
                 </div>
               )}
-              <input className="form-input" value={destHeroForm.imageUrl} onChange={setH('imageUrl')} placeholder="Or paste image URL: https://…"/>
+              <input
+                className="form-input"
+                value={destHeroForm.imageUrl}
+                onChange={setH("imageUrl")}
+                placeholder="Or paste image URL: https://…"
+              />
               {!destHeroBgFile && destHeroForm.imageUrl && (
-                <img src={destHeroForm.imageUrl} alt="preview" style={{marginTop:8,width:'100%',height:120,objectFit:'cover',borderRadius:8}} onError={(e)=>e.target.style.display='none'}/>
+                <img
+                  src={destHeroForm.imageUrl}
+                  alt="preview"
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    height: 120,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
               )}
             </div>
             <div className={styles.formGroup}>
               <label>
-                Valid From Date{' '}
-                <span style={{fontWeight:400,color:'var(--text-muted)'}}>
-                  This header becomes active from this date onwards. Leave empty = always active.
+                Valid From Date{" "}
+                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+                  This header becomes active from this date onwards. Leave empty
+                  = always active.
                 </span>
               </label>
-              <input className="form-input" type="date" value={destHeroForm.validFrom} onChange={setH('validFrom')}/>
+              <input
+                className="form-input"
+                type="date"
+                value={destHeroForm.validFrom}
+                onChange={setH("validFrom")}
+              />
               {destHeroForm.validFrom && (
-                <p style={{fontSize:12,color:'var(--primary)',marginTop:4}}>
-                  <i className="fas fa-info-circle"/> Active from {new Date(destHeroForm.validFrom).toLocaleDateString()} onwards
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--primary)",
+                    marginTop: 4,
+                  }}
+                >
+                  <i className="fas fa-info-circle" /> Active from{" "}
+                  {new Date(destHeroForm.validFrom).toLocaleDateString()}{" "}
+                  onwards
                 </p>
               )}
             </div>
             <label className={styles.checkRow}>
-              <input type="checkbox" checked={destHeroForm.isActive} onChange={setH('isActive')}/>
+              <input
+                type="checkbox"
+                checked={destHeroForm.isActive}
+                onChange={setH("isActive")}
+              />
               <span>Visible (Active)</span>
             </label>
             {destHeroMsg && <p className={styles.formMsg}>{destHeroMsg}</p>}
             <div className={styles.modalFooter}>
-              <button type="button" className="btn btn-outline btn-sm" onClick={closeHero}>Cancel</button>
-              <button type="submit" className="btn btn-primary btn-sm" disabled={destHeroSaving||destHeroBgUploading}>
-                {(destHeroSaving||destHeroBgUploading) ? <><span className="spinner"/> Saving…</> : destHeroEdit ? 'Save Changes' : 'Create Hero Entry'}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closeHero}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={destHeroSaving || destHeroBgUploading}
+              >
+                {destHeroSaving || destHeroBgUploading ? (
+                  <>
+                    <span className="spinner" /> Saving…
+                  </>
+                ) : destHeroEdit ? (
+                  "Save Changes"
+                ) : (
+                  "Create Hero Entry"
+                )}
               </button>
             </div>
           </form>
         </Modal>
       )}
-
     </div>
   );
 };

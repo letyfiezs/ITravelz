@@ -51,7 +51,8 @@ export const bookingService = {
   getById: (id) => api.get(`/bookings/${id}`),
   getByRef: (bookingId) =>
     api.get(`/bookings/pay/${encodeURIComponent(bookingId)}`),
-  createCheckoutSession: (data) => api.post("/bookings/create-checkout-session", data),
+  createCheckoutSession: (data) =>
+    api.post("/bookings/create-checkout-session", data),
   verifyCheckout: (data) => api.post("/bookings/verify-checkout", data),
   create: (data) => api.post("/bookings", data),
   update: (id, data) => api.put(`/bookings/${id}`, data),

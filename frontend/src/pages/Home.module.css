@@ -494,9 +494,6 @@ html[data-theme="dark"] .packSection {
   align-items: center;
 }
 
-.whyLeft {
-}
-
 .whyRight {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -885,7 +882,7 @@ html[data-theme="dark"] .packSection {
   padding: 56px 0;
 }
 .scrollSection:nth-child(even) {
-  background: var(--bg-alt);
+  background: var(--bg-secondary);
 }
 
 .sectionHead {
@@ -897,7 +894,7 @@ html[data-theme="dark"] .packSection {
 .sectionTitle {
   font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0;
 }
 
@@ -927,8 +924,8 @@ html[data-theme="dark"] .packSection {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
@@ -939,7 +936,7 @@ html[data-theme="dark"] .packSection {
     background 0.2s,
     transform 0.2s,
     box-shadow 0.2s;
-  color: var(--text-primary);
+  color: var(--text);
 }
 .scrollArrow:hover {
   background: var(--primary);
@@ -959,11 +956,11 @@ html[data-theme="dark"] .packSection {
 .scrollCard {
   flex: 0 0 300px;
   scroll-snap-align: start;
-  background: var(--card-bg);
+  background: var(--bg-card);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   transition:
     transform 0.25s,
     box-shadow 0.25s;
@@ -1017,7 +1014,7 @@ html[data-theme="dark"] .packSection {
 .scrollCardTitle {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0 0 8px;
   white-space: nowrap;
   overflow: hidden;

@@ -1,6 +1,16 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { login, getProfile, updateProfile, getStats, getUsers, makeAdminByEmail, removeAdminByEmail, deleteUserById, translateText } = require('../controllers/adminController');
+const {
+  login,
+  getProfile,
+  updateProfile,
+  getStats,
+  getUsers,
+  makeAdminByEmail,
+  removeAdminByEmail,
+  deleteUserById,
+  translateText,
+} = require("../controllers/adminController");
 const {
   getAllBookings,
   getBookingById,
@@ -8,13 +18,13 @@ const {
   deleteBooking,
   approveBooking,
   declineBooking,
-} = require('../controllers/bookingController');
+} = require("../controllers/bookingController");
 const {
   createService,
   updateService,
   deleteService,
-  getAllServices: getAllServicesAdmin
-} = require('../controllers/serviceController');
+  getAllServices: getAllServicesAdmin,
+} = require("../controllers/serviceController");
 const {
   upsertContent,
   updateContent,
@@ -22,7 +32,7 @@ const {
   uploadImage,
   uploadVideo,
   getAllContent,
-} = require('../controllers/contentController');
+} = require("../controllers/contentController");
 
 const {
   createPackage,
@@ -31,7 +41,7 @@ const {
   getAllPackagesAdmin,
   uploadPackageImages,
   deletePackageImage,
-} = require('../controllers/packageController');
+} = require("../controllers/packageController");
 const {
   createItinerary,
   updateItinerary,
@@ -39,7 +49,7 @@ const {
   getAllItinerariesAdmin,
   uploadItineraryImages,
   deleteItineraryImage,
-} = require('../controllers/itineraryController');
+} = require("../controllers/itineraryController");
 const {
   getAllDestinationsAdmin,
   createDestination,
@@ -47,7 +57,7 @@ const {
   deleteDestination,
   uploadDestinationImages,
   deleteDestinationImage,
-} = require('../controllers/destinationController');
+} = require("../controllers/destinationController");
 const {
   getAllFestivalsAdmin,
   createFestival,
@@ -55,7 +65,7 @@ const {
   deleteFestival,
   uploadFestivalImages,
   deleteFestivalImage,
-} = require('../controllers/festivalController');
+} = require("../controllers/festivalController");
 const {
   getAllAboutAdmin,
   createAbout,
@@ -63,89 +73,119 @@ const {
   deleteAbout,
   uploadAboutImages,
   deleteAboutImage,
-} = require('../controllers/aboutController');
-const { protectAdmin } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+} = require("../controllers/aboutController");
+const { protectAdmin } = require("../middleware/auth");
+const upload = require("../middleware/upload");
 const videoUpload = upload.videoUpload;
 
 // Auth Routes
-router.post('/login', login);
-router.get('/profile', protectAdmin, getProfile);
-router.put('/profile', protectAdmin, updateProfile);
+router.post("/login", login);
+router.get("/profile", protectAdmin, getProfile);
+router.put("/profile", protectAdmin, updateProfile);
 
 // Stats & Users
-router.get('/stats', protectAdmin, getStats);
-router.get('/users', protectAdmin, getUsers);
-router.post('/users/make-admin', protectAdmin, makeAdminByEmail);
-router.patch('/users/remove-admin', protectAdmin, removeAdminByEmail);
-router.delete('/users/:id', protectAdmin, deleteUserById);
+router.get("/stats", protectAdmin, getStats);
+router.get("/users", protectAdmin, getUsers);
+router.post("/users/make-admin", protectAdmin, makeAdminByEmail);
+router.patch("/users/remove-admin", protectAdmin, removeAdminByEmail);
+router.delete("/users/:id", protectAdmin, deleteUserById);
 
 // Auto-translate
-router.post('/translate', protectAdmin, translateText);
+router.post("/translate", protectAdmin, translateText);
 
 // Booking Management Routes
-router.get('/bookings', protectAdmin, getAllBookings);
-router.get('/bookings/:id', protectAdmin, getBookingById);
-router.patch('/bookings/:id/approve', protectAdmin, approveBooking);
-router.patch('/bookings/:id/decline', protectAdmin, declineBooking);
-router.put('/bookings/:id', protectAdmin, updateBooking);
-router.patch('/bookings/:id', protectAdmin, updateBooking);
-router.delete('/bookings/:id', protectAdmin, deleteBooking);
+router.get("/bookings", protectAdmin, getAllBookings);
+router.get("/bookings/:id", protectAdmin, getBookingById);
+router.patch("/bookings/:id/approve", protectAdmin, approveBooking);
+router.patch("/bookings/:id/decline", protectAdmin, declineBooking);
+router.put("/bookings/:id", protectAdmin, updateBooking);
+router.patch("/bookings/:id", protectAdmin, updateBooking);
+router.delete("/bookings/:id", protectAdmin, deleteBooking);
 
 // Service Management Routes
-router.post('/services', protectAdmin, createService);
-router.put('/services/:id', protectAdmin, updateService);
-router.delete('/services/:id', protectAdmin, deleteService);
+router.post("/services", protectAdmin, createService);
+router.put("/services/:id", protectAdmin, updateService);
+router.delete("/services/:id", protectAdmin, deleteService);
 
 // Content Management Routes
-router.get('/content', protectAdmin, getAllContent);
-router.post('/content', protectAdmin, upsertContent);
-router.put('/content/:id', protectAdmin, updateContent);
-router.delete('/content/:id', protectAdmin, deleteContent);
+router.get("/content", protectAdmin, getAllContent);
+router.post("/content", protectAdmin, upsertContent);
+router.put("/content/:id", protectAdmin, updateContent);
+router.delete("/content/:id", protectAdmin, deleteContent);
 
 // Package Management Routes
-router.get('/packages', protectAdmin, getAllPackagesAdmin);
-router.post('/packages', protectAdmin, createPackage);
-router.put('/packages/:id', protectAdmin, updatePackage);
-router.delete('/packages/:id', protectAdmin, deletePackage);
-router.post('/packages/:id/images', protectAdmin, upload.array('images', 10), uploadPackageImages);
-router.delete('/packages/:id/images', protectAdmin, deletePackageImage);
+router.get("/packages", protectAdmin, getAllPackagesAdmin);
+router.post("/packages", protectAdmin, createPackage);
+router.put("/packages/:id", protectAdmin, updatePackage);
+router.delete("/packages/:id", protectAdmin, deletePackage);
+router.post(
+  "/packages/:id/images",
+  protectAdmin,
+  upload.array("images", 10),
+  uploadPackageImages,
+);
+router.delete("/packages/:id/images", protectAdmin, deletePackageImage);
 
 // Itinerary Management Routes
-router.get('/itineraries', protectAdmin, getAllItinerariesAdmin);
-router.post('/itineraries', protectAdmin, createItinerary);
-router.put('/itineraries/:id', protectAdmin, updateItinerary);
-router.delete('/itineraries/:id', protectAdmin, deleteItinerary);
-router.post('/itineraries/:id/images', protectAdmin, upload.array('images', 10), uploadItineraryImages);
-router.delete('/itineraries/:id/images', protectAdmin, deleteItineraryImage);
+router.get("/itineraries", protectAdmin, getAllItinerariesAdmin);
+router.post("/itineraries", protectAdmin, createItinerary);
+router.put("/itineraries/:id", protectAdmin, updateItinerary);
+router.delete("/itineraries/:id", protectAdmin, deleteItinerary);
+router.post(
+  "/itineraries/:id/images",
+  protectAdmin,
+  upload.array("images", 10),
+  uploadItineraryImages,
+);
+router.delete("/itineraries/:id/images", protectAdmin, deleteItineraryImage);
 
 // Destination Management Routes
-router.get('/destinations', protectAdmin, getAllDestinationsAdmin);
-router.post('/destinations', protectAdmin, createDestination);
-router.put('/destinations/:id', protectAdmin, updateDestination);
-router.delete('/destinations/:id', protectAdmin, deleteDestination);
-router.post('/destinations/:id/images', protectAdmin, upload.array('images', 10), uploadDestinationImages);
-router.delete('/destinations/:id/images', protectAdmin, deleteDestinationImage);
+router.get("/destinations", protectAdmin, getAllDestinationsAdmin);
+router.post("/destinations", protectAdmin, createDestination);
+router.put("/destinations/:id", protectAdmin, updateDestination);
+router.delete("/destinations/:id", protectAdmin, deleteDestination);
+router.post(
+  "/destinations/:id/images",
+  protectAdmin,
+  upload.array("images", 10),
+  uploadDestinationImages,
+);
+router.delete("/destinations/:id/images", protectAdmin, deleteDestinationImage);
 
 // Image Upload
-router.post('/upload', protectAdmin, upload.single('image'), uploadImage);
+router.post("/upload", protectAdmin, upload.single("image"), uploadImage);
 // Video Upload
-router.post('/upload-video', protectAdmin, videoUpload.single('video'), uploadVideo);
+router.post(
+  "/upload-video",
+  protectAdmin,
+  videoUpload.single("video"),
+  uploadVideo,
+);
 
 // Festival Management Routes
-router.get('/festivals', protectAdmin, getAllFestivalsAdmin);
-router.post('/festivals', protectAdmin, createFestival);
-router.put('/festivals/:id', protectAdmin, updateFestival);
-router.delete('/festivals/:id', protectAdmin, deleteFestival);
-router.post('/festivals/:id/images', protectAdmin, upload.array('images', 10), uploadFestivalImages);
-router.delete('/festivals/:id/images', protectAdmin, deleteFestivalImage);
+router.get("/festivals", protectAdmin, getAllFestivalsAdmin);
+router.post("/festivals", protectAdmin, createFestival);
+router.put("/festivals/:id", protectAdmin, updateFestival);
+router.delete("/festivals/:id", protectAdmin, deleteFestival);
+router.post(
+  "/festivals/:id/images",
+  protectAdmin,
+  upload.array("images", 10),
+  uploadFestivalImages,
+);
+router.delete("/festivals/:id/images", protectAdmin, deleteFestivalImage);
 
 // About Mongolia Management Routes
-router.get('/about', protectAdmin, getAllAboutAdmin);
-router.post('/about', protectAdmin, createAbout);
-router.put('/about/:id', protectAdmin, updateAbout);
-router.delete('/about/:id', protectAdmin, deleteAbout);
-router.post('/about/:id/images', protectAdmin, upload.array('images', 10), uploadAboutImages);
-router.delete('/about/:id/images', protectAdmin, deleteAboutImage);
+router.get("/about", protectAdmin, getAllAboutAdmin);
+router.post("/about", protectAdmin, createAbout);
+router.put("/about/:id", protectAdmin, updateAbout);
+router.delete("/about/:id", protectAdmin, deleteAbout);
+router.post(
+  "/about/:id/images",
+  protectAdmin,
+  upload.array("images", 10),
+  uploadAboutImages,
+);
+router.delete("/about/:id/images", protectAdmin, deleteAboutImage);
 
 module.exports = router;

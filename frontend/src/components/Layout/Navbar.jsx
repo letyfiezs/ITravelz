@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useLanguage } from "../../hooks/useContext";
+import { useTheme } from "../../hooks/useContext";
 import { LANGUAGES } from "../../context/LanguageContext";
 import styles from "./Navbar.module.css";
 
@@ -17,6 +18,7 @@ const NAV_KEYS = [
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -124,6 +126,16 @@ export default function Navbar() {
 
         {/* Desktop right controls */}
         <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.themeBtn}
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            <i className={`fas ${theme === "dark" ? "fa-moon" : "fa-sun"}`} />
+          </button>
+
           {/* Language Picker */}
           <div className={styles.langMenu} ref={langRef}>
             <button
