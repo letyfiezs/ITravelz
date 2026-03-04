@@ -127,7 +127,7 @@ export default function Home() {
       .catch(() => {});
 
     aboutService.getAll()
-      .then(r => { const d = r.data?.data || r.data?.about || r.data || []; setAbouts(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_ABOUT).slice(0, 8)); })
+      .then(r => { const d = r.data?.items || r.data?.data || r.data?.about || r.data || []; setAbouts(shuffle(Array.isArray(d) && d.length > 0 ? d : FALLBACK_ABOUT).slice(0, 8)); })
       .catch(() => {});
   }, []);
 

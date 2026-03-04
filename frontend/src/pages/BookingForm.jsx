@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { bookingService, packageService } from '../services/api';
-import { useAuth } from '../hooks/useContext';
+import { useAuth, useLanguage } from '../hooks/useContext';
 import ImageSlideshow from '../components/ImageSlideshow/ImageSlideshow';
 import styles from './BookingForm.module.css';
 
 const BookingForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language, t } = useLanguage();
+  const tr = (pkg, key) => pkg?.translations?.[language]?.[key] || pkg?.[key] || '';
   const [searchParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
   const [form, setForm] = useState({
@@ -74,7 +76,7 @@ const BookingForm = () => {
         userId:        user?.id,
         price:         selectedPkg?.price || 0,
       });
-      setSuccess({ packageName: selectedPkg?.name || '', bookingId: Date.now() });
+      setSuccess({ packageName: tr(selectedPkg, 'name') || selectedPkg?.name || '', bookingId: Date.now() });
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
       setLoading(false);
@@ -136,17 +138,17 @@ const BookingForm = () => {
           <ImageSlideshow
             images={pkgImages}
             fallback={selectedPkg.image}
-            alt={selectedPkg.name}
+            alt={tr(selectedPkg, 'name')}
             interval={5000}
             className={styles.heroSlide}
           />
           <div className={styles.heroStripOverlay} />
           <div className={styles.heroStripContent}>
             <span className={styles.heroStripBadge}>{selectedPkg.category}</span>
-            <h2 className={styles.heroStripTitle}>{selectedPkg.name}</h2>
+            <h2 className={styles.heroStripTitle}>{tr(selectedPkg, 'name')}</h2>
             {selectedPkg.destination && (
               <p className={styles.heroStripMeta}>
-                <i className="fas fa-map-marker-alt" /> {selectedPkg.destination}
+                <i className="fas fa-map-marker-alt" /> {tr(selectedPkg, 'destination')}
                 {selectedPkg.duration && <> &bull; <i className="fas fa-clock" /> {selectedPkg.duration}</>}
               </p>
             )}
@@ -188,8 +190,8 @@ const BookingForm = () => {
                         )}
                       </div>
                       <div className={styles.pkgCardInfo}>
-                        <strong>{p.name}</strong>
-                        <span>{p.destination}</span>
+                        <strong>{tr(p, 'name')}</strong>
+                        <span>{tr(p, 'destination')}</span>
                         <span className={styles.pkgPrice}>${Number(p.price).toLocaleString()}</span>
                       </div>
                     </button>
@@ -312,17 +314,17 @@ const BookingForm = () => {
                 <span className={styles.infoCategoryBadge}>{selectedPkg.category}</span>
               </div>
               <div className={styles.infoBody}>
-                <h3 className={styles.infoTitle}>{selectedPkg.name}</h3>
+                <h3 className={styles.infoTitle}>{tr(selectedPkg, 'name')}</h3>
                 <div className={styles.infoMeta}>
-                  <span><i className="fas fa-map-marker-alt" /> {selectedPkg.destination}</span>
+                  <span><i className="fas fa-map-marker-alt" /> {tr(selectedPkg, 'destination')}</span>
                   <span><i className="fas fa-clock" /> {selectedPkg.duration}</span>
                 </div>
-                {selectedPkg.description && (
-                  <p className={styles.infoDesc}>{selectedPkg.description}</p>
+                {(tr(selectedPkg, 'description') || selectedPkg.description) && (
+                  <p className={styles.infoDesc}>{tr(selectedPkg, 'description')}</p>
                 )}
-                {(selectedPkg.features || []).length > 0 && (
+                {((selectedPkg.translations?.[language]?.features || selectedPkg.features) || []).length > 0 && (
                   <ul className={styles.infoFeatures}>
-                    {selectedPkg.features.map((f, i) => (
+                    {(selectedPkg.translations?.[language]?.features || selectedPkg.features || []).map((f, i) => (
                       <li key={i}><i className="fas fa-check-circle" /> {f}</li>
                     ))}
                   </ul>
