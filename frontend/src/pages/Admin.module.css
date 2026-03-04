@@ -37,6 +37,33 @@
 .tabToolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .tabToolbar span { font-size: 14px; color: var(--text-muted); }
 
+.usersToolbarControls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.usersSearchInput { min-width: 260px; max-width: 360px; }
+
+.userActionGroup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.userActionBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm, 6px);
+	height: 32px;
+	padding: 0 10px;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all .15s;
+	white-space: nowrap;
+}
+.userActionBtn:disabled { opacity: .6; cursor: not-allowed; }
+.userActionMake { background: rgba(0,53,128,.1); color: var(--primary, #003580); border-color: rgba(0,53,128,.2); }
+.userActionMake:hover:not(:disabled) { background: var(--primary, #003580); color: #fff; border-color: var(--primary, #003580); }
+.userActionRemove { background: rgba(245,158,11,.12); color: #b45309; border-color: rgba(245,158,11,.25); }
+.userActionRemove:hover:not(:disabled) { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.userActionDelete { background: rgba(239,68,68,.1); color: #dc2626; border-color: rgba(239,68,68,.2); }
+.userActionDelete:hover:not(:disabled) { background: #ef4444; color: #fff; border-color: #ef4444; }
+
 /* ── Action buttons ── */
 .actions { display: flex; gap: 6px; }
 .btnView, .btnEdit, .btnDel { width: 32px; height: 32px; border: none; border-radius: var(--radius-sm, 6px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: all .15s; }
@@ -95,4 +122,12 @@
 
 /* ── Responsive ── */
 @media (max-width: 900px) { .statsGrid { grid-template-columns: 1fr 1fr; } .detailGrid { grid-template-columns: 1fr; } .formRow { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .statsGrid { grid-template-columns: 1fr; } .tableWrap { overflow-x: auto; } .tabs { gap: 0; } .tab { padding: 10px 14px; font-size: 13px; } }
+@media (max-width: 640px) {
+	.statsGrid { grid-template-columns: 1fr; }
+	.tableWrap { overflow-x: auto; }
+	.tabs { gap: 0; }
+	.tab { padding: 10px 14px; font-size: 13px; }
+	.tabToolbar { align-items: flex-start; flex-direction: column; gap: 10px; }
+	.usersToolbarControls { width: 100%; }
+	.usersSearchInput { width: 100%; max-width: 100%; min-width: 0; }
+}
