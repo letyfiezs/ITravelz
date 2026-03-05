@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const querystring = require("querystring");
 const isEmailVerified = true;
 const {
   sendVerificationEmail,
@@ -73,19 +72,17 @@ exports.signup = async (req, res) => {
       verificationTokenHash.substring(0, 10) + "...",
     );
 
-    // Create user — mark email verified immediately so the user can sign in right away.
-    // A verification email is still sent as a courtesy.
+    // Create user — email must be verified before the user can sign in.
     user = new User({
       name,
       email,
       password,
-      isEmailVerified: true,
+      isEmailVerified: false,
       emailVerificationToken: verificationTokenHash,
       emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000,
     });
 
     await user.save();
-    const loginToken = generateToken(user._id);
     console.log("✅ User saved to database:", user._id);
     console.log(
       "✅ Stored token hash in DB:",
@@ -96,16 +93,10 @@ exports.signup = async (req, res) => {
       new Date(user.emailVerificationExpires),
     );
 
-    // Build verification link that hits the backend verification endpoint
-    // so clicking the email link will verify the account server-side and
-    // optionally redirect the user back to the frontend UI.
-    const params = querystring.stringify({ token: verificationToken, email });
-    const backendUrl = process.env.API_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com";
-    const redirectTo = `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
-
-    const verificationLink = `${backendUrl}/api/auth/verify-email?${params}&redirect=true&redirectUrl=${encodeURIComponent(
-      redirectTo,
-    )}`;
+    // Build verification link — goes directly to the frontend page which
+    // calls the backend verify-email/:token endpoint on load.
+    const frontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com";
+    const verificationLink = `${frontendUrl}/verify-email/${verificationToken}`;
     console.log("📧 Verification link:", verificationLink);
 
     // Send verification email
@@ -121,11 +112,15 @@ exports.signup = async (req, res) => {
       console.log("✅ Verification email sent successfully to:", email);
       res.status(201).json({
         success: true,
-        message: "Account created successfully!",
+        message: "Account created! Please check your email to verify your account before signing in.",
         emailSent: true,
-        token: loginToken,
-        user: { id: user._id, name: user.name, email: user.email, role: user.role || "user" },
-        data: { id: user._id, name: user.name, email: user.email, role: user.role || "user", isEmailVerified: true },
+        data: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role || "user",
+          isEmailVerified: false,
+        },
       });
     } else {
       console.warn(
@@ -135,11 +130,15 @@ exports.signup = async (req, res) => {
       );
       res.status(201).json({
         success: true,
-        message: "Account created successfully!",
+        message: "Account created! We could not send a verification email — please contact support.",
         emailSent: false,
-        token: loginToken,
-        user: { id: user._id, name: user.name, email: user.email, role: user.role || "user" },
-        data: { id: user._id, name: user.name, email: user.email, role: user.role || "user", isEmailVerified: true },
+        data: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role || "user",
+          isEmailVerified: false,
+        },
       });
     }
   } catch (error) {
@@ -171,8 +170,12 @@ exports.verifyEmail = async (req, res) => {
     if (!token || !email) {
       console.error("❌ Verification Failed - Missing token or email");
       if (shouldRedirect) {
-        const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-        return res.redirect(`${target}?success=false&message=${encodeURIComponent('Invalid verification request')}`);
+        const target =
+          redirectUrl ||
+          `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+        return res.redirect(
+          `${target}?success=false&message=${encodeURIComponent("Invalid verification request")}`,
+        );
       }
       return res
         .status(400)
@@ -197,8 +200,12 @@ exports.verifyEmail = async (req, res) => {
     if (!user) {
       console.error("❌ User not found with email:", email);
       if (shouldRedirect) {
-        const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-        return res.redirect(`${target}?success=false&message=${encodeURIComponent('User not found')}`);
+        const target =
+          redirectUrl ||
+          `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+        return res.redirect(
+          `${target}?success=false&message=${encodeURIComponent("User not found")}`,
+        );
       }
       return res.status(400).json({
         success: false,
@@ -221,8 +228,12 @@ exports.verifyEmail = async (req, res) => {
     if (!user.emailVerificationToken) {
       console.error("❌ No verification token found for user");
       if (shouldRedirect) {
-        const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-        return res.redirect(`${target}?success=false&message=${encodeURIComponent('Verification token not found')}`);
+        const target =
+          redirectUrl ||
+          `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+        return res.redirect(
+          `${target}?success=false&message=${encodeURIComponent("Verification token not found")}`,
+        );
       }
       return res.status(400).json({
         success: false,
@@ -238,8 +249,12 @@ exports.verifyEmail = async (req, res) => {
       );
       console.error("Got:", verificationTokenHash.substring(0, 10) + "...");
       if (shouldRedirect) {
-        const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-        return res.redirect(`${target}?success=false&message=${encodeURIComponent('Invalid verification token')}`);
+        const target =
+          redirectUrl ||
+          `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+        return res.redirect(
+          `${target}?success=false&message=${encodeURIComponent("Invalid verification token")}`,
+        );
       }
       return res.status(400).json({
         success: false,
@@ -254,8 +269,12 @@ exports.verifyEmail = async (req, res) => {
     ) {
       console.error("❌ Verification token expired");
       if (shouldRedirect) {
-        const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-        return res.redirect(`${target}?success=false&message=${encodeURIComponent('Verification link expired')}`);
+        const target =
+          redirectUrl ||
+          `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+        return res.redirect(
+          `${target}?success=false&message=${encodeURIComponent("Verification link expired")}`,
+        );
       }
       return res.status(400).json({
         success: false,
@@ -293,7 +312,9 @@ exports.verifyEmail = async (req, res) => {
     await sendWelcomeEmail(email, user.name);
 
     if (shouldRedirect) {
-      const target = redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
+      const target =
+        redirectUrl ||
+        `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
       return res.redirect(`${target}?success=true`);
     }
 
@@ -311,8 +332,12 @@ exports.verifyEmail = async (req, res) => {
     console.error("❌ Email verification error:", error);
     console.error("Error message:", error.message);
     if (req.query && (req.query.redirect === "true" || req.query.redirectUrl)) {
-      const target = req.query.redirectUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email`;
-      return res.redirect(`${target}?success=false&message=${encodeURIComponent('Server error during verification')}`);
+      const target =
+        req.query.redirectUrl ||
+        `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
+      return res.redirect(
+        `${target}?success=false&message=${encodeURIComponent("Server error during verification")}`,
+      );
     }
     res.status(500).json({
       success: false,
@@ -379,8 +404,19 @@ exports.login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
-      data: { id: user._id, name: user.name, email: user.email, role: user.role, isEmailVerified: user.isEmailVerified },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
     });
   } catch (error) {
     console.error("❌ Login error:", error);
@@ -425,7 +461,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Build reset link
-    const resetLink = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/reset-password/${resetToken}`;
 
     // Send password reset email
     const emailSent = await sendPasswordResetEmail(
@@ -574,23 +610,36 @@ exports.updateProfile = async (req, res) => {
 exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
     }
     // Cloudinary gives req.file.path, disk storage gives a local path
-    const avatarUrl = req.file.path || `${process.env.API_URL || ''}/uploads/${req.file.filename}`;
+    const avatarUrl =
+      req.file.path ||
+      `${process.env.API_URL || ""}/uploads/${req.file.filename}`;
 
     const user = await User.findByIdAndUpdate(
       req.userId,
       { avatar: avatarUrl, updatedAt: Date.now() },
-      { new: true }
+      { new: true },
     );
 
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     res.json({ success: true, avatar: user.avatar, user });
   } catch (error) {
-    console.error('Upload avatar error:', error);
-    res.status(500).json({ success: false, message: 'Avatar upload failed', error: error.message });
+    console.error("Upload avatar error:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Avatar upload failed",
+        error: error.message,
+      });
   }
 };
 
@@ -643,10 +692,20 @@ exports.changePassword = async (req, res) => {
 exports.validateToken = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password");
-    if (!user) return res.status(401).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     res.json({
       success: true,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, phone: user.phone },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        phone: user.phone,
+      },
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
@@ -657,7 +716,10 @@ exports.validateToken = async (req, res) => {
 exports.verifyEmailByToken = async (req, res) => {
   try {
     const { token } = req.params;
-    if (!token) return res.status(400).json({ success: false, message: "Token required" });
+    if (!token)
+      return res
+        .status(400)
+        .json({ success: false, message: "Token required" });
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const user = await User.findOne({
@@ -666,7 +728,12 @@ exports.verifyEmailByToken = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired verification link" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Invalid or expired verification link",
+        });
     }
 
     user.isEmailVerified = true;
@@ -674,7 +741,10 @@ exports.verifyEmailByToken = async (req, res) => {
     user.emailVerificationExpires = undefined;
     await user.save();
 
-    res.json({ success: true, message: "Email verified! You can now sign in." });
+    res.json({
+      success: true,
+      message: "Email verified! You can now sign in.",
+    });
   } catch (err) {
     console.error("verifyEmailByToken error:", err);
     res.status(500).json({ success: false, message: "Verification failed" });
@@ -688,10 +758,17 @@ exports.resetPasswordWithToken = async (req, res) => {
     const { password, confirmPassword } = req.body;
 
     if (!token || !password) {
-      return res.status(400).json({ success: false, message: "Token and new password are required" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Token and new password are required",
+        });
     }
     if (confirmPassword && password !== confirmPassword) {
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -701,7 +778,9 @@ exports.resetPasswordWithToken = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired reset link" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired reset link" });
     }
 
     user.password = password;
@@ -709,9 +788,14 @@ exports.resetPasswordWithToken = async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    res.json({ success: true, message: "Password reset successfully! You can now sign in." });
+    res.json({
+      success: true,
+      message: "Password reset successfully! You can now sign in.",
+    });
   } catch (err) {
     console.error("resetPasswordWithToken error:", err);
-    res.status(500).json({ success: false, message: "Error resetting password" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error resetting password" });
   }
 };

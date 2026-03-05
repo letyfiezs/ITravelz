@@ -11,6 +11,8 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [verifyEmailSent, setVerifyEmailSent] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -22,9 +24,55 @@ const Signup = () => {
     setLoading(true);
     const result = await signup(form.name, form.email, form.password);
     setLoading(false);
-    if (result.success) navigate('/');
-    else setError(result.message || 'Registration failed. Please try again.');
+    if (result.success) {
+      setRegisteredEmail(form.email);
+      setVerifyEmailSent(true);
+    } else {
+      setError(result.message || 'Registration failed. Please try again.');
+    }
   };
+
+  if (verifyEmailSent) {
+    return (
+      <div className={styles.authPage}>
+        <div className={styles.authLeft}>
+          <div className={styles.authLeftContent}>
+            <Link to="/" className={styles.authBrand}>
+              <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
+              <span className={styles.brandText}>I<span>Travelz</span></span>
+            </Link>
+            <h2>Start your adventure today</h2>
+            <p>Create your free account and unlock access to exclusive deals, curated itineraries, and a world of possibilities.</p>
+          </div>
+          <div className={styles.authLeftOverlay} />
+        </div>
+        <div className={styles.authRight}>
+          <div className={styles.authCard}>
+            <div style={{ textAlign: 'center', padding: '12px 0 24px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✉️</div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '10px' }}>Check your email</h1>
+              <p style={{ color: '#6b7280', marginBottom: '8px', lineHeight: 1.6 }}>
+                We sent a verification link to
+              </p>
+              <p style={{ fontWeight: 700, color: '#1e3a5f', marginBottom: '20px', wordBreak: 'break-all' }}>
+                {registeredEmail}
+              </p>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '28px', lineHeight: 1.6 }}>
+                Click the link in the email to verify your account, then come back to sign in.
+                The link expires in 24 hours.
+              </p>
+              <button
+                className={`btn btn-primary ${styles.submitBtn}`}
+                onClick={() => navigate('/login')}
+              >
+                Go to Sign In <i className="fas fa-arrow-right" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.authPage}>

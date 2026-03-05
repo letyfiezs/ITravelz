@@ -24,7 +24,10 @@ const sendEmail = async (to, subject, htmlContent) => {
     console.log("✅ Email sent via Brevo:", subject);
     return true;
   } catch (error) {
-    console.error("❌ Brevo Email error:", error.response?.data || error.message);
+    console.error(
+      "❌ Brevo Email error:",
+      error.response?.data || error.message,
+    );
     return false;
   }
 };
@@ -114,7 +117,11 @@ const sendVerificationEmail = async (email, name, token, link) => {
       <p style="margin:0;font-size:13px;color:#713f12;">This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
     </div>
   `;
-  return await sendEmail(email, "Verify your email — Total Grand Travel", baseTemplate(content));
+  return await sendEmail(
+    email,
+    "Verify your email — Total Grand Travel",
+    baseTemplate(content),
+  );
 };
 
 /* ===========================
@@ -137,7 +144,11 @@ const sendWelcomeEmail = async (email, name) => {
 
     ${ctaButton("Start Exploring", process.env.FRONTEND_URL || "https://itravelmongolia.com", "#22c55e")}
   `;
-  return await sendEmail(email, "Welcome to Total Grand Travel! 🌍", baseTemplate(content));
+  return await sendEmail(
+    email,
+    "Welcome to Total Grand Travel! 🌍",
+    baseTemplate(content),
+  );
 };
 
 /* ===========================
@@ -158,7 +169,11 @@ const sendPasswordResetEmail = async (email, name, token, link) => {
       <p style="margin:0;font-size:13px;color:#9f1239;">⏱ This link expires in <strong>30 minutes</strong>. If you didn't request a password reset, please ignore this email — your account is safe.</p>
     </div>
   `;
-  return await sendEmail(email, "Password Reset Request — Total Grand Travel", baseTemplate(content));
+  return await sendEmail(
+    email,
+    "Password Reset Request — Total Grand Travel",
+    baseTemplate(content),
+  );
 };
 
 /* ===========================
@@ -221,11 +236,15 @@ const sendBookingApprovedEmail = async (email, name, booking) => {
       </table>
     </div>
 
-    ${amount > 0 ? `
+    ${
+      amount > 0
+        ? `
     <div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:1px solid #bfdbfe;border-radius:10px;padding:16px 24px;margin-bottom:24px;text-align:center;">
       <p style="margin:0 0 4px;font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">Total Amount Due</p>
       <p style="margin:0;font-size:32px;font-weight:800;color:#059669;">$${Number(amount).toLocaleString()}</p>
-    </div>` : ""}
+    </div>`
+        : ""
+    }
 
     ${ctaButton("💳 Complete Payment", payLink, "#2563eb")}
 

@@ -59,14 +59,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password) => {
     try {
       const res = await authService.register({ name, email, password, confirmPassword: password });
-      const token = res.data.token;
-      const u = res.data.user || res.data.data;
-      if (token && u) {
-        localStorage.setItem('token', token);
-        setUser(u);
-        setIsAuth(true);
-      }
-      return { success: true };
+      return { success: true, message: res.data.message, emailSent: res.data.emailSent };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || 'Registration failed' };
     }
