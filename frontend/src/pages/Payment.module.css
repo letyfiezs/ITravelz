@@ -155,6 +155,8 @@
 }
 
 .payBtn {
+  display: block;
+  width: 100%;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: #fff;
   border: none;
@@ -256,10 +258,58 @@
 }
 
 @media (max-width: 600px) {
+  .page {
+    padding: 24px 12px 40px;
+    align-items: flex-start;
+  }
   .card {
-    padding: 28px 18px;
+    padding: 24px 16px;
+    border-radius: 12px;
   }
   .title {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+  }
+  .subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+  }
+  .summary {
+    padding: 14px;
+  }
+  .row {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .row span {
+    width: 100%;
+    font-size: 0.78rem;
+  }
+  .row strong {
+    text-align: left;
+    font-size: 0.875rem;
+    width: 100%;
+  }
+  .payBtn {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 13px;
+  }
+  .sectionLabel {
+    font-size: 0.78rem;
+  }
+  .amount {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding: 16px 8px 32px;
+  }
+  .card {
+    padding: 20px 12px;
+  }
+  .title {
+    font-size: 1.15rem;
   }
 }

@@ -19,9 +19,9 @@ const router = express.Router();
 
 // Public routes
 router.post("/", createBooking);
-router.get("/pay/:bookingId", getBookingByRef);            // fetch booking info for payment page
+router.get("/pay/:bookingId", getBookingByRef); // fetch booking info for payment page
 router.post("/create-checkout-session", createCheckoutSession); // Stripe: create hosted checkout
-router.post("/verify-checkout", verifyCheckout);               // Stripe: verify + mark paid + emails
+router.post("/verify-checkout", verifyCheckout); // Stripe: verify + mark paid + emails
 
 // Admin routes - specific routes BEFORE generic /:id
 router.get("/", protect, getAllBookings);
@@ -36,4 +36,3 @@ router.patch("/:id/cancel", protect, cancelBooking);
 router.delete("/:id", protect, deleteBooking);
 
 module.exports = router;
-
