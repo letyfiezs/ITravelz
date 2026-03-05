@@ -102,9 +102,14 @@ app.get("/api/health", (req, res) => {
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // SPA fallback — let React Router handle all non-API routes
+// Skip requests that look like static files (have an extension); let them 404 naturally
+// instead of returning index.html (which would cause wrong MIME type errors in the browser)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  if (path.extname(req.path)) return next(); // .css, .js, .png, etc. → 404, not index.html
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'), (err) => {
+    if (err) next(err);
+  });
 });
 
 // ========================================

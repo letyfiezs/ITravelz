@@ -3,7 +3,12 @@ const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error("[FATAL] STRIPE_SECRET_KEY environment variable is not set. Payment features will not work.");
+}
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
+  : null;
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
@@ -14,6 +19,9 @@ const {
 
 // Create Stripe Checkout Session — redirects user to Stripe-hosted payment page
 exports.createCheckoutSession = async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
+  }
   try {
     const { bookingId } = req.body;
     if (!bookingId) {
@@ -66,6 +74,9 @@ exports.createCheckoutSession = async (req, res) => {
 
 // Verify Stripe Checkout Session + mark paid + send emails
 exports.verifyCheckout = async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
+  }
   try {
     const { bookingId, sessionId } = req.body;
     if (!bookingId || !sessionId) {
@@ -741,6 +752,9 @@ exports.getBookingByRef = async (req, res) => {
 
 // Pay Booking (public — called from payment page after Stripe confirms payment)
 exports.payBooking = async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
+  }
   try {
     const { bookingId, email, paymentIntentId } = req.body;
 
