@@ -16,7 +16,7 @@ const Payment = () => {
 
   useEffect(() => {
     if (!bookingId) {
-      setFetchError("Буруу холбоос. Booking ID олдсонгүй.");
+      setFetchError("Invalid link. Booking ID not found.");
       setLoading(false);
       return;
     }
@@ -26,17 +26,17 @@ const Payment = () => {
         const b = res.data.data;
         if (b.status !== "approved") {
           setFetchError(
-            "Энэ захиалга төлбөр төлөх боломжгүй байна. (Статус: " +
+            "This booking is not available for payment. (Status: " +
               b.status +
               ")",
           );
         } else if (b.paymentStatus === "paid") {
-          setFetchError("Энэ захиалгын төлбөр аль хэдийн төлөгдсөн байна.");
+          setFetchError("This booking has already been paid.");
         }
         setBooking(b);
       })
       .catch(() =>
-        setFetchError("Захиалга олдсонгүй. Холбоос буруу байж болзошгүй."),
+        setFetchError("Booking not found. The link may be incorrect."),
       )
       .finally(() => setLoading(false));
   }, [bookingId]);
@@ -49,7 +49,7 @@ const Payment = () => {
       window.location.href = res.data.url;
     } catch (err) {
       setPayError(
-        err.response?.data?.message || "Алдаа гарлаа. Дахин оролдоно уу.",
+        err.response?.data?.message || "Something went wrong. Please try again.",
       );
       setRedirecting(false);
     }
@@ -61,7 +61,7 @@ const Payment = () => {
         <div className={styles.card}>
           <div className={styles.spinner} />
           <p style={{ textAlign: "center", color: "#6b7280" }}>
-            Захиалга уншиж байна...
+            Loading booking...
           </p>
         </div>
       </div>
@@ -74,10 +74,10 @@ const Payment = () => {
         <div className={styles.card}>
           <div className={styles.errorIcon}>⚠️</div>
           <p className={styles.errorMsg}>
-            {fetchError || "Захиалга олдсонгүй."}
+            {fetchError || "Booking not found."}
           </p>
           <button className={styles.homeBtn} onClick={() => navigate("/")}>
-            Нүүр хуудас
+            Go Home
           </button>
         </div>
       </div>
@@ -100,44 +100,44 @@ const Payment = () => {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>✈️ Аялал Баталгаажуулах</h1>
+        <h1 className={styles.title}>✈️ Confirm Your Booking</h1>
         <p className={styles.subtitle}>
-          Захиалгаа шалгаад Stripe-аар аюулгүй төлбөр төлнө үү.
+          Review your details and pay securely with Stripe.
         </p>
 
         <div className={styles.summary}>
-          <h3 className={styles.sectionLabel}>Захиалгын мэдээлэл</h3>
+          <h3 className={styles.sectionLabel}>Booking Details</h3>
           <div className={styles.row}>
-            <span>Захиалгын дугаар</span>
+            <span>Booking ID</span>
             <strong>{booking.bookingId}</strong>
           </div>
           <div className={styles.row}>
-            <span>Багц / Аялал</span>
+            <span>Package</span>
             <strong>{booking.serviceName}</strong>
           </div>
           <div className={styles.row}>
-            <span>Огноо</span>
+            <span>Travel Date</span>
             <strong>{travelDate}</strong>
           </div>
           {booking.bookingTime && (
             <div className={styles.row}>
-              <span>Цаг</span>
+              <span>Time</span>
               <strong>{booking.bookingTime}</strong>
             </div>
           )}
           <div className={styles.row}>
-            <span>Хүний тоо</span>
+            <span>Guests</span>
             <strong>{booking.numberOfPeople}</strong>
           </div>
           {booking.duration && booking.duration !== "N/A" && (
             <div className={styles.row}>
-              <span>Үргэлжлэх хугацаа</span>
+              <span>Duration</span>
               <strong>{booking.duration}</strong>
             </div>
           )}
           {amount > 0 && (
             <div className={`${styles.row} ${styles.totalRow}`}>
-              <span>Нийт дүн</span>
+              <span>Total Amount</span>
               <strong className={styles.amount}>
                 ${amount.toLocaleString()}
               </strong>
@@ -153,8 +153,8 @@ const Payment = () => {
           disabled={redirecting}
         >
           {redirecting
-            ? "Stripe руу шилжиж байна..."
-            : `💳 Stripe-аар төлөх — $${amount.toLocaleString()}`}
+            ? "Redirecting to Stripe..."
+            : `💳 Pay with Stripe — $${amount.toLocaleString()}`}
         </button>
 
         <p
@@ -165,8 +165,8 @@ const Payment = () => {
             marginTop: "12px",
           }}
         >
-          Stripe-ийн аюулгүй хуудас руу шилжинэ. Картын мэдээлэл энэ сайтад
-          хадгалагдахгүй.
+          You'll be redirected to Stripe's secure checkout. Card details are
+          never stored on this site.
         </p>
       </div>
     </div>

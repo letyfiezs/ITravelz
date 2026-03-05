@@ -14,7 +14,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     if (!bookingId || !sessionId) {
-      setErrorMsg("Буруу холбоос. Захиалгын мэдээлэл олдсонгүй.");
+      setErrorMsg("Invalid link. Booking information not found.");
       setStatus("error");
       return;
     }
@@ -27,7 +27,7 @@ const PaymentSuccess = () => {
       .catch((err) => {
         const msg =
           err.response?.data?.message ||
-          "Төлбөрийг баталгаажуулахад алдаа гарлаа. Дахин оролдоно уу.";
+          "Failed to verify payment. Please try again or contact support.";
         setErrorMsg(msg);
         setStatus("error");
       });
@@ -39,7 +39,7 @@ const PaymentSuccess = () => {
         <div className={styles.card}>
           <div className={styles.spinner} />
           <p style={{ textAlign: "center", color: "#6b7280" }}>
-            Төлбөр баталгаажуулж байна...
+            Verifying your payment...
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ const PaymentSuccess = () => {
           <div className={styles.errorIcon}>⚠️</div>
           <p className={styles.errorMsg}>{errorMsg}</p>
           <button className={styles.homeBtn} onClick={() => navigate("/")}>
-            Нүүр хуудас
+            Go Home
           </button>
         </div>
       </div>
@@ -64,16 +64,16 @@ const PaymentSuccess = () => {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.successIcon}>🎉</div>
-        <h2 className={styles.successTitle}>Таны аялал баталгаажлаа!</h2>
+        <h2 className={styles.successTitle}>Your trip is confirmed!</h2>
         <p className={styles.successMsg}>
-          Баталгаажуулах имэйл таны хаяг руу илгээгдлээ. Бид удахгүй
-          дэлгэрэнгүй мэдээлэл үлдээнэ.
+          A confirmation email has been sent to your inbox. We'll follow up
+          with detailed itinerary information soon.
         </p>
         <p className={styles.successSub}>
-          Бидэнд итгэснэд баярлалаа — сайхан аялал хүсье! ✈️
+          Thank you for choosing us — have an amazing adventure! ✈️
         </p>
         <button className={styles.homeBtn} onClick={() => navigate("/")}>
-          Нүүр хуудас руу буцах
+          Back to Home
         </button>
       </div>
     </div>

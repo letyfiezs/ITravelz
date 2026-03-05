@@ -33,10 +33,10 @@ exports.createCheckoutSession = async (req, res) => {
       return res.status(404).json({ success: false, message: "Booking not found" });
     }
     if (booking.status !== "approved") {
-      return res.status(400).json({ success: false, message: "Захиалга зөвшөөрөгдөөгүй байна" });
+      return res.status(400).json({ success: false, message: "Booking has not been approved yet." });
     }
     if (booking.paymentStatus === "paid") {
-      return res.status(400).json({ success: false, message: "Энэ захиалгын төлбөр аль хэдийн төлөгдсөн" });
+      return res.status(400).json({ success: false, message: "This booking has already been paid." });
     }
 
     const raw = booking.totalPrice || booking.price * booking.numberOfPeople || booking.price || 0;
@@ -69,7 +69,7 @@ exports.createCheckoutSession = async (req, res) => {
     res.status(200).json({ success: true, url: session.url });
   } catch (error) {
     console.error("createCheckoutSession error:", error);
-    res.status(500).json({ success: false, message: "Checkout session үүсгэхэд алдаа гарлаа", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to create checkout session.", error: error.message });
   }
 };
 
@@ -86,15 +86,15 @@ exports.verifyCheckout = async (req, res) => {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
-      return res.status(400).json({ success: false, message: "Stripe төлбөр амжилтгүй байна" });
+      return res.status(400).json({ success: false, message: "Stripe payment was not successful." });
     }
     if (session.metadata?.bookingId !== bookingId) {
-      return res.status(403).json({ success: false, message: "Session энэ захиалгатай таарахгүй байна" });
+      return res.status(403).json({ success: false, message: "Session does not match this booking." });
     }
 
     const booking = await Booking.findOne({ bookingId });
     if (!booking) {
-      return res.status(404).json({ success: false, message: "Захиалга олдсонгүй" });
+      return res.status(404).json({ success: false, message: "Booking not found." });
     }
     if (booking.paymentStatus === "paid") {
       return res.status(200).json({ success: true, alreadyPaid: true, data: booking });
@@ -127,7 +127,7 @@ exports.verifyCheckout = async (req, res) => {
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
     console.error("verifyCheckout error:", error);
-    res.status(500).json({ success: false, message: "Баталгаажуулахад алдаа гарлаа", error: error.message });
+    res.status(500).json({ success: false, message: "Verification failed.", error: error.message });
   }
 };
 
