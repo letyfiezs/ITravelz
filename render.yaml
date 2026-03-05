@@ -50,10 +50,14 @@ services:
       - key: ADMIN_EMAIL
         sync: false # Admin email for notifications
 
+      # Frontend build-time API URL (relative = same service, no CORS)
+      - key: VITE_API_URL
+        value: /api
+
       # Stripe payment
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://itravelz.onrender.com
+        value: https://itravelmongolia.com

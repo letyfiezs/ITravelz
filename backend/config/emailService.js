@@ -162,7 +162,7 @@ const sendBookingConfirmationEmail = async (email, name, booking) => {
    BOOKING APPROVED
 =========================== */
 const sendBookingApprovedEmail = async (email, name, booking) => {
-  const frontend = process.env.FRONTEND_URL || "https://itravelz.onrender.com";
+  const frontend = process.env.FRONTEND_URL || "https://itravelmongolia.com";
   const bookingRef = booking.bookingId || "";
   const payLink = `${frontend}/payment?bookingId=${encodeURIComponent(bookingRef)}`;
   const amount = booking.totalPrice || booking.price || 0;

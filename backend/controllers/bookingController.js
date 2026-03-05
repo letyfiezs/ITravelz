@@ -32,7 +32,7 @@ exports.createCheckoutSession = async (req, res) => {
 
     const raw = booking.totalPrice || booking.price * booking.numberOfPeople || booking.price || 0;
     const amountInCents = Math.max(Math.round(raw * 100), 50);
-    const frontendUrl = process.env.FRONTEND_URL || "https://itravelz.onrender.com";
+    const frontendUrl = process.env.FRONTEND_URL || "https://itravelmongolia.com";
     const travelDate = new Date(booking.bookingDate).toLocaleDateString("en-US", {
       year: "numeric", month: "long", day: "numeric",
     });
