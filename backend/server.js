@@ -16,12 +16,12 @@ const adminRoutes = require("./routes/admin");
 const servicesRoutes = require("./routes/services");
 const contentRoutes = require("./routes/content");
 const packagesRoutes = require("./routes/packages");
-const itinerariesRoutes = require('./routes/itineraries');
-const destinationsRoutes = require('./routes/destinations');
-const contactRoutes = require('./routes/contact');
-const chatRoutes    = require('./routes/chat');
-const festivalsRoutes = require('./routes/festivals');
-const aboutRoutes     = require('./routes/about');
+const itinerariesRoutes = require("./routes/itineraries");
+const destinationsRoutes = require("./routes/destinations");
+const contactRoutes = require("./routes/contact");
+const chatRoutes = require("./routes/chat");
+const festivalsRoutes = require("./routes/festivals");
+const aboutRoutes = require("./routes/about");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -33,7 +33,7 @@ app.set("trust proxy", 1);
 app.use(
   helmet({
     contentSecurityPolicy: false,
-  })
+  }),
 );
 
 const allowedOrigins = [
@@ -55,7 +55,7 @@ app.use(
       callback(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,
-  })
+  }),
 );
 
 const limiter = rateLimit({
@@ -71,7 +71,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(passport.initialize());
 
 // Serve uploaded images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ========================================
 // API ROUTES
@@ -82,12 +82,12 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/packages", packagesRoutes);
 app.use("/api/content", contentRoutes);
-app.use('/api/itineraries', itinerariesRoutes);
-app.use('/api/destinations', destinationsRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/chat',    chatRoutes);
-app.use('/api/festivals', festivalsRoutes);
-app.use('/api/about',     aboutRoutes);
+app.use("/api/itineraries", itinerariesRoutes);
+app.use("/api/destinations", destinationsRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/festivals", festivalsRoutes);
+app.use("/api/about", aboutRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (req, res) => {
@@ -99,15 +99,15 @@ app.get("/api/health", (req, res) => {
 // ========================================
 
 // Serve built React static files
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 // SPA fallback — let React Router handle all non-API routes
 // Skip requests that look like static files (have an extension); let them 404 naturally
 // instead of returning index.html (which would cause wrong MIME type errors in the browser)
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
   if (path.extname(req.path)) return next(); // .css, .js, .png, etc. → 404, not index.html
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'), (err) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"), (err) => {
     if (err) next(err);
   });
 });
@@ -156,19 +156,19 @@ const server = app.listen(PORT, () => {
 const gracefulShutdown = (signal) => {
   console.log(`[SHUTDOWN] ${signal} received — closing HTTP server`);
   server.close(() => {
-    console.log('[SHUTDOWN] HTTP server closed');
+    console.log("[SHUTDOWN] HTTP server closed");
     mongoose.connection.close(false).then(() => {
-      console.log('[SHUTDOWN] MongoDB connection closed');
+      console.log("[SHUTDOWN] MongoDB connection closed");
       process.kill(process.pid, signal);
     });
   });
 };
 
-process.once('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.once("SIGUSR2", () => gracefulShutdown("SIGUSR2"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-process.on('unhandledRejection', (err) => {
-  console.error('[UNHANDLED]', err);
+process.on("unhandledRejection", (err) => {
+  console.error("[UNHANDLED]", err);
   server.close(() => process.exit(1));
 });

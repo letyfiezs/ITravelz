@@ -4,6 +4,13 @@ const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error("[WARN] STRIPE_SECRET_KEY not set — payment endpoints will return 503.");
+}
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
+  : null;
+
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
@@ -11,8 +18,119 @@ const {
   sendBookingDeclinedEmail,
 } = require("../config/emailService");
 
+// ─── Stripe: Create Checkout Session ─────────────────────────────────────────
+exports.createCheckoutSession = async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ success: false, message: "Payment service is not configured." });
+  }
+  try {
+    const { bookingId } = req.body;
+    if (!bookingId) {
+      return res.status(400).json({ success: false, message: "bookingId is required" });
+    }
+    const booking = await Booking.findOne({ bookingId });
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+    if (booking.status !== "approved") {
+      return res.status(400).json({ success: false, message: "Захиалга зөвшөөрөгдөөгүй байна" });
+    }
+    if (booking.paymentStatus === "paid") {
+      return res.status(400).json({ success: false, message: "Энэ захиалгын төлбөр аль хэдийн төлөгдсөн" });
+    }
 
-// Create Booking (Client)
+    const raw = booking.totalPrice || booking.price * booking.numberOfPeople || booking.price || 0;
+    const amountInCents = Math.max(Math.round(raw * 100), 50);
+    const frontendUrl = process.env.FRONTEND_URL || "https://itravelmongolia.com";
+    const travelDate = new Date(booking.bookingDate).toLocaleDateString("en-US", {
+      year: "numeric", month: "long", day: "numeric",
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      customer_email: booking.email,
+      line_items: [{
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `✈️ ${booking.serviceName}`,
+            description: `Захиалга #${booking.bookingId} · ${travelDate} · ${booking.numberOfPeople} хүн`,
+          },
+          unit_amount: amountInCents,
+        },
+        quantity: 1,
+      }],
+      mode: "payment",
+      metadata: { bookingId: booking.bookingId },
+      success_url: `${frontendUrl}/payment/success?bookingId=${booking.bookingId}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/payment?bookingId=${booking.bookingId}`,
+    });
+
+    res.status(200).json({ success: true, url: session.url });
+  } catch (error) {
+    console.error("createCheckoutSession error:", error);
+    res.status(500).json({ success: false, message: "Checkout session үүсгэхэд алдаа гарлаа", error: error.message });
+  }
+};
+
+// ─── Stripe: Verify Checkout Session ─────────────────────────────────────────
+exports.verifyCheckout = async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ success: false, message: "Payment service is not configured." });
+  }
+  try {
+    const { bookingId, sessionId } = req.body;
+    if (!bookingId || !sessionId) {
+      return res.status(400).json({ success: false, message: "bookingId and sessionId are required" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== "paid") {
+      return res.status(400).json({ success: false, message: "Stripe төлбөр амжилтгүй байна" });
+    }
+    if (session.metadata?.bookingId !== bookingId) {
+      return res.status(403).json({ success: false, message: "Session энэ захиалгатай таарахгүй байна" });
+    }
+
+    const booking = await Booking.findOne({ bookingId });
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Захиалга олдсонгүй" });
+    }
+    if (booking.paymentStatus === "paid") {
+      return res.status(200).json({ success: true, alreadyPaid: true, data: booking });
+    }
+
+    booking.paymentStatus = "paid";
+    booking.paymentMethod = "stripe";
+    booking.transactionId = session.payment_intent || sessionId;
+    booking.updatedAt = Date.now();
+    await booking.save();
+
+    try {
+      const bookingDetails = {
+        bookingId: booking.bookingId,
+        packageName: booking.serviceName,
+        travelDate: new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          year: "numeric", month: "long", day: "numeric",
+        }),
+        bookingTime: booking.bookingTime || "",
+        numberOfPeople: booking.numberOfPeople,
+        duration: booking.duration || "N/A",
+        totalPrice: booking.totalPrice || booking.price,
+      };
+      await sendPaymentSuccessEmail(booking.email, booking.fullName, bookingDetails);
+      console.log("✅ Stripe payment confirmed — email sent for", bookingId);
+    } catch (emailErr) {
+      console.error("Email error (payment confirmed):", emailErr.message);
+    }
+
+    res.status(200).json({ success: true, data: booking });
+  } catch (error) {
+    console.error("verifyCheckout error:", error);
+    res.status(500).json({ success: false, message: "Баталгаажуулахад алдаа гарлаа", error: error.message });
+  }
+};
+
 exports.createBooking = async (req, res) => {
   try {
     // Try to extract the authenticated userId from the Bearer token if present
@@ -183,16 +301,23 @@ exports.createBooking = async (req, res) => {
     if (booking.email) {
       try {
         await sendBookingConfirmationEmail(booking.email, booking.fullName, {
-          bookingId:   booking.bookingId,
+          bookingId: booking.bookingId,
           packageName: booking.serviceName,
-          duration:    booking.duration,
-          travelDate:  booking.bookingDate
-            ? booking.bookingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          duration: booking.duration,
+          travelDate: booking.bookingDate
+            ? booking.bookingDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
             : finalBookingDate,
         });
         console.log("✅ Confirmation email sent to", booking.email);
       } catch (emailErr) {
-        console.error("Confirmation email error (non-critical):", emailErr.message);
+        console.error(
+          "Confirmation email error (non-critical):",
+          emailErr.message,
+        );
       }
     }
 
@@ -277,13 +402,11 @@ exports.getUserBookings = async (req, res) => {
     });
   } catch (error) {
     console.error("Get user bookings error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching your bookings",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching your bookings",
+      error: error.message,
+    });
   }
 };
 
@@ -618,13 +741,11 @@ exports.getBookingByRef = async (req, res) => {
     });
   } catch (error) {
     console.error("getBookingByRef error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching booking",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching booking",
+      error: error.message,
+    });
   }
 };
 
@@ -656,12 +777,10 @@ exports.payBooking = async (req, res) => {
         .json({ success: false, message: "Booking is not yet approved" });
     }
     if (booking.paymentStatus === "paid") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "This booking has already been paid",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "This booking has already been paid",
+      });
     }
 
     booking.paymentStatus = "paid";
@@ -707,13 +826,11 @@ exports.payBooking = async (req, res) => {
     });
   } catch (error) {
     console.error("payBooking error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error processing payment",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error processing payment",
+      error: error.message,
+    });
   }
 };
 

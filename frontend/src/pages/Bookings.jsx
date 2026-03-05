@@ -174,9 +174,17 @@ const Bookings = () => {
                     )}
                   </div>
 
-                  {/* Cancel action */}
+                  {/* Pay / Cancel actions */}
                   {(b.status === 'pending' || b.status === 'approved') && (
                     <div className={styles.cardActions}>
+                      {b.status === 'approved' && b.paymentStatus !== 'paid' && b.bookingId && (
+                        <Link
+                          to={`/payment?bookingId=${b.bookingId}`}
+                          className={styles.payBtn}
+                        >
+                          <i className="fas fa-credit-card" /> Pay Now
+                        </Link>
+                      )}
                       <button className={styles.cancelBtn} onClick={() => handleCancel(b._id)}>
                         <i className="fas fa-times" /> Cancel
                       </button>

@@ -103,9 +103,10 @@
 }
 .notes i { color: var(--primary); margin-right: 6px; }
 
-/* Cancel action column */
+/* Cancel / Pay action column */
 .cardActions {
-  flex-shrink: 0; display: flex; align-items: center;
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: stretch;
+  justify-content: center; gap: 8px;
   padding: 0 16px; border-left: 1px solid var(--border);
 }
 .cancelBtn {
@@ -113,9 +114,18 @@
   color: var(--error, #e53e3e); border-radius: var(--radius-sm, 6px);
   padding: 6px 14px; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .cancelBtn:hover { background: var(--error, #e53e3e); color: #fff; }
+.payBtn {
+  background: #10b981; border: 1px solid #10b981;
+  color: #fff; border-radius: var(--radius-sm, 6px);
+  padding: 6px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none;
+}
+.payBtn:hover { background: #059669; border-color: #059669; }
 
 /* Empty state */
 .empty {
@@ -214,9 +224,10 @@
 }
 .notes i { color: var(--primary); margin-right: 6px; }
 
-/* Cancel action column */
+/* Cancel / Pay action column */
 .cardActions {
-  flex-shrink: 0; display: flex; align-items: center;
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: stretch;
+  justify-content: center; gap: 8px;
   padding: 0 16px; border-left: 1px solid var(--border);
 }
 .cancelBtn {
@@ -224,9 +235,18 @@
   color: var(--error, #e53e3e); border-radius: var(--radius-sm, 6px);
   padding: 6px 14px; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .cancelBtn:hover { background: var(--error, #e53e3e); color: #fff; }
+.payBtn {
+  background: #10b981; border: 1px solid #10b981;
+  color: #fff; border-radius: var(--radius-sm, 6px);
+  padding: 6px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none;
+}
+.payBtn:hover { background: #059669; border-color: #059669; }
 
 /* Empty state */
 .empty {
