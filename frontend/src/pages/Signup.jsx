@@ -9,6 +9,8 @@ const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -68,14 +70,20 @@ const Signup = () => {
               <label>Password</label>
               <div className={styles.inputWrap}>
                 <i className="fas fa-lock" />
-                <input className="form-input" type="password" value={form.password} onChange={set('password')} placeholder="Min. 6 characters" required />
+                <input className="form-input" type={showPassword ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder="Min. 6 characters" required />
+                <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword((v) => !v)} tabIndex={-1} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} />
+                </button>
               </div>
             </div>
             <div className="form-group">
               <label>Confirm password</label>
               <div className={styles.inputWrap}>
                 <i className="fas fa-lock" />
-                <input className="form-input" type="password" value={form.confirm} onChange={set('confirm')} placeholder="Repeat your password" required />
+                <input className="form-input" type={showConfirm ? 'text' : 'password'} value={form.confirm} onChange={set('confirm')} placeholder="Repeat your password" required />
+                <button type="button" className={styles.eyeBtn} onClick={() => setShowConfirm((v) => !v)} tabIndex={-1} aria-label={showConfirm ? 'Hide password' : 'Show password'}>
+                  <i className={showConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'} />
+                </button>
               </div>
             </div>
             <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>

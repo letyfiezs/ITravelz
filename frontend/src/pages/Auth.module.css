@@ -117,7 +117,8 @@
 
 .inputWrap { position: relative; }
 
-.inputWrap i {
+/* left prefix icon – never clickable */
+.inputWrap > i {
   position: absolute;
   left: 14px;
   top: 50%;
@@ -128,23 +129,36 @@
   z-index: 1;
 }
 
+/* show/hide password toggle */
 .eyeBtn {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 0.88rem;
-  padding: 0 2px;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm, 4px);
   display: flex;
   align-items: center;
-  transition: color var(--transition);
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+  z-index: 2;
 }
 
-.eyeBtn:hover { color: var(--primary); }
+.eyeBtn:hover {
+  color: var(--primary);
+  background: rgba(0, 53, 128, 0.08);
+}
+
+.eyeBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
 
 .inputWrap input {
   width: 100%;
