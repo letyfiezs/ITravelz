@@ -11,6 +11,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -64,7 +65,10 @@ const Login = () => {
               </label>
               <div className={styles.inputWrap}>
                 <i className="fas fa-lock" />
-                <input className="form-input" type="password" value={form.password} onChange={set('password')} placeholder="Enter your password" required />
+                <input className="form-input" type={showPassword ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder="Enter your password" required />
+                <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword((v) => !v)} tabIndex={-1} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'} />
+                </button>
               </div>
             </div>
             <button type="submit" className={`btn btn-primary ${styles.submitBtn}`} disabled={loading}>
