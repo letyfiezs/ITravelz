@@ -100,10 +100,8 @@ exports.signup = async (req, res) => {
     // so clicking the email link will verify the account server-side and
     // optionally redirect the user back to the frontend UI.
     const params = querystring.stringify({ token: verificationToken, email });
-    const backendUrl = process.env.API_URL || `http://localhost:5000`;
-    const redirectTo = process.env.CLIENT_URL
-      ? `${process.env.CLIENT_URL}/verify-email`
-      : `http://localhost:3000/verify-email`;
+    const backendUrl = process.env.API_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com";
+    const redirectTo = `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com"}/verify-email`;
 
     const verificationLink = `${backendUrl}/api/auth/verify-email?${params}&redirect=true&redirectUrl=${encodeURIComponent(
       redirectTo,

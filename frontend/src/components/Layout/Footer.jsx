@@ -8,8 +8,8 @@ const EXPLORE_LINKS = [
   { to: "/", key: "footer_home" },
   { to: "/packages", key: "footer_packages" },
   { to: "/destinations", key: "footer_services" },
-  { to: "/itineraries", key: "footer_itineraries" },
-  { to: "/about", key: "footer_about" },
+  { to: "/packages", key: "footer_itineraries" },
+  { to: "/about-mongolia", key: "footer_about" },
   { to: "/contact", key: "nav_contact" },
 ];
 
@@ -147,8 +147,8 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} ITravelz. {t("footer_rights")}
           </p>
           <div className={styles.legal}>
-            <Link to="/privacy">{t("footer_privacy")}</Link>
-            <Link to="/terms">{t("footer_terms")}</Link>
+            <Link to="/contact">{t("footer_privacy")}</Link>
+            <Link to="/contact">{t("footer_terms")}</Link>
           </div>
         </div>
       </div>
