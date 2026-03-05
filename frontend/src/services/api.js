@@ -51,9 +51,13 @@ export const bookingService = {
   getById: (id) => api.get(`/bookings/${id}`),
   getByRef: (bookingId) =>
     api.get(`/bookings/pay/${encodeURIComponent(bookingId)}`),
+<<<<<<< Updated upstream
   createCheckoutSession: (data) =>
     api.post("/bookings/create-checkout-session", data),
   verifyCheckout: (data) => api.post("/bookings/verify-checkout", data),
+=======
+  pay: (data) => api.post("/bookings/pay", data),
+>>>>>>> Stashed changes
   create: (data) => api.post("/bookings", data),
   update: (id, data) => api.put(`/bookings/${id}`, data),
   cancel: (id) => api.patch(`/bookings/${id}/cancel`),

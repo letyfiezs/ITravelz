@@ -3,20 +3,23 @@ const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+<<<<<<< Updated upstream
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error("[FATAL] STRIPE_SECRET_KEY environment variable is not set. Payment features will not work.");
 }
 const stripe = process.env.STRIPE_SECRET_KEY
   ? require("stripe")(process.env.STRIPE_SECRET_KEY)
   : null;
+=======
+>>>>>>> Stashed changes
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
   sendPaymentSuccessEmail,
-  sendAdminPaymentNotification,
   sendBookingDeclinedEmail,
 } = require("../config/emailService");
 
+<<<<<<< Updated upstream
 // Create Stripe Checkout Session — redirects user to Stripe-hosted payment page
 exports.createCheckoutSession = async (req, res) => {
   if (!stripe) {
@@ -134,6 +137,8 @@ exports.verifyCheckout = async (req, res) => {
   }
 };
 
+=======
+>>>>>>> Stashed changes
 // Create Booking (Client)
 exports.createBooking = async (req, res) => {
   try {
@@ -750,27 +755,18 @@ exports.getBookingByRef = async (req, res) => {
   }
 };
 
-// Pay Booking (public — called from payment page after Stripe confirms payment)
+// Pay Booking (public — called from payment page after user confirms payment)
 exports.payBooking = async (req, res) => {
   if (!stripe) {
     return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
   }
   try {
-    const { bookingId, email, paymentIntentId } = req.body;
+    const { bookingId, email, transactionId, paymentMethod } = req.body;
 
-    if (!bookingId || !email || !paymentIntentId) {
+    if (!bookingId || !email) {
       return res
         .status(400)
-        .json({ success: false, message: "bookingId, email, and paymentIntentId are required" });
-    }
-
-    // Verify with Stripe that the payment actually succeeded
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    if (paymentIntent.status !== "succeeded") {
-      return res.status(400).json({ success: false, message: "Stripe payment not completed" });
-    }
-    if (paymentIntent.metadata?.bookingId !== bookingId) {
-      return res.status(403).json({ success: false, message: "Payment does not match this booking" });
+        .json({ success: false, message: "bookingId and email are required" });
     }
 
     const booking = await Booking.findOne({ bookingId });
@@ -799,8 +795,8 @@ exports.payBooking = async (req, res) => {
     }
 
     booking.paymentStatus = "paid";
-    booking.paymentMethod = "stripe";
-    booking.transactionId = paymentIntentId;
+    booking.paymentMethod = paymentMethod || "bank_transfer";
+    if (transactionId) booking.transactionId = transactionId;
     booking.updatedAt = Date.now();
     await booking.save();
 
@@ -818,14 +814,17 @@ exports.payBooking = async (req, res) => {
         numberOfPeople: booking.numberOfPeople,
         duration: booking.duration || "N/A",
       };
-      await sendPaymentSuccessEmail(booking.email, booking.fullName, bookingDetails);
+      await sendPaymentSuccessEmail(
+        booking.email,
+        booking.fullName,
+        bookingDetails,
+      );
       console.log("✅ Trip confirmed — final email sent to", booking.email);
-
-      // Notify admin
-      await sendAdminPaymentNotification(bookingDetails, booking.fullName, booking.email);
-      console.log("✅ Admin payment notification sent");
     } catch (emailErr) {
-      console.log("Final confirmation email failed but payment saved:", emailErr.message);
+      console.log(
+        "Final confirmation email failed but payment saved:",
+        emailErr.message,
+      );
     }
 
     res.status(200).json({

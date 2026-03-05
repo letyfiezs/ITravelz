@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { bookingService } from "../services/api";
 import styles from "./Payment.module.css";
@@ -11,12 +11,20 @@ const Payment = () => {
   const [booking, setBooking] = useState(null);
   const [fetchError, setFetchError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [redirecting, setRedirecting] = useState(false);
-  const [payError, setPayError] = useState("");
 
+  const [form, setForm] = useState({
+    email: "",
+    transactionId: "",
+    paymentMethod: "bank_transfer",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [payError, setPayError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  // Fetch booking info
   useEffect(() => {
     if (!bookingId) {
-      setFetchError("Invalid link. Booking ID not found.");
+      setFetchError("Буруу холбоос. Booking ID олдсонгүй.");
       setLoading(false);
       return;
     }
@@ -25,25 +33,47 @@ const Payment = () => {
       .then((res) => {
         const b = res.data.data;
         if (b.status !== "approved") {
-          setFetchError("This booking is not available for payment. Status: " + b.status);
+          setFetchError(
+            "Энэ захиалга төлбөр төлөх боломжгүй байна. (Статус: " +
+              b.status +
+              ")",
+          );
         } else if (b.paymentStatus === "paid") {
-          setFetchError("Payment has already been completed for this booking.");
+          setFetchError("Энэ захиалгын төлбөр аль хэдийн төлөгдсөн байна.");
         }
         setBooking(b);
       })
-      .catch(() => setFetchError("Booking not found. The link may be invalid."))
+      .catch(() =>
+        setFetchError("Захиалга олдсонгүй. Холбоос буруу байж болзошгүй."),
+      )
       .finally(() => setLoading(false));
   }, [bookingId]);
 
-  const handlePay = async () => {
+  const handleChange = (e) =>
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handlePay = async (e) => {
+    e.preventDefault();
+    if (!form.email.trim()) {
+      setPayError("Имэйл хаягаа оруулна уу.");
+      return;
+    }
     setPayError("");
-    setRedirecting(true);
+    setSubmitting(true);
     try {
-      const res = await bookingService.createCheckoutSession({ bookingId });
-      window.location.href = res.data.url;
+      await bookingService.pay({
+        bookingId,
+        email: form.email.trim(),
+        transactionId: form.transactionId.trim(),
+        paymentMethod: form.paymentMethod,
+      });
+      setSuccess(true);
     } catch (err) {
-      setPayError(err.response?.data?.message || "An error occurred. Please try again.");
-      setRedirecting(false);
+      const msg =
+        err.response?.data?.message || "Алдаа гарлаа. Дахин оролдоно уу.";
+      setPayError(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -52,90 +82,191 @@ const Payment = () => {
       <div className={styles.page}>
         <div className={styles.card}>
           <div className={styles.spinner} />
-          <p style={{ textAlign: "center", color: "#6b7280" }}>Loading booking details...</p>
+          <p>Захиалга уншиж байна...</p>
         </div>
       </div>
     );
   }
 
-  if (!booking || fetchError) {
+  if (success) {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
-          <div className={styles.errorIcon}>warning</div>
-          <p className={styles.errorMsg}>{fetchError || "Something went wrong."}</p>
-          <button className={styles.homeBtn} onClick={() => navigate("/")}>Go to Home</button>
+          <div className={styles.successIcon}>🎉</div>
+          <h2 className={styles.successTitle}>Таны аялал баталгаажлаа!</h2>
+          <p className={styles.successMsg}>
+            Баtalгаажуулах имэйл таны хаяг руу илгээгдлээ. Бид удахгүй
+            дэлгэрэнгүй мэдээлэл үлдээнэ.
+          </p>
+          <p className={styles.successSub}>
+            Бидэнд итгэснэд баярлалаа — сайхан аялал хүсье! ✈️
+          </p>
+          <button className={styles.homeBtn} onClick={() => navigate("/")}>
+            Нүүр хуудас руу буцах
+          </button>
         </div>
       </div>
     );
   }
 
-  const amount = booking.totalPrice || booking.price || 0;
+  if (fetchError) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <div className={styles.errorIcon}>⚠️</div>
+          <p className={styles.errorMsg}>{fetchError}</p>
+          <button className={styles.homeBtn} onClick={() => navigate("/")}>
+            Нүүр хуудас
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const amount =
+    booking.totalPrice ||
+    booking.price * booking.numberOfPeople ||
+    booking.price ||
+    0;
   const travelDate = booking.bookingDate
     ? new Date(booking.bookingDate).toLocaleDateString("en-US", {
-        year: "numeric", month: "long", day: "numeric",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
-    : "-";
+    : "—";
 
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Confirm Your Trip</h1>
+        <h1 className={styles.title}>✈️ Аялал Баталгаажуулах</h1>
         <p className={styles.subtitle}>
-          Review your booking and complete payment to secure your reservation.
+          Захиалгаа баталгаажуулахын тулд доорх дансруу шилжүүлэлт хийнэ үү.
         </p>
 
+        {/* Booking Summary */}
         <div className={styles.summary}>
-          <h3 className={styles.sectionLabel}>Booking Details</h3>
+          <h3 className={styles.sectionLabel}>Захиалгын мэдээлэл</h3>
           <div className={styles.row}>
-            <span>Booking ID</span>
+            <span>Захиалгын дугаар</span>
             <strong>{booking.bookingId}</strong>
           </div>
           <div className={styles.row}>
-            <span>Package / Tour</span>
+            <span>Багц / Аялал</span>
             <strong>{booking.serviceName}</strong>
           </div>
           <div className={styles.row}>
-            <span>Travel Date</span>
+            <span>Амралтын огноо</span>
             <strong>{travelDate}</strong>
           </div>
           {booking.bookingTime && (
             <div className={styles.row}>
-              <span>Time</span>
+              <span>Цаг</span>
               <strong>{booking.bookingTime}</strong>
             </div>
           )}
           <div className={styles.row}>
-            <span>Guests</span>
+            <span>Хүний тоо</span>
             <strong>{booking.numberOfPeople}</strong>
           </div>
           {booking.duration && booking.duration !== "N/A" && (
             <div className={styles.row}>
-              <span>Duration</span>
+              <span>Үргэлжлэх хугацаа</span>
               <strong>{booking.duration}</strong>
             </div>
           )}
           {amount > 0 && (
             <div className={`${styles.row} ${styles.totalRow}`}>
-              <span>Total Amount</span>
-              <strong className={styles.amount}>${amount.toLocaleString()}</strong>
+              <span>Нийт дүн</span>
+              <strong className={styles.amount}>
+                ${amount.toLocaleString()}
+              </strong>
             </div>
           )}
         </div>
 
-        {payError && <p className={styles.errorMsg}>{payError}</p>}
+        {/* Bank Transfer Info */}
+        <div className={styles.bankBox}>
+          <h3 className={styles.sectionLabel}>💳 Шилжүүлэлтийн мэдээлэл</h3>
+          <div className={styles.row}>
+            <span>Банк</span>
+            <strong>Хаан Банк</strong>
+          </div>
+          <div className={styles.row}>
+            <span>Дансны дугаар</span>
+            <strong>5001234567</strong>
+          </div>
+          <div className={styles.row}>
+            <span>Эзэмшигч</span>
+            <strong>Total Grand Travel LLC</strong>
+          </div>
+          <div className={styles.row}>
+            <span>Гүйлгээний утга</span>
+            <strong>{booking.bookingId}</strong>
+          </div>
+          {amount > 0 && (
+            <div className={styles.row}>
+              <span>Шилжүүлэх дүн</span>
+              <strong>${amount.toLocaleString()}</strong>
+            </div>
+          )}
+          <p className={styles.bankNote}>
+            ⚠️ Гүйлгээний утга дотор захиалгын дугаарыг ({booking.bookingId})
+            заавал бичнэ үү.
+          </p>
+        </div>
 
-        <button
-          className={styles.payBtn}
-          onClick={handlePay}
-          disabled={redirecting}
-        >
-          {redirecting ? "Redirecting to Stripe..." : `Pay with Stripe - $${amount.toLocaleString()}`}
-        </button>
+        {/* Payment Confirmation Form */}
+        <form className={styles.form} onSubmit={handlePay}>
+          <h3 className={styles.sectionLabel}>Төлбөр баталгаажуулах</h3>
 
-        <p className={styles.stripeNote}>
-          Secured by Stripe. Your card details are never stored on this site.
-        </p>
+          <label className={styles.label}>
+            Имэйл хаяг <span className={styles.required}>*</span>
+            <input
+              className={styles.input}
+              type="email"
+              name="email"
+              placeholder="Захиалгадаа бүртгэсэн имэйл"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label className={styles.label}>
+            Гүйлгээний лавлах дугаар{" "}
+            <span className={styles.optional}>(заавал биш)</span>
+            <input
+              className={styles.input}
+              type="text"
+              name="transactionId"
+              placeholder="Банкны гүйлгээний дугаар"
+              value={form.transactionId}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label className={styles.label}>
+            Төлбөрийн хэлбэр
+            <select
+              className={styles.input}
+              name="paymentMethod"
+              value={form.paymentMethod}
+              onChange={handleChange}
+            >
+              <option value="bank_transfer">Банкны шилжүүлэлт</option>
+              <option value="cash">Бэлэн мөнгө</option>
+              <option value="card">Карт</option>
+              <option value="other">Бусад</option>
+            </select>
+          </label>
+
+          {payError && <p className={styles.payError}>{payError}</p>}
+
+          <button type="submit" className={styles.payBtn} disabled={submitting}>
+            {submitting ? "Баталгаажуулж байна..." : "✅ Төлбөр баталгаажуулах"}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -5,8 +5,7 @@ const {
   getUserBookings,
   getBookingById,
   getBookingByRef,
-  createCheckoutSession,
-  verifyCheckout,
+  payBooking,
   updateBooking,
   cancelBooking,
   deleteBooking,
@@ -19,9 +18,8 @@ const router = express.Router();
 
 // Public routes
 router.post("/", createBooking);
-router.get("/pay/:bookingId", getBookingByRef);               // fetch booking info for payment page
-router.post("/create-checkout-session", createCheckoutSession); // Stripe: create hosted checkout
-router.post("/verify-checkout", verifyCheckout);               // Stripe: verify + mark paid + emails
+router.get("/pay/:bookingId", getBookingByRef); // fetch booking info for payment page
+router.post("/pay", payBooking); // mark as paid + send final email
 
 // Admin routes - specific routes BEFORE generic /:id
 router.get("/", protect, getAllBookings);
