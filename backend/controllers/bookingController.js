@@ -3,15 +3,7 @@ const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-<<<<<<< Updated upstream
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.error("[FATAL] STRIPE_SECRET_KEY environment variable is not set. Payment features will not work.");
-}
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
-  : null;
-=======
->>>>>>> Stashed changes
+
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
@@ -19,126 +11,7 @@ const {
   sendBookingDeclinedEmail,
 } = require("../config/emailService");
 
-<<<<<<< Updated upstream
-// Create Stripe Checkout Session — redirects user to Stripe-hosted payment page
-exports.createCheckoutSession = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
-  }
-  try {
-    const { bookingId } = req.body;
-    if (!bookingId) {
-      return res.status(400).json({ success: false, message: "bookingId is required" });
-    }
-    const booking = await Booking.findOne({ bookingId });
-    if (!booking) {
-      return res.status(404).json({ success: false, message: "Booking not found" });
-    }
-    if (booking.status !== "approved") {
-      return res.status(400).json({ success: false, message: "Захиалга зөвшөөрөгдөөгүй байна" });
-    }
-    if (booking.paymentStatus === "paid") {
-      return res.status(400).json({ success: false, message: "Энэ захиалгын төлбөр аль хэдийн төлөгдсөн" });
-    }
 
-    const raw = booking.totalPrice || booking.price * booking.numberOfPeople || booking.price || 0;
-    const amountInCents = Math.max(Math.round(raw * 100), 50);
-    const frontendUrl = process.env.FRONTEND_URL || "https://itravelmongolia.com";
-    const travelDate = new Date(booking.bookingDate).toLocaleDateString("en-US", {
-      year: "numeric", month: "long", day: "numeric",
-    });
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      customer_email: booking.email,
-      line_items: [{
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `✈️ ${booking.serviceName}`,
-            description: `Захиалга #${booking.bookingId} · ${travelDate} · ${booking.numberOfPeople} хүн`,
-          },
-          unit_amount: amountInCents,
-        },
-        quantity: 1,
-      }],
-      mode: "payment",
-      metadata: { bookingId: booking.bookingId },
-      success_url: `${frontendUrl}/payment/success?bookingId=${booking.bookingId}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${frontendUrl}/payment?bookingId=${booking.bookingId}`,
-    });
-
-    res.status(200).json({ success: true, url: session.url });
-  } catch (error) {
-    console.error("createCheckoutSession error:", error);
-    res.status(500).json({ success: false, message: "Checkout session үүсгэхэд алдаа гарлаа", error: error.message });
-  }
-};
-
-// Verify Stripe Checkout Session + mark paid + send emails
-exports.verifyCheckout = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
-  }
-  try {
-    const { bookingId, sessionId } = req.body;
-    if (!bookingId || !sessionId) {
-      return res.status(400).json({ success: false, message: "bookingId and sessionId are required" });
-    }
-
-    // Verify with Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.payment_status !== "paid") {
-      return res.status(400).json({ success: false, message: "Stripe төлбөр амжилтгүй байна" });
-    }
-    if (session.metadata?.bookingId !== bookingId) {
-      return res.status(403).json({ success: false, message: "Session энэ захиалгатай таарахгүй байна" });
-    }
-
-    const booking = await Booking.findOne({ bookingId });
-    if (!booking) {
-      return res.status(404).json({ success: false, message: "Захиалга олдсонгүй" });
-    }
-    // Idempotent — already paid is fine
-    if (booking.paymentStatus === "paid") {
-      return res.status(200).json({ success: true, alreadyPaid: true, data: booking });
-    }
-
-    booking.paymentStatus = "paid";
-    booking.paymentMethod = "stripe";
-    booking.transactionId = session.payment_intent || sessionId;
-    booking.updatedAt = Date.now();
-    await booking.save();
-
-    // Emails
-    try {
-      const bookingDetails = {
-        bookingId: booking.bookingId,
-        packageName: booking.serviceName,
-        travelDate: new Date(booking.bookingDate).toLocaleDateString("en-US", {
-          year: "numeric", month: "long", day: "numeric",
-        }),
-        bookingTime: booking.bookingTime || "",
-        numberOfPeople: booking.numberOfPeople,
-        duration: booking.duration || "N/A",
-        totalPrice: booking.totalPrice || booking.price,
-      };
-      await sendPaymentSuccessEmail(booking.email, booking.fullName, bookingDetails);
-      await sendAdminPaymentNotification(bookingDetails, booking.fullName, booking.email);
-      console.log("✅ Payment confirmed — emails sent for", bookingId);
-    } catch (emailErr) {
-      console.error("Email error (payment confirmed):", emailErr.message);
-    }
-
-    res.status(200).json({ success: true, data: booking });
-  } catch (error) {
-    console.error("verifyCheckout error:", error);
-    res.status(500).json({ success: false, message: "Баталгаажуулахад алдаа гарлаа", error: error.message });
-  }
-};
-
-=======
->>>>>>> Stashed changes
 // Create Booking (Client)
 exports.createBooking = async (req, res) => {
   try {
@@ -757,9 +630,6 @@ exports.getBookingByRef = async (req, res) => {
 
 // Pay Booking (public — called from payment page after user confirms payment)
 exports.payBooking = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).json({ success: false, message: "Stripe is not configured. STRIPE_SECRET_KEY is missing." });
-  }
   try {
     const { bookingId, email, transactionId, paymentMethod } = req.body;
 
