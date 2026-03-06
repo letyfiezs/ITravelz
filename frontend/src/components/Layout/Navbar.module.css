@@ -318,6 +318,9 @@ html[data-theme="dark"] .dropLogout:hover {
 .mobileAuth {
   display: none;
 }
+.mobileLang {
+  display: none;
+}
 
 /* Hamburger */
 .hamburger {
@@ -407,6 +410,39 @@ html[data-theme="dark"] .dropLogout:hover {
     flex: 1;
     text-align: center;
   }
+  .mobileLang {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .mobileLangBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mobileLangBtn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .mobileLangActive {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light, #eff6ff);
+  }
+  .mobileLangActive i {
+    font-size: 0.75rem;
+  }
   .overlay {
     display: block;
   }
@@ -415,8 +451,5 @@ html[data-theme="dark"] .dropLogout:hover {
 @media (max-width: 600px) {
   .logo {
     margin-right: 0;
-  }
-  .actions .langBtn {
-    display: none;
   }
 }

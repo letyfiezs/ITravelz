@@ -34,6 +34,7 @@ export const authService = {
   resetPassword: (token, data) =>
     api.post(`/auth/reset-password/${token}`, data),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
+  resendVerification: (email) => api.post('/auth/resend-verification', { email }),
 };
 
 export const packageService = {

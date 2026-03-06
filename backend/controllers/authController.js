@@ -751,6 +751,37 @@ exports.verifyEmailByToken = async (req, res) => {
   }
 };
 
+// Resend verification email
+exports.resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || user.isEmailVerified) {
+      // Don't reveal existence; if already verified, still return generic message
+      return res.json({ success: true, message: "If this email is registered and unverified, a new verification link has been sent." });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenHash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+
+    user.emailVerificationToken = verificationTokenHash;
+    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+    await user.save();
+
+    const frontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://itravelmongolia.com";
+    const verificationLink = `${frontendUrl}/verify-email/${verificationToken}`;
+
+    await sendVerificationEmail(user.email, user.name, verificationToken, verificationLink);
+
+    res.json({ success: true, message: "Verification email sent. Please check your inbox." });
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    res.status(500).json({ success: false, message: "Error sending verification email" });
+  }
+};
+
 // Reset password with token in URL param (React frontend: POST /reset-password/:token)
 exports.resetPasswordWithToken = async (req, res) => {
   try {

@@ -120,6 +120,20 @@ export default function Navbar() {
               </>
             )}
           </div>
+
+          {/* Mobile language switcher */}
+          <div className={styles.mobileLang}>
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                className={`${styles.mobileLangBtn} ${language === lang.code ? styles.mobileLangActive : ""}`}
+                onClick={() => { setLanguage(lang.code); setMenuOpen(false); }}
+              >
+                <span>{lang.label}</span>
+                {language === lang.code && <i className="fas fa-check" />}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Desktop right controls */}

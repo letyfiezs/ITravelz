@@ -14,6 +14,7 @@ const {
   updateProfile,
   changePassword,
   uploadAvatar,
+  resendVerificationEmail,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -38,6 +39,7 @@ router.post("/reset-password/:token", resetPasswordWithToken);
 // Email verification — supports both query-string (email link) and URL-param (React frontend)
 router.get("/verify-email", verifyEmail);
 router.get("/verify-email/:token", verifyEmailByToken);
+router.post("/resend-verification", resendVerificationEmail);
 
 // ── Google OAuth ───────────────────────────────────────────────────────
 // Step 1: redirect to Google

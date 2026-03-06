@@ -12,17 +12,37 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('idle'); // idle | loading | sent | error
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setUnverifiedEmail('');
+    setResendStatus('idle');
     setLoading(true);
     const result = await login(form.email, form.password);
     setLoading(false);
     if (result.success) navigate(from, { replace: true });
-    else setError(result.message || 'Invalid email or password');
+    else {
+      setError(result.message || 'Invalid email or password');
+      if (result.message && result.message.toLowerCase().includes('verify')) {
+        setUnverifiedEmail(form.email);
+      }
+    }
+  };
+
+  const handleResend = async () => {
+    setResendStatus('loading');
+    try {
+      const { authService } = await import('../services/api');
+      await authService.resendVerification(unverifiedEmail);
+      setResendStatus('sent');
+    } catch {
+      setResendStatus('error');
+    }
   };
 
   return (
@@ -50,6 +70,24 @@ const Login = () => {
             <p>Sign in to your account to continue your journey</p>
           </div>
           {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle" />{error}</div>}
+          {unverifiedEmail && (
+            <div className="alert alert-warning" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span><i className="fas fa-envelope" style={{ marginRight: 6 }} />Email not verified yet.</span>
+              {resendStatus === 'sent' ? (
+                <span style={{ color: 'var(--success, green)', fontSize: '0.88rem' }}><i className="fas fa-check-circle" /> Verification email sent! Check your inbox.</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendStatus === 'loading'}
+                  style={{ alignSelf: 'flex-start', background: 'none', border: 'none', padding: 0, color: 'var(--primary)', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {resendStatus === 'loading' ? 'Sending...' : 'Resend verification email'}
+                </button>
+              )}
+              {resendStatus === 'error' && <span style={{ color: 'var(--error, red)', fontSize: '0.85rem' }}>Failed to send. Please try again.</span>}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className={styles.authForm}>
             <div className="form-group">
               <label>Email address</label>

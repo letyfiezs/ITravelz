@@ -79,6 +79,7 @@ const Profile = () => {
       await userService.changePassword({
         currentPassword: pwForm.currentPassword,
         newPassword: pwForm.newPassword,
+        confirmPassword: pwForm.newPassword,
       });
       setPwStatus("success");
       setPwMsg("Password changed successfully.");
