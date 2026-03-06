@@ -3,26 +3,17 @@ const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.error("[WARN] STRIPE_SECRET_KEY not set — payment endpoints will return 503.");
-}
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
-  : null;
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
   sendPaymentSuccessEmail,
+  sendAdminPaymentNotification,
   sendBookingDeclinedEmail,
 } = require("../config/emailService");
 
-// ─── Stripe: Create Checkout Session ─────────────────────────────────────────
+// Create Stripe Checkout Session — redirects user to Stripe-hosted payment page
 exports.createCheckoutSession = async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ success: false, message: "Payment service is not configured." });
-  }
   try {
     const { bookingId } = req.body;
     if (!bookingId) {
@@ -33,10 +24,10 @@ exports.createCheckoutSession = async (req, res) => {
       return res.status(404).json({ success: false, message: "Booking not found" });
     }
     if (booking.status !== "approved") {
-      return res.status(400).json({ success: false, message: "Booking has not been approved yet." });
+      return res.status(400).json({ success: false, message: "Захиалга зөвшөөрөгдөөгүй байна" });
     }
     if (booking.paymentStatus === "paid") {
-      return res.status(400).json({ success: false, message: "This booking has already been paid." });
+      return res.status(400).json({ success: false, message: "Энэ захиалгын төлбөр аль хэдийн төлөгдсөн" });
     }
 
     const raw = booking.totalPrice || booking.price * booking.numberOfPeople || booking.price || 0;
@@ -69,33 +60,32 @@ exports.createCheckoutSession = async (req, res) => {
     res.status(200).json({ success: true, url: session.url });
   } catch (error) {
     console.error("createCheckoutSession error:", error);
-    res.status(500).json({ success: false, message: "Failed to create checkout session.", error: error.message });
+    res.status(500).json({ success: false, message: "Checkout session үүсгэхэд алдаа гарлаа", error: error.message });
   }
 };
 
-// ─── Stripe: Verify Checkout Session ─────────────────────────────────────────
+// Verify Stripe Checkout Session + mark paid + send emails
 exports.verifyCheckout = async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ success: false, message: "Payment service is not configured." });
-  }
   try {
     const { bookingId, sessionId } = req.body;
     if (!bookingId || !sessionId) {
       return res.status(400).json({ success: false, message: "bookingId and sessionId are required" });
     }
 
+    // Verify with Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
-      return res.status(400).json({ success: false, message: "Stripe payment was not successful." });
+      return res.status(400).json({ success: false, message: "Stripe төлбөр амжилтгүй байна" });
     }
     if (session.metadata?.bookingId !== bookingId) {
-      return res.status(403).json({ success: false, message: "Session does not match this booking." });
+      return res.status(403).json({ success: false, message: "Session энэ захиалгатай таарахгүй байна" });
     }
 
     const booking = await Booking.findOne({ bookingId });
     if (!booking) {
-      return res.status(404).json({ success: false, message: "Booking not found." });
+      return res.status(404).json({ success: false, message: "Захиалга олдсонгүй" });
     }
+    // Idempotent — already paid is fine
     if (booking.paymentStatus === "paid") {
       return res.status(200).json({ success: true, alreadyPaid: true, data: booking });
     }
@@ -106,6 +96,7 @@ exports.verifyCheckout = async (req, res) => {
     booking.updatedAt = Date.now();
     await booking.save();
 
+    // Emails
     try {
       const bookingDetails = {
         bookingId: booking.bookingId,
@@ -119,7 +110,8 @@ exports.verifyCheckout = async (req, res) => {
         totalPrice: booking.totalPrice || booking.price,
       };
       await sendPaymentSuccessEmail(booking.email, booking.fullName, bookingDetails);
-      console.log("✅ Stripe payment confirmed — email sent for", bookingId);
+      await sendAdminPaymentNotification(bookingDetails, booking.fullName, booking.email);
+      console.log("✅ Payment confirmed — emails sent for", bookingId);
     } catch (emailErr) {
       console.error("Email error (payment confirmed):", emailErr.message);
     }
@@ -127,10 +119,11 @@ exports.verifyCheckout = async (req, res) => {
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
     console.error("verifyCheckout error:", error);
-    res.status(500).json({ success: false, message: "Verification failed.", error: error.message });
+    res.status(500).json({ success: false, message: "Баталгаажуулахад алдаа гарлаа", error: error.message });
   }
 };
 
+// Create Booking (Client)
 exports.createBooking = async (req, res) => {
   try {
     // Try to extract the authenticated userId from the Bearer token if present
@@ -301,23 +294,16 @@ exports.createBooking = async (req, res) => {
     if (booking.email) {
       try {
         await sendBookingConfirmationEmail(booking.email, booking.fullName, {
-          bookingId: booking.bookingId,
+          bookingId:   booking.bookingId,
           packageName: booking.serviceName,
-          duration: booking.duration,
-          travelDate: booking.bookingDate
-            ? booking.bookingDate.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
+          duration:    booking.duration,
+          travelDate:  booking.bookingDate
+            ? booking.bookingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
             : finalBookingDate,
         });
         console.log("✅ Confirmation email sent to", booking.email);
       } catch (emailErr) {
-        console.error(
-          "Confirmation email error (non-critical):",
-          emailErr.message,
-        );
+        console.error("Confirmation email error (non-critical):", emailErr.message);
       }
     }
 
@@ -402,11 +388,13 @@ exports.getUserBookings = async (req, res) => {
     });
   } catch (error) {
     console.error("Get user bookings error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching your bookings",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching your bookings",
+        error: error.message,
+      });
   }
 };
 
@@ -741,11 +729,108 @@ exports.getBookingByRef = async (req, res) => {
     });
   } catch (error) {
     console.error("getBookingByRef error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching booking",
-      error: error.message,
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching booking",
+        error: error.message,
+      });
+  }
+};
+
+// Pay Booking (public — called from payment page after Stripe confirms payment)
+exports.payBooking = async (req, res) => {
+  try {
+    const { bookingId, email, paymentIntentId } = req.body;
+
+    if (!bookingId || !email || !paymentIntentId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "bookingId, email, and paymentIntentId are required" });
+    }
+
+    // Verify with Stripe that the payment actually succeeded
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({ success: false, message: "Stripe payment not completed" });
+    }
+    if (paymentIntent.metadata?.bookingId !== bookingId) {
+      return res.status(403).json({ success: false, message: "Payment does not match this booking" });
+    }
+
+    const booking = await Booking.findOne({ bookingId });
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+    if (booking.email.toLowerCase() !== email.toLowerCase()) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Email does not match this booking" });
+    }
+    if (booking.status !== "approved") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Booking is not yet approved" });
+    }
+    if (booking.paymentStatus === "paid") {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "This booking has already been paid",
+        });
+    }
+
+    booking.paymentStatus = "paid";
+    booking.paymentMethod = "stripe";
+    booking.transactionId = paymentIntentId;
+    booking.updatedAt = Date.now();
+    await booking.save();
+
+    // Send final trip-confirmed email
+    try {
+      const bookingDetails = {
+        bookingId: booking.bookingId,
+        packageName: booking.serviceName,
+        travelDate: new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        bookingTime: booking.bookingTime || "",
+        numberOfPeople: booking.numberOfPeople,
+        duration: booking.duration || "N/A",
+      };
+      await sendPaymentSuccessEmail(booking.email, booking.fullName, bookingDetails);
+      console.log("✅ Trip confirmed — final email sent to", booking.email);
+
+      // Notify admin
+      await sendAdminPaymentNotification(bookingDetails, booking.fullName, booking.email);
+      console.log("✅ Admin payment notification sent");
+    } catch (emailErr) {
+      console.log("Final confirmation email failed but payment saved:", emailErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment confirmed! Confirmation email sent.",
+      data: {
+        bookingId: booking.bookingId,
+        paymentStatus: booking.paymentStatus,
+      },
     });
+  } catch (error) {
+    console.error("payBooking error:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error processing payment",
+        error: error.message,
+      });
   }
 };
 
