@@ -31,10 +31,17 @@ passport.use(
             user.googleId     = profile.id;
             user.authProvider = 'google';
             if (!user.avatar && avatar) user.avatar = avatar;
-              // Google has verified this email, so mark it verified
-              user.isEmailVerified = true;
-              user.emailVerificationToken = undefined;
-              user.emailVerificationExpires = undefined;
+            // Google has verified this email, so mark it verified
+            user.isEmailVerified = true;
+            user.emailVerificationToken = undefined;
+            user.emailVerificationExpires = undefined;
+            await user.save();
+            return done(null, user);
+          }
+        }
+
+        // 3) brand new user via Google
+        user = await User.create({
           name,
           email,
           googleId:     profile.id,
