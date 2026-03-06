@@ -48,6 +48,16 @@ html[data-theme="dark"] .header.scrolled {
   width: auto;
   object-fit: contain;
 }
+.logoText {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+.logoText em {
+  font-style: normal;
+  color: var(--accent);
+}
 
 /* Nav links */
 .nav {

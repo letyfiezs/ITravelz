@@ -75,6 +75,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className={styles.logo}>
           <img src="/logo.png" alt="ITravel" className={styles.logoImg} />
+          <span className={styles.logoText}>
+            I<em>Travel</em>
+          </span>
         </Link>
 
         {/* Desktop nav */}
