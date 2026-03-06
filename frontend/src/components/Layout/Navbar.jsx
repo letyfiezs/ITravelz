@@ -74,12 +74,7 @@ export default function Navbar() {
       <div className={`${styles.inner} container`}>
         {/* Logo */}
         <Link to="/" className={styles.logo}>
-          <span className={styles.logoIcon}>
-            <i className="fas fa-plane-departure" />
-          </span>
-          <span className={styles.logoText}>
-            I<em>Travel</em>
-          </span>
+          <img src="/logo.png" alt="ITravel" className={styles.logoImg} />
         </Link>
 
         {/* Desktop nav */}
