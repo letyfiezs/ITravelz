@@ -194,7 +194,7 @@ exports.chat = async (req, res) => {
 
     switch (intent) {
       case 'greeting':
-        reply = `👋 Hi there! Welcome to iTravel Mongolia!\n\nI'm your travel assistant. Here's what I can help with:\n\n• 🌍 **Tours & Packages** — what tours are available?\n• 💵 **Pricing** — tour costs & budgets\n• 🗺 **Itineraries** — day-by-day schedules\n• ✈️ **Destinations** — where to travel\n• 📞 **Contact** — reach our travel experts\n\nWhat would you like to know? 😊`;
+        reply = `👋 Сайн байна уу! ITravelz-д тавтай морил!\n\nБи таны аялалын туслах бот байна. Дараах зүйлсийн талаар асууж болно:\n\n• 🌍 **Аялалууд** — ямар tour байна?\n• 💵 **Үнэ** — аялалын зардал\n• 🗺 **Хөтөлбөрүүд** — itinerary\n• ✈️ **Газрууд** — хаана аялах\n• 📞 **Холбогдох** — бидэнтэй уулзах\n\nЮу асуух вэ? 😊`;
         break;
 
       case 'farewell':
@@ -246,32 +246,31 @@ exports.chat = async (req, res) => {
         break;
 
       case 'help':
-        reply = `🤖 **I can help you with:**\n\n• 🌍 Browse tours & packages\n• 💵 Check prices & budgets\n• ✈️ Explore destinations\n• 🗺 View tour itineraries\n• 📋 How to book\n• 🛎 Services we offer\n• 📞 Contact our team\n\nExample questions:\n_"What tours are available?"_\n_"How much is the Gobi Desert tour?"_\n_"How do I book a tour?"_`;
+        reply = `🤖 **Би дараах зүйлст тусалж чадна:**\n\n• 🌍 Аялалын жагсаалт харах\n• 💵 Үнэ лавлах\n• ✈️ Аялах газрууд\n• 🗺 Аялалын хөтөлбөр\n• 📋 Захиалга хийх заавар\n• 🛎 Үйлчилгээний мэдээлэл\n• 📞 Холбоо барих\n\nЖишээ асуултууд:\n_"Ямар аялал байна вэ?"_\n_"Bali tour хэд вэ?"_\n_"Захиалга хэрхэн хийх вэ?"_`;
         break;
 
       default: {
-        // Fuzzy search: check if message contains any package/destination name
         const lower2 = message.toLowerCase();
         const pkgHints = packages.filter((p) =>
           lower2.includes(p.destination?.toLowerCase() || '') ||
-          lower2.includes(p.category?.toLowerCase() || '')
+          lower2.includes(p.category?.toLowerCase() || '') ||
+          lower2.includes(p.name?.toLowerCase() || '')
         );
         if (pkgHints.length) {
-          reply = `🔍 Таны хайлттай холбоотой аялалууд:\n\n`;
+          reply = `🔍 **Matching tours:**\n\n`;
           pkgHints.slice(0, 4).forEach((p, i) => {
             reply += `${i + 1}. **${p.name}** — $${Number(p.price).toLocaleString()} · ${p.destination || '—'}\n`;
           });
-          reply += `\n👉 **[Бүх аялал харах](/packages)**`;
+          reply += `\n👉 **[View all tours](/packages)**`;
         } else {
-          // Language-aware fallback
-          const fallbacks = {
-            mn: `🤔 Уучлаарай, тодорхой хариулт өгч чадахгүй байна.\n\n• _"Ямар tours байна вэ?"_\n• _"Үнэ хэд вэ?"_\n• _"Захиалга хийх"_\n\n👉 **[Бидэнтэй холбогдох](/contact)**`,
-            de: `🤔 Das konnte ich nicht beantworten.\n\n• _"Welche Touren gibt es?"_\n• _"Was kosten die Touren?"_\n\n👉 **[Alle Touren](/packages)** · **[Kontakt](/contact)**`,
-            ko: `🤔 잘 이해하지 못했습니다.\n\n• _"어떤 투어가 있나요?"_\n• _"투어 가격은 얼마인가요?"_\n\n👉 **[전체 투어](/packages)** · **[연락하기](/contact)**`,
-            ja: `🤔 申し訳ありませんが、理解できませんでした。\n\n• _"どんなツアーがありますか？"_\n• _"料金はいくらですか？"_\n\n👉 **[全ツアー](/packages)** · **[お問い合わせ](/contact)**`,
-            zh: `🤔 抱歉，我不太理解您的问题。\n\n• _"有哪些行程？"_\n• _"费用是多少？"_\n\n👉 **[全部行程](/packages)** · **[联系我们](/contact)**`,
+          const fallback = {
+            mn: '🤔 Уучлаарай, тодорхой хариулт өгч чадахгүй байна.\n\n• _"Ямар tour байна вэ?"_\n• _"Үнэ хэд вэ?"_\n• _"Захиалга хийх"_\n\n👉 **[Бүх аялал](/packages)** · **[Холбогдох](/contact)**',
+            de: '🤔 Entschuldigung, das konnte ich nicht beantworten.\n\n• _"Welche Touren gibt es?"_\n• _"Wie viel kostet eine Tour?"_\n\n👉 **[Alle Touren](/packages)** · **[Kontakt](/contact)**',
+            ko: '🤔 잘 이해하지 못했습니다.\n\n• _"어떤 투어가 있나요?"_\n• _"가격은 얼마인가요?"_\n\n👉 **[전체 투어](/packages)** · **[연락하기](/contact)**',
+            ja: '🤔 申し訳ありませんが、理解できませんでした。\n\n• _"どんなツアーがありますか？"_\n• _"料金はいくらですか？"_\n\n👉 **[全ツアー](/packages)** · **[お問い合わせ](/contact)**',
+            zh: '🤔 抱歉，我不太理解您的问题。\n\n• _"有哪些行程？"_\n• _"费用是多少？"_\n\n👉 **[全部行程](/packages)** · **[联系我们](/contact)**',
           };
-          reply = fallbacks[language] || `🤔 I'm not sure about that, but here are things I can help with:\n• _"What tours are available?"_\n• _"How much do tours cost?"_\n• _"How do I book a tour?"_\n\n📞 **[Contact our travel experts](/contact)**`;
+          reply = fallback[language] || `🤔 I'm not sure about that.\n\n• _"What tours are available?"_\n• _"How much do tours cost?"_\n• _"How do I book?"_\n\n👉 **[Browse tours](/packages)** · **[Contact us](/contact)**`;
         }
       }
     }
@@ -287,17 +286,15 @@ exports.chat = async (req, res) => {
 // OpenAI system prompt builder
 // ─────────────────────────────────────────────
 function buildSystemPrompt(packages, itineraries, destinations, services, language = 'en') {
-  const LANG_NAMES = { en: 'English', mn: 'Mongolian', de: 'German', ko: 'Korean', ja: 'Japanese', zh: 'Chinese' };
-  const langName = LANG_NAMES[language] || 'English';
-
+  const LANG = { en: 'English', mn: 'Mongolian', de: 'German', ko: 'Korean', ja: 'Japanese', zh: 'Chinese' };
+  const langName = LANG[language] || 'English';
   let prompt = `You are iTravel Mongolia's friendly AI travel assistant.
-IMPORTANT: Respond ONLY in ${langName}. Always use ${langName} in every response regardless of what language the user writes in.
+IMPORTANT: Always respond in ${langName} only, regardless of what language the user writes in.
 Be helpful, concise, and enthusiastic about Mongolia travel. Use emojis appropriately.
-Focus on tours, packages, itineraries, pricing, and travel information specific to Mongolia.
 
 AVAILABLE PACKAGES (${packages.length} total, live from database):
 ${packages.slice(0, 15).map((p) =>
-  `- ${p.name}: $${p.price}/person, ${p.duration}, destination: ${p.destination}, category: ${p.category}`
+  `- ${p.name}: $${p.price}/person, ${p.duration}, ${p.destination}, category: ${p.category}`
 ).join('\n')}
 
 AVAILABLE DESTINATIONS (${destinations.length} total):
@@ -310,8 +307,8 @@ ${itineraries.slice(0, 10).map((it) =>
   `- ${it.title}: ${it.duration}, ${it.locations}${it.price ? `, $${it.price}` : ''}`
 ).join('\n')}
 
-When recommending specific packages, always include price and booking link: [Book ${'{name}'}](/packages/${'{id}'}).
-For listings link to: /packages, /itineraries, /destinations.
+When recommending packages, include price and booking link: [Book ${'{name}'}](/booking?package=${'{id}'}).
+For listings: /packages, /itineraries, /destinations.
 Keep responses under 250 words.`;
   return prompt;
 }

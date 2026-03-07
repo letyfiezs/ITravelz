@@ -4,199 +4,184 @@ import { chatService, packageService } from '../../services/api';
 import { useLanguage } from '../../hooks/useContext';
 import styles from './ChatWidget.module.css';
 
-// ── Per-language flow translations ───────────────────────────
-const FLOW_T = {
+// ── Company contact info (mirrors Contact.jsx) ────────────────
+const CONTACT = {
+  email:    'grandtravelmongolia@gmail.com',
+  phone:    '+976 77088055',
+  facebook: 'https://www.facebook.com/profile.php?id=100068557103724',
+  hours:    'Everyday 24/7',
+};
+
+// ── Flow translations (6 languages) ──────────────────────────
+const L = {
   en: {
-    welcome:         "Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?",
-    yes_trip:        "Yes, planning a trip ✈️",
-    just_info:       "Just looking for information",
-    contact_expert:  "Contact travel expert",
-    tour_interest:   "Great! What type of tour are you interested in?",
-    custom_tour:     "Custom Private Tour 🎯",
-    travel_date:     "When are you planning to travel?",
-    jun_jul:         "June – July",
-    aug_sep:         "August – September",
-    flexible:        "Flexible dates",
-    not_sure:        "Not sure yet",
-    group_size:      "How many people will travel?",
-    solo:            "Solo traveler",
-    two:             "2 travelers",
-    three_five:      "3–5 travelers",
-    six_plus:        "6+ travelers",
-    tour_style:      "What type of tour style do you prefer?",
-    budget:          "Budget tour 💰",
-    standard:        "Standard tour ⭐",
-    luxury:          "Luxury tour 👑",
-    recommend_msg:   "Based on your preferences:\n✈️ **Tour**: {tourType}\n📅 **Date**: {travelDate}\n👥 **Group**: {groupSize}\n⭐ **Style**: {tourStyle}\n\nHere's our top recommendation for you!",
-    no_pkg_match:    "Here are our most popular tours that match your preferences!",
-    book_this:       "Book This Tour 🎯",
-    browse_all:      "Browse All Tours",
-    ask_question:    "Ask a Question 💬",
-    back_tours:      "← Choose different tour",
-    faq_msg:         "Feel free to ask any question about Mongolia travel, tours, or prices. I'm here to help! 😊",
-    contact_msg:     "Our travel experts are ready to help you plan your perfect Mongolia trip!\n\n📞 **[Contact us here](/contact)** — we respond within 24 hours.",
-    type_placeholder:"Ask a question…",
+    welcome:       'Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?',
+    opt_yes:       'Yes, planning a trip ✈️',
+    opt_info:      'Just looking for information',
+    opt_contact:   'Contact travel expert',
+    tour_q:        'Great! What type of tour are you interested in?',
+    custom_tour:   'Custom Private Tour 🎯',
+    date_q:        'When are you planning to travel?',
+    d1: 'June – July',   d2: 'August – September',
+    d3: 'Flexible dates', d4: 'Not sure yet',
+    size_q:        'How many people will travel?',
+    s1: 'Solo traveler',  s2: '2 travelers',
+    s3: '3–5 travelers',  s4: '6+ travelers',
+    style_q:       'What tour style do you prefer?',
+    st1: 'Budget tour 💰', st2: 'Standard tour ⭐', st3: 'Luxury tour 👑',
+    rec_msg:       'Based on your preferences:\n✈️ Tour: {tour}\n📅 Date: {date}\n👥 Group: {size}\n⭐ Style: {style}\n\nHere is our top recommendation:',
+    no_pkg:        'Here are our most popular Mongolia tours:',
+    btn_book:      'Book This Tour 🎯',
+    btn_all:       'Browse All Tours',
+    btn_back:      '← Choose Different Tour',
+    btn_ask:       'Ask a Question 💬',
+    faq_msg:       "Feel free to ask anything about Mongolia travel, tours, prices, or itineraries. I'm here to help! 😊",
+    contact_intro: "Here's how to reach our travel experts:",
+    placeholder:   'Ask a question…',
+    lang_reset:    'Language changed. Starting fresh!',
   },
   mn: {
-    welcome:         "Сайн уу 👋 iTravel Mongolia-д тавтай морил! Та Монгол руу аялахаар төлөвлөж байна уу?",
-    yes_trip:        "Тийм, аялал төлөвлөж байна ✈️",
-    just_info:       "Зөвхөн мэдээлэл авмаар байна",
-    contact_expert:  "Аяллын мэргэжилтэнтэй холбогдох",
-    tour_interest:   "Гайхалтай! Ямар аялалыг сонирхож байна вэ?",
-    custom_tour:     "Хувийн тусгай аялал 🎯",
-    travel_date:     "Та хэзээ аялахаар төлөвлөж байна вэ?",
-    jun_jul:         "6–7-р сар",
-    aug_sep:         "8–9-р сар",
-    flexible:        "Огноо уян хатан",
-    not_sure:        "Одоогоор мэдэхгүй",
-    group_size:      "Хэдэн хүн аялах вэ?",
-    solo:            "Ганцаар",
-    two:             "2 хүн",
-    three_five:      "3–5 хүн",
-    six_plus:        "6+ хүн",
-    tour_style:      "Ямар хэв маягийн аяллыг илүүд үздэг вэ?",
-    budget:          "Хэмнэлттэй аялал 💰",
-    standard:        "Стандарт аялал ⭐",
-    luxury:          "Тансаг аялал 👑",
-    recommend_msg:   "Таны сонголтууд:\n✈️ **Аялал**: {tourType}\n📅 **Огноо**: {travelDate}\n👥 **Хүн**: {groupSize}\n⭐ **Хэв маяг**: {tourStyle}\n\nТаны хувьд хамгийн тохиромжтой аялал:",
-    no_pkg_match:    "Таны сонголтод тохирсон хамгийн алдартай аялалуудыг харуулж байна!",
-    book_this:       "Энэ аяллыг захиалах 🎯",
-    browse_all:      "Бүх аялалыг үзэх",
-    ask_question:    "Асуулт асуух 💬",
-    back_tours:      "← Өөр аялал сонгох",
-    faq_msg:         "Монгол аялал, tour, үнийн талаар дурын асуулт асуугаарай. Тусалахад бэлэн! 😊",
-    contact_msg:     "Манай аяллын мэргэжилтнүүд таны Монгол аяллыг төлөвлөхөд тусалахад бэлэн байна!\n\n📞 **[Холбогдох хуудас](/contact)** — 24 цагийн дотор хариу өгнө.",
-    type_placeholder:"Асуулт асуух…",
+    welcome:       'Сайн уу 👋 iTravel Mongolia-д тавтай морил! Та Монгол руу аялахаар төлөвлөж байна уу?',
+    opt_yes:       'Тийм, аялал төлөвлөж байна ✈️',
+    opt_info:      'Зөвхөн мэдээлэл авмаар байна',
+    opt_contact:   'Аяллын мэргэжилтэнтэй холбогдох',
+    tour_q:        'Гайхалтай! Ямар аялалыг сонирхож байна вэ?',
+    custom_tour:   'Хувийн тусгай аялал 🎯',
+    date_q:        'Та хэзээ аялахаар төлөвлөж байна вэ?',
+    d1: '6–7-р сар',          d2: '8–9-р сар',
+    d3: 'Огноо уян хатан',    d4: 'Одоогоор мэдэхгүй',
+    size_q:        'Хэдэн хүн аялах вэ?',
+    s1: 'Ганцаар',    s2: '2 хүн',
+    s3: '3–5 хүн',    s4: '6+ хүн',
+    style_q:       'Ямар хэв маягийн аяллыг илүүд үздэг вэ?',
+    st1: 'Хэмнэлттэй аялал 💰', st2: 'Стандарт аялал ⭐', st3: 'Тансаг аялал 👑',
+    rec_msg:       'Таны сонголтууд:\n✈️ Аялал: {tour}\n📅 Огноо: {date}\n👥 Хүн: {size}\n⭐ Хэв маяг: {style}\n\nТаны хувьд хамгийн тохиромжтой аялал:',
+    no_pkg:        'Манай хамгийн алдартай аялалуудыг танилцуулъя:',
+    btn_book:      'Энэ аяллыг захиалах 🎯',
+    btn_all:       'Бүх аялалыг үзэх',
+    btn_back:      '← Өөр аялал сонгох',
+    btn_ask:       'Асуулт асуух 💬',
+    faq_msg:       'Монгол аялал, tour, үнэ, хөтөлбөрийн талаар дурын асуулт асуугаарай. Тусалахад бэлэн! 😊',
+    contact_intro: 'Манай аяллын мэргэжилтэдтэй холбогдох мэдээлэл:',
+    placeholder:   'Асуулт бичнэ үү…',
+    lang_reset:    'Хэл солигдлоо. Шинэчлэн эхэллээ!',
   },
   de: {
-    welcome:         "Hallo 👋 Willkommen bei iTravel Mongolia! Planen Sie eine Reise in die Mongolei?",
-    yes_trip:        "Ja, ich plane eine Reise ✈️",
-    just_info:       "Nur Informationen suchen",
-    contact_expert:  "Reiseexperten kontaktieren",
-    tour_interest:   "Toll! Für welche Touren interessieren Sie sich?",
-    custom_tour:     "Private Individualtour 🎯",
-    travel_date:     "Wann planen Sie zu reisen?",
-    jun_jul:         "Juni – Juli",
-    aug_sep:         "August – September",
-    flexible:        "Flexible Daten",
-    not_sure:        "Noch nicht sicher",
-    group_size:      "Wie viele Personen reisen?",
-    solo:            "Einzelreisender",
-    two:             "2 Reisende",
-    three_five:      "3–5 Reisende",
-    six_plus:        "6+ Reisende",
-    tour_style:      "Welchen Tourstil bevorzugen Sie?",
-    budget:          "Budget-Tour 💰",
-    standard:        "Standard-Tour ⭐",
-    luxury:          "Luxus-Tour 👑",
-    recommend_msg:   "Basierend auf Ihren Präferenzen:\n✈️ **Tour**: {tourType}\n📅 **Datum**: {travelDate}\n👥 **Gruppe**: {groupSize}\n⭐ **Stil**: {tourStyle}\n\nUnsere Top-Empfehlung für Sie!",
-    no_pkg_match:    "Hier sind unsere beliebtesten Touren, die zu Ihnen passen!",
-    book_this:       "Diese Tour buchen 🎯",
-    browse_all:      "Alle Touren ansehen",
-    ask_question:    "Frage stellen 💬",
-    back_tours:      "← Andere Tour wählen",
-    faq_msg:         "Stellen Sie gerne Fragen zu Mongolei-Reisen, Touren oder Preisen. Ich helfe Ihnen! 😊",
-    contact_msg:     "Unsere Experten helfen Ihnen gerne!\n\n📞 **[Kontakt hier](/contact)** — Antwort innerhalb von 24 Stunden.",
-    type_placeholder:"Frage stellen…",
+    welcome:       'Hallo 👋 Willkommen bei iTravel Mongolia! Planen Sie eine Reise in die Mongolei?',
+    opt_yes:       'Ja, ich plane eine Reise ✈️',
+    opt_info:      'Nur Informationen suchen',
+    opt_contact:   'Reiseexperten kontaktieren',
+    tour_q:        'Toll! Für welche Tour interessieren Sie sich?',
+    custom_tour:   'Private Individualtour 🎯',
+    date_q:        'Wann planen Sie zu reisen?',
+    d1: 'Juni – Juli',        d2: 'August – September',
+    d3: 'Flexible Daten',     d4: 'Noch nicht sicher',
+    size_q:        'Wie viele Personen reisen?',
+    s1: 'Einzelreisender',    s2: '2 Reisende',
+    s3: '3–5 Reisende',       s4: '6+ Reisende',
+    style_q:       'Welchen Tourstil bevorzugen Sie?',
+    st1: 'Budget-Tour 💰', st2: 'Standard-Tour ⭐', st3: 'Luxus-Tour 👑',
+    rec_msg:       'Ihre Präferenzen:\n✈️ Tour: {tour}\n📅 Datum: {date}\n👥 Gruppe: {size}\n⭐ Stil: {style}\n\nUnsere Top-Empfehlung:',
+    no_pkg:        'Hier sind unsere beliebtesten Touren:',
+    btn_book:      'Diese Tour buchen 🎯',
+    btn_all:       'Alle Touren ansehen',
+    btn_back:      '← Andere Tour wählen',
+    btn_ask:       'Frage stellen 💬',
+    faq_msg:       'Stellen Sie gerne Fragen zu Mongolei-Reisen, Touren oder Preisen. Ich helfe Ihnen! 😊',
+    contact_intro: 'So erreichen Sie unsere Reiseexperten:',
+    placeholder:   'Frage stellen…',
+    lang_reset:    'Sprache geändert. Neustart!',
   },
   ko: {
-    welcome:         "안녕하세요 👋 iTravel Mongolia에 오신 것을 환영합니다! 몽골 여행을 계획 중이신가요?",
-    yes_trip:        "네, 여행을 계획 중입니다 ✈️",
-    just_info:       "정보만 찾고 있습니다",
-    contact_expert:  "여행 전문가에게 연락",
-    tour_interest:   "훌륭합니다! 어떤 투어에 관심이 있으신가요?",
-    custom_tour:     "맞춤 프라이빗 투어 🎯",
-    travel_date:     "언제 여행할 예정인가요?",
-    jun_jul:         "6월 – 7월",
-    aug_sep:         "8월 – 9월",
-    flexible:        "날짜 유연",
-    not_sure:        "아직 모름",
-    group_size:      "몇 명이 여행하나요?",
-    solo:            "혼자 여행",
-    two:             "2명",
-    three_five:      "3–5명",
-    six_plus:        "6명 이상",
-    tour_style:      "어떤 투어 스타일을 선호하시나요?",
-    budget:          "알뜰 투어 💰",
-    standard:        "스탠다드 투어 ⭐",
-    luxury:          "럭셔리 투어 👑",
-    recommend_msg:   "선호도:\n✈️ **투어**: {tourType}\n📅 **날짜**: {travelDate}\n👥 **그룹**: {groupSize}\n⭐ **스타일**: {tourStyle}\n\n최고 추천 투어입니다!",
-    no_pkg_match:    "선호도에 맞는 인기 투어를 소개합니다!",
-    book_this:       "이 투어 예약하기 🎯",
-    browse_all:      "모든 투어 보기",
-    ask_question:    "질문하기 💬",
-    back_tours:      "← 다른 투어 선택",
-    faq_msg:         "몽골 여행, 투어, 가격에 대해 자유롭게 질문하세요. 도와드리겠습니다! 😊",
-    contact_msg:     "저희 전문가들이 완벽한 여행을 준비해 드립니다!\n\n📞 **[여기서 연락하기](/contact)** — 24시간 내 응답.",
-    type_placeholder:"질문을 입력하세요…",
+    welcome:       '안녕하세요 👋 iTravel Mongolia에 오신 것을 환영합니다! 몽골 여행을 계획 중이신가요?',
+    opt_yes:       '네, 여행을 계획 중입니다 ✈️',
+    opt_info:      '정보만 찾고 있습니다',
+    opt_contact:   '여행 전문가에게 연락',
+    tour_q:        '훌륭합니다! 어떤 투어에 관심이 있으신가요?',
+    custom_tour:   '맞춤 프라이빗 투어 🎯',
+    date_q:        '언제 여행할 예정인가요?',
+    d1: '6월 – 7월',   d2: '8월 – 9월',
+    d3: '날짜 유연',    d4: '아직 모름',
+    size_q:        '몇 명이 여행하나요?',
+    s1: '혼자 여행',   s2: '2명',
+    s3: '3–5명',      s4: '6명 이상',
+    style_q:       '어떤 투어 스타일을 선호하시나요?',
+    st1: '알뜰 투어 💰', st2: '스탠다드 투어 ⭐', st3: '럭셔리 투어 👑',
+    rec_msg:       '선호도:\n✈️ 투어: {tour}\n📅 날짜: {date}\n👥 그룹: {size}\n⭐ 스타일: {style}\n\n최고 추천 투어:',
+    no_pkg:        '인기 몽골 투어를 소개합니다:',
+    btn_book:      '이 투어 예약하기 🎯',
+    btn_all:       '모든 투어 보기',
+    btn_back:      '← 다른 투어 선택',
+    btn_ask:       '질문하기 💬',
+    faq_msg:       '몽골 여행, 투어, 가격에 대해 자유롭게 질문하세요. 도와드리겠습니다! 😊',
+    contact_intro: '여행 전문가 연락처:',
+    placeholder:   '질문을 입력하세요…',
+    lang_reset:    '언어가 변경되었습니다. 처음부터 시작합니다!',
   },
   ja: {
-    welcome:         "こんにちは 👋 iTravel Mongoliaへようこそ！モンゴル旅行をご計画中ですか？",
-    yes_trip:        "はい、旅行を計画しています ✈️",
-    just_info:       "情報を探しています",
-    contact_expert:  "旅行専門家に連絡",
-    tour_interest:   "素晴らしい！どのツアーに興味がありますか？",
-    custom_tour:     "プライベートカスタムツアー 🎯",
-    travel_date:     "いつ旅行を計画していますか？",
-    jun_jul:         "6月 – 7月",
-    aug_sep:         "8月 – 9月",
-    flexible:        "日程は柔軟",
-    not_sure:        "まだ未定",
-    group_size:      "何名で旅行しますか？",
-    solo:            "一人旅",
-    two:             "2名",
-    three_five:      "3〜5名",
-    six_plus:        "6名以上",
-    tour_style:      "ツアースタイルは？",
-    budget:          "バジェットツアー 💰",
-    standard:        "スタンダードツアー ⭐",
-    luxury:          "ラグジュアリーツアー 👑",
-    recommend_msg:   "ご希望:\n✈️ **ツアー**: {tourType}\n📅 **日程**: {travelDate}\n👥 **人数**: {groupSize}\n⭐ **スタイル**: {tourStyle}\n\nおすすめツアーをご紹介します！",
-    no_pkg_match:    "人気のツアーをご紹介します！",
-    book_this:       "このツアーを予約 🎯",
-    browse_all:      "全ツアーを見る",
-    ask_question:    "質問する 💬",
-    back_tours:      "← 別のツアーを選ぶ",
-    faq_msg:         "モンゴル旅行について何でもご質問ください。お手伝いします！ 😊",
-    contact_msg:     "専門家がお手伝いします！\n\n📞 **[お問い合わせはこちら](/contact)** — 24時間以内にご返信。",
-    type_placeholder:"質問を入力…",
+    welcome:       'こんにちは 👋 iTravel Mongoliaへようこそ！モンゴル旅行をご計画中ですか？',
+    opt_yes:       'はい、旅行を計画しています ✈️',
+    opt_info:      '情報を探しています',
+    opt_contact:   '旅行専門家に連絡',
+    tour_q:        '素晴らしい！どのツアーに興味がありますか？',
+    custom_tour:   'プライベートカスタムツアー 🎯',
+    date_q:        'いつ旅行を計画していますか？',
+    d1: '6月 – 7月',      d2: '8月 – 9月',
+    d3: '日程は柔軟',      d4: 'まだ未定',
+    size_q:        '何名で旅行しますか？',
+    s1: '一人旅',    s2: '2名',
+    s3: '3〜5名',    s4: '6名以上',
+    style_q:       'ツアースタイルは？',
+    st1: 'バジェットツアー 💰', st2: 'スタンダードツアー ⭐', st3: 'ラグジュアリーツアー 👑',
+    rec_msg:       'ご希望:\n✈️ ツアー: {tour}\n📅 日程: {date}\n👥 人数: {size}\n⭐ スタイル: {style}\n\nおすすめツアー:',
+    no_pkg:        '人気のモンゴルツアーをご紹介します:',
+    btn_book:      'このツアーを予約 🎯',
+    btn_all:       '全ツアーを見る',
+    btn_back:      '← 別のツアーを選ぶ',
+    btn_ask:       '質問する 💬',
+    faq_msg:       'モンゴル旅行について何でもご質問ください。お手伝いします！ 😊',
+    contact_intro: '旅行専門家への連絡先:',
+    placeholder:   '質問を入力…',
+    lang_reset:    '言語が変更されました。最初からやり直します！',
   },
   zh: {
-    welcome:         "您好 👋 欢迎来到iTravel Mongolia！您在计划去蒙古的旅行吗？",
-    yes_trip:        "是的，我在计划旅行 ✈️",
-    just_info:       "只是寻找信息",
-    contact_expert:  "联系旅行专家",
-    tour_interest:   "太好了！您对哪种旅游感兴趣？",
-    custom_tour:     "私人定制游 🎯",
-    travel_date:     "您计划什么时候旅行？",
-    jun_jul:         "6月 – 7月",
-    aug_sep:         "8月 – 9月",
-    flexible:        "日期灵活",
-    not_sure:        "还不确定",
-    group_size:      "几人出行？",
-    solo:            "独自旅行",
-    two:             "2人",
-    three_five:      "3–5人",
-    six_plus:        "6人以上",
-    tour_style:      "您偏好哪种旅游风格？",
-    budget:          "经济游 💰",
-    standard:        "标准游 ⭐",
-    luxury:          "豪华游 👑",
-    recommend_msg:   "您的偏好:\n✈️ **行程**: {tourType}\n📅 **日期**: {travelDate}\n👥 **人数**: {groupSize}\n⭐ **风格**: {tourStyle}\n\n这是我们为您推荐的最佳行程！",
-    no_pkg_match:    "这是符合您偏好的热门行程！",
-    book_this:       "预订此行程 🎯",
-    browse_all:      "浏览全部行程",
-    ask_question:    "提问 💬",
-    back_tours:      "← 选择其他行程",
-    faq_msg:         "欢迎随时提问关于蒙古旅行的任何问题。我来帮您！ 😊",
-    contact_msg:     "我们的专家随时准备为您服务！\n\n📞 **[点击联系我们](/contact)** — 24小时内回复。",
-    type_placeholder:"输入问题…",
+    welcome:       '您好 👋 欢迎来到iTravel Mongolia！您在计划去蒙古的旅行吗？',
+    opt_yes:       '是的，我在计划旅行 ✈️',
+    opt_info:      '只是寻找信息',
+    opt_contact:   '联系旅行专家',
+    tour_q:        '太好了！您对哪种旅游感兴趣？',
+    custom_tour:   '私人定制游 🎯',
+    date_q:        '您计划什么时候旅行？',
+    d1: '6月 – 7月',   d2: '8月 – 9月',
+    d3: '日期灵活',     d4: '还不确定',
+    size_q:        '几人出行？',
+    s1: '独自旅行',    s2: '2人',
+    s3: '3–5人',      s4: '6人以上',
+    style_q:       '您偏好哪种旅游风格？',
+    st1: '经济游 💰', st2: '标准游 ⭐', st3: '豪华游 👑',
+    rec_msg:       '您的偏好:\n✈️ 行程: {tour}\n📅 日期: {date}\n👥 人数: {size}\n⭐ 风格: {style}\n\n我们的推荐行程:',
+    no_pkg:        '这是我们最受欢迎的蒙古行程:',
+    btn_book:      '预订此行程 🎯',
+    btn_all:       '浏览全部行程',
+    btn_back:      '← 选择其他行程',
+    btn_ask:       '提问 💬',
+    faq_msg:       '欢迎随时提问关于蒙古旅行的任何问题。我来帮您！ 😊',
+    contact_intro: '联系我们的旅行专家:',
+    placeholder:   '输入问题…',
+    lang_reset:    '语言已更改，重新开始！',
   },
 };
 
-// ── Markdown renderer ────────────────────────────────────────
-const renderText = (text) =>
-  text.split('\n').map((line, li, arr) => {
+const t = (lang, key, vars = {}) => {
+  let str = (L[lang] || L.en)[key] || (L.en[key] || key);
+  Object.entries(vars).forEach(([k, v]) => { str = str.replaceAll(`{${k}}`, v); });
+  return str;
+};
+
+// ── Markdown renderer (bold + links) ─────────────────────────
+const renderText = (text) => {
+  const lines = text.split('\n');
+  return lines.map((line, li) => {
     const parts = line.split(/(\*\*[^*]+\*\*)/g).map((p, i) => {
       if (p.startsWith('**') && p.endsWith('**'))
         return <strong key={i}>{p.slice(2, -2)}</strong>;
@@ -216,8 +201,9 @@ const renderText = (text) =>
       if (last < p.length) chunks.push(p.slice(last));
       return chunks.length ? chunks : p;
     });
-    return <span key={li}>{parts}{li < arr.length - 1 && <br />}</span>;
+    return <span key={li}>{parts}{li < lines.length - 1 && <br />}</span>;
   });
+};
 
 const TypingDots = () => (
   <div className={styles.typingWrap}>
@@ -228,31 +214,62 @@ const TypingDots = () => (
   </div>
 );
 
-// ── ChatWidget ───────────────────────────────────────────────
+// ── Package card inside chat ──────────────────────────────────
+const PkgCard = ({ pkg, onBook, lang }) => (
+  <div className={styles.pkgCard}>
+    {pkg.image && <img src={pkg.image} alt={pkg.name} className={styles.pkgImg} />}
+    <div className={styles.pkgBody}>
+      <div className={styles.pkgName}>{pkg.name}</div>
+      <div className={styles.pkgMeta}>
+        {pkg.destination && <span>📍 {pkg.destination}</span>}
+        {pkg.duration    && <span>⏱ {pkg.duration}</span>}
+        <span className={styles.pkgPrice}>💵 ${Number(pkg.price).toLocaleString()}</span>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Contact info card ─────────────────────────────────────────
+const ContactCard = () => (
+  <div className={styles.contactCard}>
+    <a className={styles.contactRow} href={`mailto:${CONTACT.email}`}>
+      <i className="fas fa-envelope" style={{ color: '#6c63ff' }} />
+      <span>{CONTACT.email}</span>
+    </a>
+    <a className={styles.contactRow} href={`tel:${CONTACT.phone}`}>
+      <i className="fas fa-phone" style={{ color: '#22c55e' }} />
+      <span>{CONTACT.phone}</span>
+    </a>
+    <a className={styles.contactRow} href={CONTACT.facebook} target="_blank" rel="noopener noreferrer">
+      <i className="fab fa-facebook-f" style={{ color: '#1877f2' }} />
+      <span>Facebook</span>
+    </a>
+    <div className={styles.contactRow}>
+      <i className="fas fa-clock" style={{ color: '#f59e0b' }} />
+      <span>{CONTACT.hours}</span>
+    </div>
+  </div>
+);
+
+// ── ChatWidget ─────────────────────────────────────────────────
 const ChatWidget = () => {
-  const { language } = useLanguage();
-  const navigate     = useNavigate();
+  const { language }   = useLanguage();
+  const navigate       = useNavigate();
 
-  // Translation helper
-  const lt = useCallback((key) => FLOW_T[language]?.[key] ?? FLOW_T.en[key] ?? key, [language]);
-  const lformat = useCallback((key, vars = {}) => {
-    let s = lt(key);
-    Object.entries(vars).forEach(([k, v]) => { s = s.replaceAll(`{${k}}`, v); });
-    return s;
-  }, [lt]);
-
-  const [open,      setOpen]      = useState(false);
-  const [flowStep,  setFlowStep]  = useState('welcome');
-  const [flowData,  setFlowData]  = useState({ tourType: '', travelDate: '', groupSize: '', tourStyle: '' });
-  const [packages,  setPackages]  = useState([]);
-  const [messages,  setMessages]  = useState([]);
-  const [input,     setInput]     = useState('');
-  const [typing,    setTyping]    = useState(false);
-  const [unread,    setUnread]    = useState(0);
+  const [open,     setOpen]     = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [flowStep, setFlowStep] = useState('welcome');
+  const [flowData, setFlowData] = useState({ tour: '', date: '', size: '', style: '' });
+  const [packages, setPackages] = useState([]);
+  const [input,    setInput]    = useState('');
+  const [typing,   setTyping]   = useState(false);
+  const [unread,   setUnread]   = useState(0);
   const bodyRef  = useRef(null);
   const inputRef = useRef(null);
+  // track previous language to detect changes
+  const prevLang = useRef(language);
 
-  // Load active packages from DB once
+  // ── Load packages from DB once ───────────────────────────
   useEffect(() => {
     packageService.getAll()
       .then(res => {
@@ -262,32 +279,38 @@ const ChatWidget = () => {
       .catch(() => {});
   }, []);
 
-  // Set welcome message (re-set when language changes)
+  // ── Initialize / reset on language change ────────────────
   useEffect(() => {
-    setMessages([{ role: 'assistant', content: lt('welcome') }]);
-  }, [lt]);
+    const isLangChange = prevLang.current !== language;
+    prevLang.current = language;
 
-  // Auto-scroll
+    const welcomeMsg = isLangChange
+      ? [
+          { role: 'assistant', content: t(language, 'lang_reset') },
+          { role: 'assistant', content: t(language, 'welcome') },
+        ]
+      : [{ role: 'assistant', content: t(language, 'welcome') }];
+
+    setMessages(welcomeMsg);
+    setFlowStep('welcome');
+    setFlowData({ tour: '', date: '', size: '', style: '' });
+  }, [language]);
+
+  // ── Auto-scroll ────────────────────────────────────────
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [messages, typing]);
 
-  // Unread badge
+  // ── Unread badge ───────────────────────────────────────
   useEffect(() => {
     if (!open) setUnread(n => n + 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
-  // ── Tour interest: live packages from DB ──────────────────
-  const getTourInterestOptions = useCallback(() => {
-    const base = packages.slice(0, 4).map(p => ({ label: p.name, next: 'travel_date', pkgId: p._id }));
-    return [...base, { label: lt('custom_tour'), next: 'travel_date' }].slice(0, 5);
-  }, [packages, lt]);
-
-  // ── Recommend: find best matching package ─────────────────
-  const getRecommendedPackage = useCallback(() => {
+  // ── Find best matching package ─────────────────────────
+  const findPackage = useCallback((tourLabel) => {
     if (!packages.length) return null;
-    const lower = flowData.tourType.toLowerCase();
+    const lower = tourLabel.toLowerCase();
     let match = packages.find(p =>
       p.name?.toLowerCase().includes(lower) ||
       lower.includes((p.name ?? '').toLowerCase()) ||
@@ -296,137 +319,149 @@ const ChatWidget = () => {
     );
     if (!match) {
       const sorted = [...packages].sort((a, b) => a.price - b.price);
-      if (flowData.tourStyle.includes('Budget') || flowData.tourStyle.includes('💰') || flowData.tourStyle.includes('경제') || flowData.tourStyle.includes('经济') || flowData.tourStyle.includes('ハジェット') || flowData.tourStyle.includes('Хэмнэлттэй') || flowData.tourStyle.includes('Budget'))
-        match = sorted[0];
-      else if (flowData.tourStyle.includes('Luxury') || flowData.tourStyle.includes('👑') || flowData.tourStyle.includes('Тансаг') || flowData.tourStyle.includes('럭셔리') || flowData.tourStyle.includes('豪华') || flowData.tourStyle.includes('ラグジュアリー'))
-        match = sorted[sorted.length - 1];
-      else
-        match = sorted[Math.floor(sorted.length / 2)] ?? sorted[0];
+      match = sorted[Math.floor(sorted.length / 2)] ?? sorted[0];
     }
     return match ?? null;
-  }, [packages, flowData]);
+  }, [packages]);
 
-  // ── Current flow step buttons ─────────────────────────────
-  const getCurrentOptions = useCallback(() => {
+  // ── Flow: get the current step's option buttons ─────────
+  const getOptions = useCallback(() => {
+    const lang = language;
     switch (flowStep) {
       case 'welcome':
         return [
-          { label: lt('yes_trip'),       next: 'tour_interest' },
-          { label: lt('just_info'),      next: 'faq' },
-          { label: lt('contact_expert'), next: 'contact_info' },
+          { label: t(lang, 'opt_yes'),     action: 'tour_interest' },
+          { label: t(lang, 'opt_info'),    action: 'faq' },
+          { label: t(lang, 'opt_contact'), action: 'contact' },
         ];
-      case 'tour_interest':
-        return getTourInterestOptions();
+      case 'tour_interest': {
+        const pkgOpts = packages.slice(0, 4).map(p => ({
+          label: p.name, action: 'travel_date', data: { tour: p.name },
+        }));
+        if (!pkgOpts.length) {
+          // fallback static options
+          return [
+            { label: 'Gobi Desert Tour 🏜️',     action: 'travel_date', data: { tour: 'Gobi Desert Tour' } },
+            { label: 'Central Mongolia Tour 🏕️', action: 'travel_date', data: { tour: 'Central Mongolia Tour' } },
+            { label: 'Lake Khuvsgul Tour 🏔️',    action: 'travel_date', data: { tour: 'Lake Khuvsgul Tour' } },
+            { label: t(lang, 'custom_tour'),     action: 'travel_date', data: { tour: t(lang, 'custom_tour') } },
+          ];
+        }
+        return [...pkgOpts, { label: t(lang, 'custom_tour'), action: 'travel_date', data: { tour: t(lang, 'custom_tour') } }].slice(0, 5);
+      }
       case 'travel_date':
         return [
-          { label: lt('jun_jul'),  next: 'group_size' },
-          { label: lt('aug_sep'),  next: 'group_size' },
-          { label: lt('flexible'), next: 'group_size' },
-          { label: lt('not_sure'), next: 'group_size' },
+          { label: t(lang, 'd1'), action: 'group_size', data: { date: t(lang, 'd1') } },
+          { label: t(lang, 'd2'), action: 'group_size', data: { date: t(lang, 'd2') } },
+          { label: t(lang, 'd3'), action: 'group_size', data: { date: t(lang, 'd3') } },
+          { label: t(lang, 'd4'), action: 'group_size', data: { date: t(lang, 'd4') } },
         ];
       case 'group_size':
         return [
-          { label: lt('solo'),       next: 'tour_style' },
-          { label: lt('two'),        next: 'tour_style' },
-          { label: lt('three_five'), next: 'tour_style' },
-          { label: lt('six_plus'),   next: 'tour_style' },
+          { label: t(lang, 's1'), action: 'tour_style', data: { size: t(lang, 's1') } },
+          { label: t(lang, 's2'), action: 'tour_style', data: { size: t(lang, 's2') } },
+          { label: t(lang, 's3'), action: 'tour_style', data: { size: t(lang, 's3') } },
+          { label: t(lang, 's4'), action: 'tour_style', data: { size: t(lang, 's4') } },
         ];
       case 'tour_style':
         return [
-          { label: lt('budget'),   next: 'recommend' },
-          { label: lt('standard'), next: 'recommend' },
-          { label: lt('luxury'),   next: 'recommend' },
+          { label: t(lang, 'st1'), action: 'recommend', data: { style: t(lang, 'st1') } },
+          { label: t(lang, 'st2'), action: 'recommend', data: { style: t(lang, 'st2') } },
+          { label: t(lang, 'st3'), action: 'recommend', data: { style: t(lang, 'st3') } },
         ];
       case 'recommend': {
-        const pkg = getRecommendedPackage();
+        const pkg = findPackage(flowData.tour);
         return [
-          ...(pkg ? [{ label: lt('book_this'),   next: '_book',       pkgId: pkg._id }] : []),
-          { label: lt('browse_all'),   next: '_browse' },
-          { label: lt('back_tours'),   next: 'tour_interest' },
-          { label: lt('ask_question'), next: 'faq' },
+          ...(pkg ? [{ label: t(lang, 'btn_book'), action: '_book', data: { pkgId: pkg._id } }] : []),
+          { label: t(lang, 'btn_all'),  action: '_browse' },
+          { label: t(lang, 'btn_back'), action: 'tour_interest' },
+          { label: t(lang, 'btn_ask'),  action: 'faq' },
         ];
       }
       default:
         return [];
     }
-  }, [flowStep, lt, getTourInterestOptions, getRecommendedPackage]);
+  }, [flowStep, language, packages, flowData.tour, findPackage]);
 
-  // ── Handle flow button click ──────────────────────────────
-  const handleFlowOption = useCallback((option) => {
-    const next      = option.next;
-    const userLabel = option.label;
-    const newData   = { ...flowData };
-
-    if (flowStep === 'tour_interest') newData.tourType   = userLabel;
-    if (flowStep === 'travel_date')   newData.travelDate = userLabel;
-    if (flowStep === 'group_size')    newData.groupSize  = userLabel;
-    if (flowStep === 'tour_style')    newData.tourStyle  = userLabel;
-    if (next === 'tour_interest')     newData.tourType   = '';
+  // ── Handle flow option click ──────────────────────────
+  const handleOption = useCallback((opt) => {
+    const lang = language;
+    const userMsg = { role: 'user', content: opt.label };
+    const newData = { ...flowData, ...(opt.data || {}) };
     setFlowData(newData);
 
-    const userMsg = { role: 'user', content: userLabel };
-
-    // Navigate actions (no step change needed)
-    if (next === '_book' && option.pkgId) {
-      navigate(`/booking?package=${option.pkgId}`);
+    // Special navigation actions
+    if (opt.action === '_book' && opt.data?.pkgId) {
+      navigate(`/booking?package=${opt.data.pkgId}`);
       return;
     }
-    if (next === '_browse') {
+    if (opt.action === '_browse') {
       navigate('/packages');
       return;
     }
 
-    // FAQ (free chat)
-    if (next === 'faq') {
-      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: lt('faq_msg') }]);
+    // FAQ / free chat mode
+    if (opt.action === 'faq') {
+      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: t(lang, 'faq_msg') }]);
       setFlowStep('faq');
       setTimeout(() => inputRef.current?.focus(), 100);
       return;
     }
 
     // Contact info
-    if (next === 'contact_info') {
-      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: lt('contact_msg') }]);
-      setFlowStep('faq');
-      setTimeout(() => inputRef.current?.focus(), 100);
+    if (opt.action === 'contact') {
+      setMessages(prev => [
+        ...prev,
+        userMsg,
+        { role: 'assistant', content: t(lang, 'contact_intro'), extra: 'contact' },
+      ]);
+      setFlowStep('contact');
       return;
     }
 
-    // Recommend step
-    if (next === 'recommend') {
-      const summary = lformat('recommend_msg', {
-        tourType:   newData.tourType,
-        travelDate: newData.travelDate,
-        groupSize:  newData.groupSize,
-        tourStyle:  newData.tourStyle,
-      });
-      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: summary }]);
-      setFlowStep('recommend');
-      return;
-    }
-
-    // Tour interest (back)
-    if (next === 'tour_interest') {
-      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: lt('tour_interest') }]);
+    // Back to tour selection
+    if (opt.action === 'tour_interest') {
+      setFlowData(d => ({ ...d, tour: '' }));
+      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: t(lang, 'tour_q') }]);
       setFlowStep('tour_interest');
       return;
     }
 
-    // Normal flow steps
-    const stepMessages = {
-      tour_interest: lt('tour_interest'),
-      travel_date:   lt('travel_date'),
-      group_size:    lt('group_size'),
-      tour_style:    lt('tour_style'),
-    };
-    if (stepMessages[next]) {
-      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: stepMessages[next] }]);
-      setFlowStep(next);
+    // Recommend step
+    if (opt.action === 'recommend') {
+      const pkg = findPackage(newData.tour);
+      const summary = t(lang, 'rec_msg', {
+        tour:  newData.tour,
+        date:  newData.date,
+        size:  newData.size,
+        style: newData.style,
+      });
+      const botMessages = pkg
+        ? [
+            { role: 'assistant', content: summary },
+            { role: 'assistant', content: pkg.name, extra: 'pkg', pkg },
+          ]
+        : [{ role: 'assistant', content: t(lang, 'no_pkg') }];
+      setMessages(prev => [...prev, userMsg, ...botMessages]);
+      setFlowStep('recommend');
+      return;
     }
-  }, [flowStep, flowData, lt, lformat, navigate]);
 
-  // ── Free-text chat message ────────────────────────────────
-  const sendChatMessage = useCallback(async (text) => {
+    // Generic flow steps
+    const stepMessages = {
+      tour_interest: t(lang, 'tour_q'),
+      travel_date:   t(lang, 'date_q'),
+      group_size:    t(lang, 'size_q'),
+      tour_style:    t(lang, 'style_q'),
+    };
+    if (stepMessages[opt.action]) {
+      setMessages(prev => [...prev, userMsg, { role: 'assistant', content: stepMessages[opt.action] }]);
+      setFlowStep(opt.action);
+    }
+  }, [language, flowData, findPackage, navigate]);
+
+  // ── Free-text: send to chat API ───────────────────────
+  const send = useCallback(async (text) => {
     const msg = (text || input).trim();
     if (!msg) return;
     setInput('');
@@ -434,7 +469,7 @@ const ChatWidget = () => {
     setTyping(true);
     try {
       const history = messages.slice(-6);
-      const res = await chatService.send(msg, history, language);
+      const res  = await chatService.send(msg, history, language);
       const reply = res.data?.reply || '😔 No response. Please try again.';
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     } catch {
@@ -444,12 +479,9 @@ const ChatWidget = () => {
     }
   }, [input, messages, language]);
 
-  const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } };
+  const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
-  // ── Derived state ──────────────────────────────────────────
-  const currentOptions    = getCurrentOptions();
-  const showFlowButtons   = currentOptions.length > 0;
-  const recommendedPkg    = flowStep === 'recommend' ? getRecommendedPackage() : null;
+  const options = getOptions();
 
   return (
     <>
@@ -478,38 +510,23 @@ const ChatWidget = () => {
                   <div className={styles.botAvatar}><i className="fas fa-robot" /></div>
                 )}
                 <div className={`${styles.bubble} ${m.role === 'user' ? styles.bubbleUser : styles.bubbleBot}`}>
-                  {renderText(m.content)}
+                  {m.extra === 'pkg' && m.pkg
+                    ? <PkgCard pkg={m.pkg} lang={language} />
+                    : m.extra === 'contact'
+                    ? <><div>{renderText(m.content)}</div><ContactCard /></>
+                    : renderText(m.content)
+                  }
                 </div>
               </div>
             ))}
-
             {typing && <TypingDots />}
-
-            {/* Recommended package card */}
-            {recommendedPkg && (
-              <div className={styles.recommendCard}>
-                {recommendedPkg.image && (
-                  <img src={recommendedPkg.image} alt={recommendedPkg.name} className={styles.recommendImg} />
-                )}
-                <div className={styles.recommendInfo}>
-                  <div className={styles.recommendName}>{recommendedPkg.name}</div>
-                  <div className={styles.recommendMeta}>
-                    {recommendedPkg.destination && <span>📍 {recommendedPkg.destination}</span>}
-                    {recommendedPkg.duration    && <span>⏱ {recommendedPkg.duration}</span>}
-                    <span className={styles.recommendPrice}>
-                      💵 ${Number(recommendedPkg.price).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Flow buttons */}
-          {showFlowButtons && (
+          {/* Flow option buttons */}
+          {options.length > 0 && (
             <div className={styles.flowOptions}>
-              {currentOptions.map((opt, i) => (
-                <button key={i} className={styles.flowBtn} onClick={() => handleFlowOption(opt)}>
+              {options.map((opt, i) => (
+                <button key={i} className={styles.flowBtn} onClick={() => handleOption(opt)}>
                   {opt.label}
                 </button>
               ))}
@@ -521,7 +538,7 @@ const ChatWidget = () => {
             <textarea
               ref={inputRef}
               className={styles.input}
-              placeholder={lt('type_placeholder')}
+              placeholder={t(language, 'placeholder')}
               value={input}
               rows={1}
               onChange={e => setInput(e.target.value)}
@@ -529,7 +546,7 @@ const ChatWidget = () => {
             />
             <button
               className={styles.sendBtn}
-              onClick={() => sendChatMessage()}
+              onClick={() => send()}
               disabled={!input.trim() || typing}
               aria-label="Send"
             >
@@ -542,7 +559,7 @@ const ChatWidget = () => {
       {/* FAB */}
       <button
         className={`${styles.fab} ${open ? styles.fabOpen : ''}`}
-        onClick={open ? () => setOpen(false) : () => { setOpen(true); setUnread(0); }}
+        onClick={() => { if (open) { setOpen(false); } else { setOpen(true); setUnread(0); } }}
         aria-label="Open chat"
       >
         {open ? <i className="fas fa-times" /> : <i className="fas fa-comment-dots" />}
