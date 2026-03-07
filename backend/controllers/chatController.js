@@ -139,7 +139,7 @@ function fmtServices(svcs) {
 // ─────────────────────────────────────────────
 exports.chat = async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], language = 'en' } = req.body;
     if (!message || !message.trim()) {
       return res.status(400).json({ reply: 'Та асуулт бичнэ үү.' });
     }
@@ -154,7 +154,7 @@ exports.chat = async (req, res) => {
 
     // ── OpenAI path ──────────────────────────────────────────
     if (openai) {
-      const systemPrompt = buildSystemPrompt(packages, itineraries, destinations, services);
+      const systemPrompt = buildSystemPrompt(packages, itineraries, destinations, services, language);
       const messages = [
         { role: 'system', content: systemPrompt },
         ...history.slice(-6).map((h) => ({ role: h.role, content: h.content })),
@@ -263,7 +263,15 @@ exports.chat = async (req, res) => {
           });
           reply += `\n👉 **[Бүх аялал харах](/packages)**`;
         } else {
-          reply = `🤔 I'm not sure about that, but here are things I can help with:\n• _"What tours are available?"_\n• _"How much do tours cost?"_\n• _"How do I book a tour?"_\n• _"What destinations do you offer?"_\n\n📞 For personalized help, **[contact our travel experts](/contact)**.`;
+          // Language-aware fallback
+          const fallbacks = {
+            mn: `🤔 Уучлаарай, тодорхой хариулт өгч чадахгүй байна.\n\n• _"Ямар tours байна вэ?"_\n• _"Үнэ хэд вэ?"_\n• _"Захиалга хийх"_\n\n👉 **[Бидэнтэй холбогдох](/contact)**`,
+            de: `🤔 Das konnte ich nicht beantworten.\n\n• _"Welche Touren gibt es?"_\n• _"Was kosten die Touren?"_\n\n👉 **[Alle Touren](/packages)** · **[Kontakt](/contact)**`,
+            ko: `🤔 잘 이해하지 못했습니다.\n\n• _"어떤 투어가 있나요?"_\n• _"투어 가격은 얼마인가요?"_\n\n👉 **[전체 투어](/packages)** · **[연락하기](/contact)**`,
+            ja: `🤔 申し訳ありませんが、理解できませんでした。\n\n• _"どんなツアーがありますか？"_\n• _"料金はいくらですか？"_\n\n👉 **[全ツアー](/packages)** · **[お問い合わせ](/contact)**`,
+            zh: `🤔 抱歉，我不太理解您的问题。\n\n• _"有哪些行程？"_\n• _"费用是多少？"_\n\n👉 **[全部行程](/packages)** · **[联系我们](/contact)**`,
+          };
+          reply = fallbacks[language] || `🤔 I'm not sure about that, but here are things I can help with:\n• _"What tours are available?"_\n• _"How much do tours cost?"_\n• _"How do I book a tour?"_\n\n📞 **[Contact our travel experts](/contact)**`;
         }
       }
     }
@@ -278,8 +286,12 @@ exports.chat = async (req, res) => {
 // ─────────────────────────────────────────────
 // OpenAI system prompt builder
 // ─────────────────────────────────────────────
-function buildSystemPrompt(packages, itineraries, destinations, services) {
-  let prompt = `You are iTravel Mongolia's friendly AI travel assistant. Answer in the same language the user writes in (Mongolian or English).
+function buildSystemPrompt(packages, itineraries, destinations, services, language = 'en') {
+  const LANG_NAMES = { en: 'English', mn: 'Mongolian', de: 'German', ko: 'Korean', ja: 'Japanese', zh: 'Chinese' };
+  const langName = LANG_NAMES[language] || 'English';
+
+  let prompt = `You are iTravel Mongolia's friendly AI travel assistant.
+IMPORTANT: Respond ONLY in ${langName}. Always use ${langName} in every response regardless of what language the user writes in.
 Be helpful, concise, and enthusiastic about Mongolia travel. Use emojis appropriately.
 Focus on tours, packages, itineraries, pricing, and travel information specific to Mongolia.
 
@@ -298,8 +310,8 @@ ${itineraries.slice(0, 10).map((it) =>
   `- ${it.title}: ${it.duration}, ${it.locations}${it.price ? `, $${it.price}` : ''}`
 ).join('\n')}
 
-When recommending specific packages, always include price and booking link: [Book ${'{name}'}](/booking?package=${'{id}'}).
+When recommending specific packages, always include price and booking link: [Book ${'{name}'}](/packages/${'{id}'}).
 For listings link to: /packages, /itineraries, /destinations.
-Keep responses under 250 words. Always be enthusiastic about Mongolia travel.`;
+Keep responses under 250 words.`;
   return prompt;
 }

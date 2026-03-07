@@ -111,7 +111,7 @@ export const aboutService = {
 };
 
 export const chatService = {
-  send: (message, history) => api.post("/chat", { message, history }),
+  send: (message, history, language = 'en') => api.post("/chat", { message, history, language }),
 };
 
 export const adminService = {
