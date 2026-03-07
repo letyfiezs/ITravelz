@@ -178,32 +178,43 @@ const t = (lang, key, vars = {}) => {
   return str;
 };
 
-// ── Markdown renderer (bold + links) ─────────────────────────
-const renderText = (text) => {
-  const lines = text.split('\n');
-  return lines.map((line, li) => {
-    const parts = line.split(/(\*\*[^*]+\*\*)/g).map((p, i) => {
-      if (p.startsWith('**') && p.endsWith('**'))
-        return <strong key={i}>{p.slice(2, -2)}</strong>;
-      const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g;
-      const chunks = [];
-      let last = 0, m;
-      while ((m = linkRe.exec(p)) !== null) {
-        if (m.index > last) chunks.push(p.slice(last, m.index));
-        chunks.push(
-          <a key={m.index} href={m[2]} className={styles.chatLink}
-            onClick={e => { if (!m[2].startsWith('http')) { e.preventDefault(); window.location.href = m[2]; } }}>
-            {m[1]}
-          </a>
-        );
-        last = m.index + m[0].length;
-      }
-      if (last < p.length) chunks.push(p.slice(last));
-      return chunks.length ? chunks : p;
-    });
-    return <span key={li}>{parts}{li < lines.length - 1 && <br />}</span>;
-  });
-};
+// ── Markdown renderer: bold, italic, links (incl. bold+link) ──
+// Handles: **bold**, _italic_, [label](url), **[label](url)**
+function renderInline(text, nav, prefix = '') {
+  // Regex matches: **...**, _..._, or [label](url) — in priority order
+  const re = /(\*\*[\s\S]+?\*\*|_[^_]+_|\[([^\]]+)\]\(([^)]+)\))/g;
+  const out = [];
+  let last = 0, m, k = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const tok = m[1];
+    if (tok.startsWith('**')) {
+      // Bold — recurse so links inside bold also render
+      out.push(<strong key={prefix + k++}>{renderInline(tok.slice(2, -2), nav, prefix + 'b')}</strong>);
+    } else if (tok.startsWith('_')) {
+      out.push(<em key={prefix + k++} style={{ opacity: 0.85 }}>{tok.slice(1, -1)}</em>);
+    } else {
+      // Link [label](url)
+      const url = m[3], label = m[2];
+      const internal = !url.startsWith('http');
+      out.push(
+        <a key={prefix + k++} href={url} className={styles.chatLink}
+          onClick={e => { if (internal) { e.preventDefault(); nav(url); } }}>
+          {label}
+        </a>
+      );
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+function renderText(text, nav) {
+  return text.split('\n').map((line, i, arr) => (
+    <span key={i}>{renderInline(line, nav)}{i < arr.length - 1 && <br />}</span>
+  ));
+}
 
 const TypingDots = () => (
   <div className={styles.typingWrap}>
@@ -513,8 +524,8 @@ const ChatWidget = () => {
                   {m.extra === 'pkg' && m.pkg
                     ? <PkgCard pkg={m.pkg} lang={language} />
                     : m.extra === 'contact'
-                    ? <><div>{renderText(m.content)}</div><ContactCard /></>
-                    : renderText(m.content)
+                    ? <><div>{renderText(m.content, navigate)}</div><ContactCard /></>
+                    : renderText(m.content, navigate)
                   }
                 </div>
               </div>

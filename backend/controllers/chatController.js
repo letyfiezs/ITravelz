@@ -28,8 +28,7 @@ const INTENTS = {
     'packages байна', 'tour байдаг', 'аялал харах', 'tour харах', 'бүх аялал',
     'what tours', 'what packages', 'available tours', 'available packages',
     'list of tours', 'show tours', 'show packages', 'all packages', 'all tours',
-    'сул аялал', 'сул tour', 'сул байна', 'available', 'аялалууд', 'packag',
-    'tour ', 'аялал',
+    'сул аялал', 'сул tour', 'available', 'аялалууд', 'packag', 'tour ', 'аялал',
   ],
   price: [
     'үнэ', 'хэд', 'price', 'cost', 'how much', 'үнэтэй', 'хямд', 'cheap',
@@ -37,26 +36,51 @@ const INTENTS = {
   ],
   booking: [
     'захиалах', 'захиалга', 'book', 'reserve', 'booking', 'захиалж', 'хэрхэн захиалах',
-    'how to book', 'sign up', 'бүртгэх', 'бүртгүүлэх',
+    'how to book', 'sign up', 'бүртгэх', 'бүртгүүлэх', 'payment', 'pay', 'төлбөр',
   ],
   itinerary: [
     'itinerary', 'хөтөлбөр', 'day by day', 'schedule', 'хуваарь', 'өдрийн',
-    'тплан', 'plan', 'program', 'програм',
+    'plan', 'program', 'програм', 'day 1', 'day 2',
   ],
   destination: [
-    'destination', 'газар', 'байршил', 'орон', 'улс', 'country', 'city',
-    'where', 'хаана', 'аялах газар', 'travel to',
+    'destination', 'газар', 'байршил', 'where', 'хаана', 'аялах газар', 'travel to',
+    'gobi', 'khuvsgul', 'хөвсгөл', 'говь', 'ulaanbaatar', 'улаанбаатар', 'mongolia',
   ],
   contact: [
     'холбогдох', 'contact', 'phone', 'утас', 'email', 'имейл', 'address', 'хаяг',
-    'reach', 'call', 'message', 'мессежийн', 'social',
+    'reach', 'call', 'facebook', 'whatsapp', 'social', 'хэрхэн холбогдох',
   ],
   services: [
-    'үйлчилгээ', 'service', 'what do you offer', 'санал', 'offer',
+    'үйлчилгээ', 'service', 'what do you offer', 'санал', 'offer', 'include',
+    'guide', 'driver', 'жолооч', 'хөтөч',
+  ],
+  visa: [
+    'visa', 'entry', 'passport', 'permit', 'travel document', 'виз', 'визний',
+    'виза', 'яаж орох', 'how to enter', 'entry requirement',
+  ],
+  weather: [
+    'weather', 'temperature', 'climate', 'season', 'цаг агаар', 'уур амьсгал',
+    'хүйтэн', 'дулаан', 'хур тунадас', 'cold', 'hot', 'when to visit', 'best time',
+    'хэзээ аялах', 'явах вэ', 'сараас',
+  ],
+  accommodation: [
+    'hotel', 'ger', 'camp', 'stay', 'lodge', 'overnight', 'sleep', 'hostel',
+    'зочид буудал', 'гэр', 'буудал', 'хонох', 'хаана хонох', 'camping',
+  ],
+  transport: [
+    'transport', 'bus', 'train', 'flight', 'taxi', 'car', 'drive', 'тээвэр',
+    'нисэх', 'автобус', 'get around', 'travel within', 'хэрхэн явах', 'замнал',
+  ],
+  food: [
+    'food', 'eat', 'restaurant', 'хоол', 'cuisine', 'хүнс', 'mongolian food',
+    'цуйван', 'хуушуур', 'бууз', 'tsuivan', 'khuushuur', 'buuz', 'айраг',
+  ],
+  group: [
+    'group', 'join', 'group tour', 'public tour', 'бүлэг аялал', 'нийтийн аялал',
+    'хэдэн хүн', 'хамтдаа аялах', 'other travelers',
   ],
   help: [
-    'help', 'тусалж', 'юу хийн', 'юу хийж', 'чадах', 'what can', 'how can',
-    'menu', 'options', 'сонголт',
+    'help', 'тусалж', 'юу хийн', 'what can', 'how can', 'menu', 'options', 'сонголт',
   ],
 };
 
@@ -238,15 +262,39 @@ exports.chat = async (req, res) => {
         break;
 
       case 'contact':
-        reply = `📞 **Бидэнтэй холбогдох:**\n\n• 📧 Email: ${process.env.FROM_EMAIL || 'info@itravelz.com'}\n• 🌐 Вебсайт: **[Contact хуудас](/contact)**\n\nМанай холбоо барих хуудсаар дамжуулан мессеж илгээж болно.\n\n👉 **[Холбогдох](/contact)**`;
+        reply = `📞 **Contact iTravel Mongolia:**\n\n• 📧 **Email:** grandtravelmongolia@gmail.com\n• 📱 **Phone / WhatsApp:** +976 77088055\n• 📘 **Facebook:** [iTravel Mongolia](https://www.facebook.com/profile.php?id=100068557103724)\n• 🕐 **Hours:** Everyday 24/7\n\n👉 Or use our **[Contact page](/contact)** to send a message.`;
         break;
 
       case 'services':
         reply = fmtServices(services);
         break;
 
+      case 'visa':
+        reply = `🛂 **Mongolia Visa Information:**\n\nCitizens of many countries can visit Mongolia **visa-free for up to 30 days**.\n\n✅ **Visa-free countries include:** USA, EU, UK, Japan, South Korea, and 60+ others.\n\n❌ **Visa required:** Some nationalities require a tourist visa — apply at a Mongolian embassy or online via evisa.mn.\n\n📋 **Required documents:** Valid passport (6+ months), return ticket, accommodation confirmation.\n\n👉 **[See our tours](/packages)** — we can assist with visa invitation letters for group bookings.\n\n_Always verify with the official Mongolian embassy for your country._`;
+        break;
+
+      case 'weather':
+        reply = `🌤 **Mongolia Weather & Best Travel Time:**\n\n**☀️ Summer (Jun–Sep):** Best time to visit! Warm days 20–30°C, ideal for Gobi and steppe tours.\n**🍂 Autumn (Sep–Oct):** Cool weather, beautiful landscapes, fewer crowds.\n**❄️ Winter (Nov–Mar):** Very cold (-20 to -40°C) but unique experiences like the Eagle Festival.\n**🌸 Spring (Apr–May):** Warming up, good for off-season travel.\n\n💡 **Most popular:** July–August — Naadam Festival (July 11–13) is a must-see!\n\n👉 **[See available tours](/packages)**`;
+        break;
+
+      case 'accommodation':
+        reply = `🏕 **Accommodation in Mongolia:**\n\n**🏡 Ger Camps (Tourist Gers):** Traditional portable homes set up in beautiful nature — most popular for tours. Comfortable beds, meals included.\n**🏨 Hotels (Ulaanbaatar):** Wide range from budget guesthouses to 5-star hotels.\n**⛺ Camping:** Available on private/custom tours in remote areas.\n\nAll our **[tour packages](/packages)** include accommodation (ger camps or hotels depending on the itinerary).\n\n👉 Want details on a specific tour's accommodation? **[Browse packages](/packages)**`;
+        break;
+
+      case 'transport':
+        reply = `🚌 **Getting Around Mongolia:**\n\n**✈️ International flights:** Chinggis Khaan International Airport (ULN), Ulaanbaatar — connections from Seoul, Beijing, Moscow, Istanbul.\n**🚐 Tour vehicles:** All our tours include 4WD Russian Furgon vans perfect for off-road Mongolia travel.\n**🚂 Trans-Mongolian Railway:** Runs Ulaanbaatar–Beijing and Ulaanbaatar–Moscow.\n**🚌 Local buses:** Budget option between major cities.\n\nAll **[our packages](/packages)** include ground transportation throughout the tour.`;
+        break;
+
+      case 'food':
+        reply = `🍖 **Mongolian Food & Cuisine:**\n\n**🥟 Buuz:** Steamed dumplings with minced meat — Mongolia's most beloved dish.\n**🥟 Khuushuur:** Deep-fried meat pastries, especially popular during Naadam.\n**🍜 Tsuivan:** Noodles stir-fried with meat and vegetables.\n**🥛 Airag:** Fermented mare's milk — a traditional drink you must try!\n**🍲 Khorkhog:** Lamb cooked with hot stones inside a container — a true nomadic feast.\n\nMost **ger camp tour packages** include traditional Mongolian meals throughout the journey.\n\n👉 **[Browse food-inclusive tours](/packages)**`;
+        break;
+
+      case 'group':
+        reply = `👥 **Group Tours in Mongolia:**\n\n**Small group tours (2–12 people):** We specialize in small, personalized groups for a better experience.\n**Private tours:** Available for any group size — fully customized itinerary.\n**Solo travelers:** Can join scheduled group departures at lower cost.\n\n📅 **Fixed departure dates** available June–September for Gobi, Central Mongolia, and Khuvsgul tours.\n\n👉 **[View all group tours](/packages)** or **[contact us](/contact)** to build a custom group tour.`;
+        break;
+
       case 'help':
-        reply = `🤖 **Би дараах зүйлст тусалж чадна:**\n\n• 🌍 Аялалын жагсаалт харах\n• 💵 Үнэ лавлах\n• ✈️ Аялах газрууд\n• 🗺 Аялалын хөтөлбөр\n• 📋 Захиалга хийх заавар\n• 🛎 Үйлчилгээний мэдээлэл\n• 📞 Холбоо барих\n\nЖишээ асуултууд:\n_"Ямар аялал байна вэ?"_\n_"Bali tour хэд вэ?"_\n_"Захиалга хэрхэн хийх вэ?"_`;
+        reply = `🤖 **I can help you with:**\n\n• 🌍 Browse Mongolia tours & packages\n• 💵 Check pricing & budgets\n• ✈️ Explore destinations (Gobi, Khuvsgul, etc.)\n• 🗺 View tour itineraries\n• 🛂 Visa & entry requirements\n• 🌤 Weather & best travel times\n• 🏕 Accommodation (ger camps, hotels)\n• 🚐 Transport & getting around\n• 🍖 Mongolian food & culture\n• 📋 How to book\n• 📞 Contact our team\n\n_Just ask in English or Mongolian!_`;
         break;
 
       default: {
