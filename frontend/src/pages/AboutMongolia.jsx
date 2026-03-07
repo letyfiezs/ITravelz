@@ -65,8 +65,9 @@ const FALLBACK = [
 const CATEGORIES = ['culture', 'nature', 'history', 'food', 'nomad', 'misc'];
 
 /* ── Read More Modal ──────────────────────────────────────── */
-function ReadMoreModal({ item, onClose }) {
+function ReadMoreModal({ item, onClose, language }) {
   const imgs = resolveImages(item);
+  const tr = (key) => item.translations?.[language]?.[key] || item[key] || '';
   const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose(); };
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose(); };
