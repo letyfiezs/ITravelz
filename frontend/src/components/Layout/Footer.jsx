@@ -45,7 +45,11 @@ export default function Footer() {
         {/* Brand */}
         <div className={styles.brand}>
           <Link to="/" className={styles.logo}>
-            <img src="/logo.png" alt="iTravel Mongolia" className={styles.logoImg} />
+            <img
+              src="/logo.png"
+              alt="iTravel Mongolia"
+              className={styles.logoImg}
+            />
             <span className={styles.logoText}>
               I<em>Travel</em>
             </span>
