@@ -194,7 +194,7 @@ exports.chat = async (req, res) => {
 
     switch (intent) {
       case 'greeting':
-        reply = `👋 Сайн байна уу! ITravelz-д тавтай морил!\n\nБи таны аялалын туслах бот байна. Дараах зүйлсийн талаар асууж болно:\n\n• 🌍 **Аялалууд** — ямар tour байна?\n• 💵 **Үнэ** — аялалын зардал\n• 🗺 **Хөтөлбөрүүд** — itinerary\n• ✈️ **Газрууд** — хаана аялах\n• 📞 **Холбогдох** — бидэнтэй уулзах\n\nЮу асуух вэ? 😊`;
+        reply = `👋 Hi there! Welcome to iTravel Mongolia!\n\nI'm your travel assistant. Here's what I can help with:\n\n• 🌍 **Tours & Packages** — what tours are available?\n• 💵 **Pricing** — tour costs & budgets\n• 🗺 **Itineraries** — day-by-day schedules\n• ✈️ **Destinations** — where to travel\n• 📞 **Contact** — reach our travel experts\n\nWhat would you like to know? 😊`;
         break;
 
       case 'farewell':
@@ -246,7 +246,7 @@ exports.chat = async (req, res) => {
         break;
 
       case 'help':
-        reply = `🤖 **Би дараах зүйлст тусалж чадна:**\n\n• 🌍 Аялалын жагсаалт харах\n• 💵 Үнэ лавлах\n• ✈️ Аялах газрууд\n• 🗺 Аялалын хөтөлбөр\n• 📋 Захиалга хийх заавар\n• 🛎 Үйлчилгээний мэдээлэл\n• 📞 Холбоо барих\n\nЖишээ асуултууд:\n_"Ямар аялал байна вэ?"_\n_"Bali tour хэд вэ?"_\n_"Захиалга хэрхэн хийх вэ?"_`;
+        reply = `🤖 **I can help you with:**\n\n• 🌍 Browse tours & packages\n• 💵 Check prices & budgets\n• ✈️ Explore destinations\n• 🗺 View tour itineraries\n• 📋 How to book\n• 🛎 Services we offer\n• 📞 Contact our team\n\nExample questions:\n_"What tours are available?"_\n_"How much is the Gobi Desert tour?"_\n_"How do I book a tour?"_`;
         break;
 
       default: {
@@ -263,7 +263,7 @@ exports.chat = async (req, res) => {
           });
           reply += `\n👉 **[Бүх аялал харах](/packages)**`;
         } else {
-          reply = `🤔 Уучлаарай, тодорхой хариулт өгч чадахгүй байна.\n\nДараах зүйлсийг асууж болно:\n• _"Ямар tours байна вэ?"_\n• _"Үнэ хэд вэ?"_\n• _"Захиалга хэрхэн хийх вэ?"_\n• _"Ямар газар аялдаг вэ?"_\n\n📞 Дэлгэрэнгүй мэдэхийг хүсвэл **[бидэнтэй холбогдоорой](/contact)**.`;
+          reply = `🤔 I'm not sure about that, but here are things I can help with:\n• _"What tours are available?"_\n• _"How much do tours cost?"_\n• _"How do I book a tour?"_\n• _"What destinations do you offer?"_\n\n📞 For personalized help, **[contact our travel experts](/contact)**.`;
         }
       }
     }
@@ -279,12 +279,13 @@ exports.chat = async (req, res) => {
 // OpenAI system prompt builder
 // ─────────────────────────────────────────────
 function buildSystemPrompt(packages, itineraries, destinations, services) {
-  let prompt = `You are ITravelz's friendly AI travel assistant. Answer in the same language the user writes in (Mongolian or English).
-Be helpful, concise, and enthusiastic about travel. Use emojis appropriately.
+  let prompt = `You are iTravel Mongolia's friendly AI travel assistant. Answer in the same language the user writes in (Mongolian or English).
+Be helpful, concise, and enthusiastic about Mongolia travel. Use emojis appropriately.
+Focus on tours, packages, itineraries, pricing, and travel information specific to Mongolia.
 
-AVAILABLE PACKAGES (${packages.length} total):
+AVAILABLE PACKAGES (${packages.length} total, live from database):
 ${packages.slice(0, 15).map((p) =>
-  `- ${p.name}: $${p.price}/person, ${p.duration}, ${p.destination}, category: ${p.category}`
+  `- ${p.name}: $${p.price}/person, ${p.duration}, destination: ${p.destination}, category: ${p.category}`
 ).join('\n')}
 
 AVAILABLE DESTINATIONS (${destinations.length} total):
@@ -297,8 +298,8 @@ ${itineraries.slice(0, 10).map((it) =>
   `- ${it.title}: ${it.duration}, ${it.locations}${it.price ? `, $${it.price}` : ''}`
 ).join('\n')}
 
-When recommending specific packages, always include price and booking link like: [Book ${'{name}'}](/booking?package=${'{id}'}).
-For listings, provide /packages, /itineraries, /destinations links.
-Keep responses under 250 words.`;
+When recommending specific packages, always include price and booking link: [Book ${'{name}'}](/booking?package=${'{id}'}).
+For listings link to: /packages, /itineraries, /destinations.
+Keep responses under 250 words. Always be enthusiastic about Mongolia travel.`;
   return prompt;
 }

@@ -1,0 +1,131 @@
+{
+  "chatbot_name": "iTravel Mongolia Booking Flow",
+  "steps": [
+    {
+      "id": "welcome",
+      "message": "Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?",
+      "options": [
+        {
+          "label": "Yes, planning a trip",
+          "next": "tour_interest"
+        },
+        {
+          "label": "Just looking for information",
+          "next": "faq"
+        },
+        {
+          "label": "Contact travel expert",
+          "next": "contact"
+        }
+      ]
+    },
+    {
+      "id": "tour_interest",
+      "message": "Great! What type of tour are you interested in?",
+      "options": [
+        {
+          "label": "Gobi Desert Tour",
+          "next": "travel_date"
+        },
+        {
+          "label": "Central Mongolia Tour",
+          "next": "travel_date"
+        },
+        {
+          "label": "Lake Khuvsgul Tour",
+          "next": "travel_date"
+        },
+        {
+          "label": "Custom Private Tour",
+          "next": "travel_date"
+        }
+      ]
+    },
+    {
+      "id": "travel_date",
+      "message": "When are you planning to travel?",
+      "options": [
+        {
+          "label": "June – July",
+          "next": "group_size"
+        },
+        {
+          "label": "August – September",
+          "next": "group_size"
+        },
+        {
+          "label": "Flexible dates",
+          "next": "group_size"
+        },
+        {
+          "label": "Not sure yet",
+          "next": "group_size"
+        }
+      ]
+    },
+    {
+      "id": "group_size",
+      "message": "How many people will travel?",
+      "options": [
+        {
+          "label": "Solo traveler",
+          "next": "tour_style"
+        },
+        {
+          "label": "2 travelers",
+          "next": "tour_style"
+        },
+        {
+          "label": "3–5 travelers",
+          "next": "tour_style"
+        },
+        {
+          "label": "6+ travelers",
+          "next": "tour_style"
+        }
+      ]
+    },
+    {
+      "id": "tour_style",
+      "message": "What type of tour style do you prefer?",
+      "options": [
+        {
+          "label": "Budget tour",
+          "next": "recommend"
+        },
+        {
+          "label": "Standard tour",
+          "next": "recommend"
+        },
+        {
+          "label": "Luxury tour",
+          "next": "recommend"
+        }
+      ]
+    },
+    {
+      "id": "recommend",
+      "message": "Based on your preferences, we recommend one of our popular Mongolia tours. Would you like to receive the itinerary and price?",
+      "options": [
+        {
+          "label": "Yes, send itinerary",
+          "next": "contact"
+        },
+        {
+          "label": "Show other tours",
+          "next": "tour_interest"
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "message": "Please leave your contact details (Name, Email, WhatsApp) and our travel specialist will send you the itinerary and price shortly.",
+      "options": []
+    },
+    {
+      "id": "faq",
+      "message": "You can ask any question about Mongolia travel, tours, or prices. I'm here to help!",
+      "options": []
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+step_id,message,button_label,next_step
+welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,"Yes, planning a trip",tour_interest
+welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,Just looking for information,faq
+welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,Contact travel expert,contact
+tour_interest,Great! What type of tour are you interested in?,Gobi Desert Tour,travel_date
+tour_interest,Great! What type of tour are you interested in?,Central Mongolia Tour,travel_date
+tour_interest,Great! What type of tour are you interested in?,Lake Khuvsgul Tour,travel_date
+tour_interest,Great! What type of tour are you interested in?,Custom Private Tour,travel_date
+travel_date,When are you planning to travel?,June – July,group_size
+travel_date,When are you planning to travel?,August – September,group_size
+travel_date,When are you planning to travel?,Flexible dates,group_size
+travel_date,When are you planning to travel?,Not sure yet,group_size
+group_size,How many people will travel?,Solo traveler,tour_style
+group_size,How many people will travel?,2 travelers,tour_style
+group_size,How many people will travel?,3–5 travelers,tour_style
+group_size,How many people will travel?,6+ travelers,tour_style
+tour_style,What type of tour style do you prefer?,Budget tour,recommend
+tour_style,What type of tour style do you prefer?,Standard tour,recommend
+tour_style,What type of tour style do you prefer?,Luxury tour,recommend
+recommend,"Based on your preferences, we recommend one of our popular Mongolia tours. Would you like to receive the itinerary and price?","Yes, send itinerary",contact
+recommend,"Based on your preferences, we recommend one of our popular Mongolia tours. Would you like to receive the itinerary and price?",Show other tours,tour_interest
+contact,"Please leave your contact details (Name, Email, WhatsApp) and our travel specialist will send you the itinerary and price shortly.",,
+faq,"You can ask any question about Mongolia travel, tours, or prices. I'm here to help!",,

@@ -257,8 +257,135 @@
 .sendBtn:hover:not(:disabled) { transform: scale(1.08); }
 .sendBtn:disabled { background: #ccc; cursor: not-allowed; }
 
+/* ── Flow Option Buttons ─────────────────────────── */
+.flowOptions {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  background: var(--bg-alt, #f8f8fb);
+  border-top: 1px solid var(--border, #eee);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.flowBtn {
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--primary, #6c63ff);
+  color: var(--primary, #6c63ff);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flowBtn:hover {
+  background: var(--primary, #6c63ff);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+/* ── Recommended Package Card ────────────────────── */
+.recommendCard {
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--primary, #6c63ff);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 4px 0 4px 35px;
+  box-shadow: 0 2px 10px rgba(108,99,255,0.12);
+}
+.recommendImg {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+.recommendInfo {
+  padding: 10px 12px;
+}
+.recommendName {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text, #222);
+  margin-bottom: 5px;
+}
+.recommendMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
+}
+.recommendPrice {
+  font-weight: 600;
+  color: var(--primary, #6c63ff);
+}
+
+/* ── Inline Contact Form ─────────────────────────── */
+.contactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 4px 35px;
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--border, #e0e0e0);
+  border-radius: 12px;
+  padding: 12px;
+}
+.contactInput {
+  border: 1.5px solid var(--border, #e0e0e0);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text, #222);
+  background: var(--bg-alt, #f8f8fb);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.contactInput:focus {
+  border-color: var(--primary, #6c63ff);
+}
+.contactInput::placeholder {
+  color: #aaa;
+}
+.contactSubmitBtn {
+  background: var(--primary, #6c63ff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 2px;
+}
+.contactSubmitBtn:hover:not(:disabled) {
+  background: #5a52d5;
+  transform: translateY(-1px);
+}
+.contactSubmitBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.contactError {
+  color: #ef4444;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
 /* ── Mobile ──────────────────────────────────────── */
 @media (max-width: 480px) {
   .window { right: 12px; bottom: 90px; width: calc(100vw - 24px); }
   .fab    { right: 16px; bottom: 20px; }
+  .flowBtn { font-size: 12px; padding: 8px 12px; }
+  .contactForm { margin-left: 0; }
+  .recommendCard { margin-left: 0; }
 }
