@@ -162,13 +162,18 @@ export default function Festivals() {
 
   const categories = [...new Set(FALLBACK.map(f => f.category))];
 
+  const heroImgRaw = heroContent?.imageUrl || heroContent?.image;
+  const heroImg = heroImgRaw
+    ? (heroImgRaw.startsWith('http') ? heroImgRaw : `${BASE}${heroImgRaw}`)
+    : null;
+
   return (
     <div className={styles.page}>
       {/* Hero */}
       <div
         className={styles.hero}
-        style={heroContent?.imageUrl || heroContent?.image ? {
-          backgroundImage: `url(${heroContent.imageUrl || heroContent.image})`,
+        style={heroImg ? {
+          backgroundImage: `url(${heroImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         } : undefined}

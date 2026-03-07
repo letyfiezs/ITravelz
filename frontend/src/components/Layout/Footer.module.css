@@ -31,6 +31,7 @@
 }
 .logoText { font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
 .logoText em { font-style: normal; color: var(--accent); }
+.logoImg { height: 36px; width: auto; border-radius: 8px; object-fit: contain; }
 
 .tagline { font-size: 0.88rem; line-height: 1.7; color: rgba(255,255,255,.55); max-width: 260px; margin-bottom: 24px; }
 

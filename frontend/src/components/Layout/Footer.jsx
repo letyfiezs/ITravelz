@@ -45,11 +45,9 @@ export default function Footer() {
         {/* Brand */}
         <div className={styles.brand}>
           <Link to="/" className={styles.logo}>
-            <span className={styles.logoIcon}>
-              <i className="fas fa-plane-departure" />
-            </span>
+            <img src="/logo.png" alt="iTravel Mongolia" className={styles.logoImg} />
             <span className={styles.logoText}>
-              I<em>Travelz</em>
+              I<em>Travel</em>
             </span>
           </Link>
           <p className={styles.tagline}>{t("footer_tagline")}</p>
