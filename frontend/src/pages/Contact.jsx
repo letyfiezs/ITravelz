@@ -190,6 +190,24 @@ const Contact = () => {
                     <span>{CONTACT_INFO.hours}</span>
                   </div>
                 </div>
+                <div className={styles.infoCard}>
+                  <div className={styles.infoIcon} style={{'--ic':'#28c76f'}}>
+                    <i className="fas fa-phone-alt" />
+                  </div>
+                  <div>
+                    <h4>Call Us</h4>
+                    <a href={`tel:${CONTACT_INFO.phone.replace(/\s/g,'')}`}>{CONTACT_INFO.phone}</a>
+                  </div>
+                </div>
+                <div className={styles.infoCard}>
+                  <div className={styles.infoIcon} style={{'--ic':'#ea5455'}}>
+                    <i className="fas fa-map-marker-alt" />
+                  </div>
+                  <div>
+                    <h4>Visit Us</h4>
+                    <span>{CONTACT_INFO.address}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Social links */}
