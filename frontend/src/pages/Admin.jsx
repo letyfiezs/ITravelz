@@ -2134,7 +2134,7 @@ const Admin = () => {
               </div>
             )}
 
-            {/* ── Destinations ── */
+            {/* ── Destinations ── */}
             {tab === "destinations" && (
               <div>
                 {/* ── Page Hero / Header Scheduling ── */}
