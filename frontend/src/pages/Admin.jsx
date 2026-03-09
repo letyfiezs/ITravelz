@@ -279,15 +279,15 @@ const Admin = () => {
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
 
-  /* itinerary modal */
-  const [itineraries, setItineraries] = useState([]);
-  const [itinModal, setItinModal] = useState(false);
-  const [itinForm, setItinForm] = useState(EMPTY_ITIN);
-  const [itinEdit, setItinEdit] = useState(null);
-  const [itinSaving, setItinSaving] = useState(false);
-  const [itinMsg, setItinMsg] = useState("");
-  const [itinImgFiles, setItinImgFiles] = useState([]);
-  const [itinCurImages, setItinCurImages] = useState([]);
+  // /* itinerary modal */
+  // const [itineraries, setItineraries] = useState([]);
+  // const [itinModal, setItinModal] = useState(false);
+  // const [itinForm, setItinForm] = useState(EMPTY_ITIN);
+  // const [itinEdit, setItinEdit] = useState(null);
+  // const [itinSaving, setItinSaving] = useState(false);
+  // const [itinMsg, setItinMsg] = useState("");
+  // const [itinImgFiles, setItinImgFiles] = useState([]);
+  // const [itinCurImages, setItinCurImages] = useState([]);
 
   /* home hero */
   const EMPTY_HOME_HERO = {
