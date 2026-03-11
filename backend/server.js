@@ -100,6 +100,23 @@ app.get("/api/health", (req, res) => {
 });
 
 // ========================================
+// SERVE REACT FRONTEND
+// ========================================
+
+const FRONTEND_DIST = path.join(__dirname, "../frontend/dist");
+
+// Serve JS/CSS/image assets
+app.use(express.static(FRONTEND_DIST));
+
+// SPA fallback — any non-API GET returns index.html so React Router works
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"), (err) => {
+    if (err) next(err);
+  });
+});
+
+// ========================================
 // ERROR HANDLING
 // ========================================
 

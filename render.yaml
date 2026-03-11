@@ -20,7 +20,7 @@ services:
 
       # Set to your Render service URL once deployed (e.g. https://itravelz.onrender.com)
       - key: CLIENT_URL
-        value: https://itravelmongolia.com
+        value: https://itravelz-2.onrender.com
 
       # Google OAuth
       - key: GOOGLE_CLIENT_ID
@@ -28,7 +28,7 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_CALLBACK_URL
-        value: https://itravelmongolia.com/api/auth/google/callback
+        value: https://itravelz-2.onrender.com/api/auth/google/callback
 
       # Optional — email / SMTP
       - key: EMAIL_HOST
@@ -60,4 +60,4 @@ services:
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://itravelmongolia.com
+        value: https://itravelz-2.onrender.com
