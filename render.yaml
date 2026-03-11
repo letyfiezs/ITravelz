@@ -17,9 +17,17 @@ services:
         sync: false # Long random secret
       - key: JWT_EXPIRE
         value: 7d
+      - key: SESSION_SECRET
+        sync: false # Long random secret for express-session
 
       # Set to your Render service URL once deployed (e.g. https://itravelz.onrender.com)
+      # ⚠ If frontend is on Vercel instead, change this to your Vercel URL
       - key: CLIENT_URL
+        value: https://itravelz-2.onrender.com
+      - key: FRONTEND_URL
+        value: https://itravelz-2.onrender.com
+      # Used by passport.js callback fallback
+      - key: BACKEND_URL
         value: https://itravelz-2.onrender.com
 
       # Google OAuth
@@ -38,6 +46,14 @@ services:
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS
+        sync: false
+
+      # Cloudinary (image uploads)
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
 
       # Brevo (Sendinblue) — email provider
@@ -59,5 +75,3 @@ services:
         sync: false
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
-      - key: FRONTEND_URL
-        value: https://itravelz-2.onrender.com

@@ -37,7 +37,8 @@ export const authService = {
   resetPassword: (token, data) =>
     api.post(`/auth/reset-password/${token}`, data),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
-  resendVerification: (email) => api.post('/auth/resend-verification', { email }),
+  resendVerification: (email) =>
+    api.post("/auth/resend-verification", { email }),
 };
 
 export const packageService = {
@@ -55,7 +56,8 @@ export const bookingService = {
   getById: (id) => api.get(`/bookings/${id}`),
   getByRef: (bookingId) =>
     api.get(`/bookings/pay/${encodeURIComponent(bookingId)}`),
-  createCheckoutSession: (data) => api.post("/bookings/create-checkout-session", data),
+  createCheckoutSession: (data) =>
+    api.post("/bookings/create-checkout-session", data),
   verifyCheckout: (data) => api.post("/bookings/verify-checkout", data),
   create: (data) => api.post("/bookings", data),
   update: (id, data) => api.put(`/bookings/${id}`, data),
@@ -114,7 +116,8 @@ export const aboutService = {
 };
 
 export const chatService = {
-  send: (message, history, language = 'en') => api.post("/chat", { message, history, language }),
+  send: (message, history, language = "en") =>
+    api.post("/chat", { message, history, language }),
 };
 
 export const adminService = {
