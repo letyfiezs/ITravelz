@@ -140,7 +140,7 @@ const Signup = () => {
           </form>
           <div className={styles.divider}><span>or</span></div>
           <a
-            href={`${import.meta.env.VITE_API_URL || 'http://localhost:10000/api'}/auth/google`}
+            href={`${import.meta.env.VITE_API_URL}/auth/google`}
             className={styles.googleBtn}
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width={18} />

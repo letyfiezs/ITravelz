@@ -11,12 +11,12 @@ import { useLanguage } from "../hooks/useContext";
 import ImageSlideshow from "../components/ImageSlideshow/ImageSlideshow";
 import styles from "./Home.module.css";
 
-const STATS = [
-  { icon: "fas fa-users", value: "15K+", key: "stat_travelers" },
-  { icon: "fas fa-map-marker-alt", value: "120+", key: "stat_destinations" },
-  { icon: "fas fa-trophy", value: "8+", key: "stat_experience" },
-  { icon: "fas fa-star", value: "4.9", key: "stat_rating" },
-];
+// const STATS = [
+//   { icon: "fas fa-users", value: "15K+", key: "stat_travelers" },
+//   { icon: "fas fa-map-marker-alt", value: "120+", key: "stat_destinations" },
+//   { icon: "fas fa-trophy", value: "8+", key: "stat_experience" },
+//   { icon: "fas fa-star", value: "4.9", key: "stat_rating" },
+// ];
 
 const FALLBACK_PKGS = [
   {
@@ -413,7 +413,7 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className={styles.statsSection}>
+      {/* <section className={styles.statsSection}>
         <div className={`${styles.statsCard} container`}>
           {STATS.map(({ icon, value, key }) => (
             <div key={key} className={styles.statItem}>
@@ -427,7 +427,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── SECTION 2: TOURS ─────────────────────────────────── */}
       <ScrollRow

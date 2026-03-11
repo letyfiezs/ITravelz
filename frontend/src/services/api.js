@@ -1,5 +1,8 @@
 import axios from "axios";
 
+// In production VITE_API_URL must be set to the Render backend URL.
+// In development the Vite proxy rewrites /api → http://localhost:5000, so the
+// "/api" fallback keeps local dev working without an .env file.
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({

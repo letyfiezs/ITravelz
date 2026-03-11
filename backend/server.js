@@ -38,11 +38,15 @@ app.use(
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:5173",
   "http://localhost:5174",
 ].filter(Boolean);
+
+// Matches any *.vercel.app subdomain (for preview + production Vercel deployments)
+const VERCEL_ORIGIN_RE = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
 
 app.use(
   cors({
@@ -50,8 +54,9 @@ app.use(
       // Allow requests with no origin (curl, Postman, mobile apps)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      // In development without CLIENT_URL set, allow all
-      if (!process.env.CLIENT_URL) return callback(null, true);
+      if (VERCEL_ORIGIN_RE.test(origin)) return callback(null, true);
+      // In development, allow all origins
+      if (process.env.NODE_ENV !== "production") return callback(null, true);
       callback(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,
@@ -95,24 +100,6 @@ app.get("/api/health", (req, res) => {
 });
 
 // ========================================
-// SERVE REACT FRONTEND
-// ========================================
-
-// Serve built React static files
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-// SPA fallback — let React Router handle all non-API routes
-// Skip requests that look like static files (have an extension); let them 404 naturally
-// instead of returning index.html (which would cause wrong MIME type errors in the browser)
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
-  if (path.extname(req.path)) return next(); // .css, .js, .png, etc. → 404, not index.html
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"), (err) => {
-    if (err) next(err);
-  });
-});
-
-// ========================================
 // ERROR HANDLING
 // ========================================
 
@@ -146,7 +133,7 @@ mongoose
 // START SERVER
 // ========================================
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
