@@ -37,31 +37,36 @@ app.use(
 );
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.FRONTEND_URL,
+  "https://itravelmongolia.com",
+  "https://www.itravelmongolia.com",
+  "https://i-travelz2.vercel.app",
+  "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:3001",
-  "http://localhost:5173",
   "http://localhost:5174",
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 // Matches any *.vercel.app subdomain (for preview + production Vercel deployments)
 const VERCEL_ORIGIN_RE = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (curl, Postman, mobile apps)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      if (VERCEL_ORIGIN_RE.test(origin)) return callback(null, true);
-      // In development, allow all origins
-      if (process.env.NODE_ENV !== "production") return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    credentials: true,
-  }),
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (VERCEL_ORIGIN_RE.test(origin)) return callback(null, true);
+    // In development, allow all origins
+    if (process.env.NODE_ENV !== "production") return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
