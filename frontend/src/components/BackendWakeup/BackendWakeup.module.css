@@ -1,0 +1,189 @@
+/* =========================================================
+   BackendWakeup – full-screen loader while Render cold-starts
+   ========================================================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #001e4d 0%, #003580 50%, #0d58c4 100%);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.overlay.fadeOut {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---- Decorative blobs ---- */
+.blob1,
+.blob2 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.blob1 {
+  width: 500px;
+  height: 500px;
+  background: #DF6951;
+  top: -140px;
+  right: -100px;
+  animation: float 7s ease-in-out infinite alternate;
+}
+.blob2 {
+  width: 400px;
+  height: 400px;
+  background: #0d58c4;
+  bottom: -120px;
+  left: -80px;
+  animation: float 9s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes float {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(30px) scale(1.07); }
+}
+
+/* ---- Card ---- */
+.card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 48px 52px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Logo row ---- */
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.planeIcon {
+  width: 32px;
+  height: 32px;
+  color: #DF6951;
+  animation: fly 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes fly {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%       { transform: translateY(-6px) rotate(-5deg); }
+  75%       { transform: translateY(4px) rotate(3deg); }
+}
+
+.brand {
+  font-family: 'Volkhov', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Spinner rings ---- */
+.spinnerWrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.ring,
+.ringInner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid transparent;
+}
+.ring {
+  border-top-color: #DF6951;
+  border-right-color: rgba(223, 105, 81, 0.3);
+  animation: spin 1.1s linear infinite;
+}
+.ringInner {
+  inset: 10px;
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  animation: spin 1.6s linear infinite reverse;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Text ---- */
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+.subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+/* ---- Elapsed ---- */
+.elapsed {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ---- Progress bar ---- */
+.progressTrack {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #DF6951, #f07f6a);
+  border-radius: 9999px;
+  transition: width 1s linear;
+}
+
+/* ---- Step dots ---- */
+.steps {
+  display: flex;
+  gap: 8px;
+}
+.step {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 0.4s ease, transform 0.4s ease;
+}
+.stepActive {
+  background: #DF6951;
+  transform: scale(1.3);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .card {
+    padding: 36px 28px;
+  }
+  .brand {
+    font-size: 1.5rem;
+  }
+}

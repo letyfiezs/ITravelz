@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import App from './App';
+import BackendWakeup from './components/BackendWakeup/BackendWakeup';
 import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <App />
+            <BackendWakeup>
+              <App />
+            </BackendWakeup>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
