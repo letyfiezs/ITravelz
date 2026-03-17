@@ -155,27 +155,35 @@ mongoose
 // START SERVER
 // ========================================
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[SERVER] Listening on 0.0.0.0:${PORT}`);
 });
 
-// Graceful shutdown for nodemon restarts (SIGUSR2) and normal exits
-const gracefulShutdown = (signal) => {
+// Graceful shutdown helper
+const gracefulShutdown = (signal, rebroadcast = false) => {
   console.log(`[SHUTDOWN] ${signal} received — closing HTTP server`);
   server.close(() => {
     console.log("[SHUTDOWN] HTTP server closed");
     mongoose.connection.close(false).then(() => {
       console.log("[SHUTDOWN] MongoDB connection closed");
-      process.kill(process.pid, signal);
+      if (rebroadcast) {
+        // Let nodemon handle the restart signal
+        process.kill(process.pid, signal);
+      } else {
+        process.exit(0);
+      }
     });
   });
 };
 
-process.once("SIGUSR2", () => gracefulShutdown("SIGUSR2"));
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+// SIGUSR2 — nodemon restart; re-broadcast so nodemon can track it
+process.once("SIGUSR2", () => gracefulShutdown("SIGUSR2", true));
+// SIGTERM — Render/Docker stop; just exit cleanly
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM", false));
+// SIGINT — Ctrl-C in local dev; just exit cleanly
+process.on("SIGINT", () => gracefulShutdown("SIGINT", false));
 
 process.on("unhandledRejection", (err) => {
   console.error("[UNHANDLED]", err);
