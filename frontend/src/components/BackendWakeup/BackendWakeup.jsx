@@ -5,7 +5,7 @@ const HEALTH_URL =
   (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "") + "/health";
 
 const POLL_INTERVAL = 3000; // ms between retries
-const MAX_WAIT = 90000;     // 90s timeout
+const MAX_WAIT = 90000; // 90s timeout
 
 export default function BackendWakeup({ children }) {
   const [ready, setReady] = useState(false);
@@ -17,7 +17,7 @@ export default function BackendWakeup({ children }) {
   useEffect(() => {
     const id = setInterval(
       () => setDots((d) => (d.length >= 3 ? "." : d + ".")),
-      500
+      500,
     );
     return () => clearInterval(id);
   }, []);
@@ -36,7 +36,10 @@ export default function BackendWakeup({ children }) {
 
     const ping = async () => {
       try {
-        const res = await fetch(HEALTH_URL, { method: "GET", cache: "no-store" });
+        const res = await fetch(HEALTH_URL, {
+          method: "GET",
+          cache: "no-store",
+        });
         if (res.ok && !cancelled) {
           // fade out then unmount loader
           setReady(true);
@@ -89,14 +92,17 @@ export default function BackendWakeup({ children }) {
             </div>
 
             {/* Message */}
-            <p className={styles.title}>Серверийг асааж байна{dots}</p>
+            <p className={styles.title}>Please wait a moment.{dots}</p>
             <p className={styles.subtitle}>
-              Render.com дээрх серверийг сэрээж байна, түр хүлээнэ үү.
+              Server is starting up and waking from hibernation. This may take
+              up to a minute. Don't worry, your session will be preserved and
+              the app will load automatically once ready. If it takes too long,
+              try refreshing the page after a short wait.
             </p>
 
             {/* Elapsed */}
             <div className={styles.elapsed}>
-              <span>{elapsed}с өнгөрлөө</span>
+              <span>{elapsed} seconds elapsed</span>
             </div>
 
             {/* Progress bar */}
