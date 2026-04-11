@@ -170,6 +170,232 @@ const FALLBACK_ABOUT = [
   },
 ];
 
+/* ─── Package Detail Modal ───────────────────────────────────── */
+function PackageModal({ pkg, onClose, t, language }) {
+  const images = pkg.images?.length ? pkg.images : pkg.image ? [pkg.image] : [];
+  const tr = (key) => pkg.translations?.[language]?.[key] || pkg[key] || "";
+  const features = pkg.translations?.[language]?.features || pkg.features || [];
+
+  const handleBackdrop = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", h);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div className={styles.pkgModalBackdrop} onClick={handleBackdrop}>
+      <div className={styles.pkgModal}>
+        <button
+          className={styles.pkgModalClose}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <i className="fas fa-times" />
+        </button>
+
+        {/* Image */}
+        <div className={styles.pkgModalImg}>
+          <ImageSlideshow
+            images={images}
+            fallback={pkg.image || FALLBACK_PKGS[0].image}
+            alt={pkg.name}
+            interval={5000}
+          />
+          {(pkg.duration || pkg.dur) && (
+            <span className={styles.pkgModalBadge}>
+              <i className="fas fa-clock" /> {pkg.duration || pkg.dur}
+            </span>
+          )}
+          {pkg.category && (
+            <span
+              className={`${styles.pkgModalBadge} ${styles.pkgModalCatBadge}`}
+            >
+              {pkg.category}
+            </span>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className={styles.pkgModalBody}>
+          {(pkg.destination || pkg.dest) && (
+            <p className={styles.pkgModalMeta}>
+              <i className="fas fa-map-marker-alt" />{" "}
+              {pkg.destination || pkg.dest}
+            </p>
+          )}
+          <h2 className={styles.pkgModalTitle}>{tr("name")}</h2>
+
+          {/* Price */}
+          <div className={styles.pkgModalPrice}>
+            <strong>{pkg.price}</strong>
+            <span className={styles.pkgModalPriceLabel}>{t("per_person")}</span>
+          </div>
+
+          {/* Description */}
+          {tr("description") && (
+            <p className={styles.pkgModalDesc}>{tr("description")}</p>
+          )}
+
+          {/* Features */}
+          {features.length > 0 && (
+            <div className={styles.pkgModalFeatures}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-check-circle" />{" "}
+                {t("pkg_features") || "Онцлог"}
+              </h4>
+              <ul className={styles.pkgModalFeatureList}>
+                {features.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Itinerary */}
+          {pkg.itinerary?.length > 0 && (
+            <div className={styles.pkgModalItinerary}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-route" />{" "}
+                {t("pkg_itinerary") || "Хөтөлбөр"}
+              </h4>
+              {pkg.itinerary.map((day, i) => (
+                <div key={i} className={styles.pkgModalDay}>
+                  <span className={styles.pkgModalDayNum}>
+                    {t("pkg_day") || "Өдөр"} {day.day || i + 1}
+                  </span>
+                  <div>
+                    {day.title && <strong>{day.title}</strong>}
+                    {day.description && <p>{day.description}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Highlights */}
+          {pkg.highlights?.length > 0 && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-star" /> {"Top 5 Experiences"}
+              </h4>
+              <ul className={styles.pkgModalBulletList}>
+                {pkg.highlights.map((h, i) => (
+                  <li key={i}>{h}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Packing List */}
+          {pkg.packingList?.length > 0 && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-backpack" /> {"Авч явах зүйлс"}
+              </h4>
+              <ul className={styles.pkgModalBulletList}>
+                {pkg.packingList.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Trip Info */}
+          {(pkg.totalDistance ||
+            pkg.maxElevation ||
+            pkg.physicalLevel ||
+            pkg.bestSeason) && (
+            <div className={styles.pkgModalTripInfo}>
+              {pkg.totalDistance && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>
+                    Total Distance
+                  </span>
+                  <span className={styles.pkgModalTripValue}>
+                    {pkg.totalDistance}
+                  </span>
+                </div>
+              )}
+              {pkg.maxElevation && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>
+                    Max Elevation
+                  </span>
+                  <span className={styles.pkgModalTripValue}>
+                    {pkg.maxElevation}
+                  </span>
+                </div>
+              )}
+              {pkg.physicalLevel && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>
+                    Physical Level
+                  </span>
+                  <span className={styles.pkgModalTripValue}>
+                    {pkg.physicalLevel}
+                  </span>
+                </div>
+              )}
+              {pkg.bestSeason && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>Best Season</span>
+                  <span className={styles.pkgModalTripValue}>
+                    {pkg.bestSeason}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Pricing Note */}
+          {pkg.pricingNote && (
+            <p className={styles.pkgModalPricingNote}>{pkg.pricingNote}</p>
+          )}
+
+          {/* Group Pricing */}
+          {pkg.groupPricing?.length > 0 && (
+            <div className={styles.pkgModalGroupPricing}>
+              {pkg.groupPricing.map((gp, i) => (
+                <div key={i} className={styles.pkgModalGroupRow}>
+                  <span className={styles.pkgModalGroupLabel}>{gp.label}</span>
+                  <span className={styles.pkgModalGroupPrice}>{gp.price}$</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className={styles.pkgModalFooter}>
+            <Link
+              to={`/booking?package=${pkg._id}`}
+              className="btn btn-primary"
+              onClick={onClose}
+            >
+              <i className="fas fa-calendar-check" /> {t("btn_book_now")}
+            </Link>
+            <button
+              className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
+              onClick={onClose}
+            >
+              {t("btn_close") || "Хаах"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Scroll Row helper ─────────────────────────────────────── */
 function ScrollRow({ children, label, viewAllTo, t }) {
   const trackRef = useRef(null);
@@ -215,9 +441,322 @@ function ScrollRow({ children, label, viewAllTo, t }) {
 
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
+/* ─── About Mongolia Detail Modal ──────────────────────────── */
+function AboutModal({ item, onClose, t, language }) {
+  const tr = (key) => item.translations?.[language]?.[key] || item[key] || "";
+  const images =
+    item.images && item.images.length > 0
+      ? item.images
+      : item.image
+        ? [item.image]
+        : [];
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", h);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className={styles.pkgModalBackdrop}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={styles.pkgModal}>
+        <button
+          className={styles.pkgModalClose}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <i className="fas fa-times" />
+        </button>
+        {images.length > 0 && (
+          <div className={styles.pkgModalImg}>
+            <ImageSlideshow
+              images={images}
+              fallback={item.image}
+              alt={tr("title")}
+              interval={5000}
+            />
+            {item.category && (
+              <span
+                className={`${styles.pkgModalBadge} ${styles.pkgModalCatBadge}`}
+              >
+                {item.category}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={styles.pkgModalBody}>
+          <h2 className={styles.pkgModalTitle}>{tr("title")}</h2>
+          {tr("description") && (
+            <p className={styles.pkgModalDesc}>{tr("description")}</p>
+          )}
+          {tr("readMore") && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-book-open" /> More
+              </h4>
+              <p className={styles.pkgModalDesc}>{tr("readMore")}</p>
+            </div>
+          )}
+          <div className={styles.pkgModalFooter}>
+            <button
+              className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
+              onClick={onClose}
+            >
+              {t("btn_close") || "Close"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Destination Detail Modal ─────────────────────────────── */
+function DestModal({ dest, onClose, t, language }) {
+  const tr = (key) => dest.translations?.[language]?.[key] || dest[key] || "";
+  const images =
+    dest.images && dest.images.length > 0
+      ? dest.images
+      : dest.image
+        ? [dest.image]
+        : [];
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", h);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className={styles.pkgModalBackdrop}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={styles.pkgModal}>
+        <button
+          className={styles.pkgModalClose}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <i className="fas fa-times" />
+        </button>
+        {images.length > 0 && (
+          <div className={styles.pkgModalImg}>
+            <ImageSlideshow
+              images={images}
+              fallback={dest.image}
+              alt={tr("name")}
+              interval={5000}
+            />
+            {dest.category && (
+              <span
+                className={`${styles.pkgModalBadge} ${styles.pkgModalCatBadge}`}
+              >
+                {dest.category}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={styles.pkgModalBody}>
+          <h2 className={styles.pkgModalTitle}>{tr("name")}</h2>
+          {(dest.city || dest.country) && (
+            <p className={styles.pkgModalMeta}>
+              <i className="fas fa-map-marker-alt" />{" "}
+              {[dest.city, dest.country].filter(Boolean).join(", ")}
+            </p>
+          )}
+          {dest.tagline && (
+            <p className={styles.pkgModalDesc}>
+              <em>{tr("tagline")}</em>
+            </p>
+          )}
+          {tr("description") && (
+            <p className={styles.pkgModalDesc}>{tr("description")}</p>
+          )}
+          {tr("culturalInfo") && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-landmark" /> Cultural &amp; Historical Info
+              </h4>
+              <p className={styles.pkgModalDesc}>{tr("culturalInfo")}</p>
+            </div>
+          )}
+          {tr("readMore") && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-book-open" /> Details
+              </h4>
+              <p className={styles.pkgModalDesc}>{tr("readMore")}</p>
+            </div>
+          )}
+          {(dest.highlights || []).length > 0 && (
+            <div className={styles.pkgModalSection}>
+              <h4 className={styles.pkgModalSubtitle}>
+                <i className="fas fa-star" /> Highlights
+              </h4>
+              <ul className={styles.pkgModalBulletList}>
+                {dest.highlights.map((h, i) => (
+                  <li key={i}>{h}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {(dest.bestTime || dest.avgCost) && (
+            <div className={styles.pkgModalTripInfo}>
+              {dest.bestTime && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>
+                    Best Time to Visit
+                  </span>
+                  <span className={styles.pkgModalTripValue}>
+                    {dest.bestTime}
+                  </span>
+                </div>
+              )}
+              {dest.avgCost && (
+                <div className={styles.pkgModalTripItem}>
+                  <span className={styles.pkgModalTripLabel}>Average Cost</span>
+                  <span className={styles.pkgModalTripValue}>
+                    {dest.avgCost}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          <div className={styles.pkgModalFooter}>
+            <button
+              className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
+              onClick={onClose}
+            >
+              {t("btn_close") || "Close"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Festival Detail Modal ─────────────────────────────────── */
+function FestModal({ fest, onClose, t, language }) {
+  const tr = (key) => fest.translations?.[language]?.[key] || fest[key] || "";
+  const images = fest.images?.length
+    ? fest.images
+    : fest.image
+      ? [fest.image]
+      : [];
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", h);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className={styles.pkgModalBackdrop}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={styles.pkgModal}>
+        <button
+          className={styles.pkgModalClose}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <i className="fas fa-times" />
+        </button>
+        {images.length > 0 && (
+          <div className={styles.pkgModalImg}>
+            <ImageSlideshow
+              images={images}
+              fallback={fest.image}
+              alt={tr("name")}
+              interval={5000}
+            />
+            {fest.category && (
+              <span
+                className={`${styles.pkgModalBadge} ${styles.pkgModalCatBadge}`}
+              >
+                {fest.category}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={styles.pkgModalBody}>
+          <h2 className={styles.pkgModalTitle}>{tr("name")}</h2>
+          <div className={styles.pkgModalPrice}>
+            {fest.date && (
+              <span className={styles.pkgModalPriceLabel}>
+                <i className="fas fa-calendar-alt" /> {fest.date}
+              </span>
+            )}
+            {fest.location && (
+              <span className={styles.pkgModalPriceLabel}>
+                &bull; <i className="fas fa-map-marker-alt" /> {fest.location}
+              </span>
+            )}
+          </div>
+          {tr("description") && (
+            <p className={styles.pkgModalDesc}>{tr("description")}</p>
+          )}
+          <div className={styles.pkgModalFooter}>
+            {fest.link && (
+              <a
+                href={fest.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+              >
+                <i className="fas fa-external-link-alt" /> {t("btn_learn_more")}
+              </a>
+            )}
+            <button
+              className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
+              onClick={onClose}
+            >
+              {t("btn_close") || "Close"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────── */
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const [selectedPkg, setSelectedPkg] = useState(null);
+  const [selectedDest, setSelectedDest] = useState(null);
+  const [selectedFest, setSelectedFest] = useState(null);
+  const [selectedAbout, setSelectedAbout] = useState(null);
 
   const [heroSlogan, setHeroSlogan] = useState("");
   const [heroImage, setHeroImage] = useState("");
@@ -436,7 +975,14 @@ export default function Home() {
         t={t}
       >
         {packages.map((pkg) => (
-          <div key={pkg._id} className={styles.scrollCard}>
+          <div
+            key={pkg._id}
+            className={`${styles.scrollCard} ${styles.pkgClickable}`}
+            onClick={() => setSelectedPkg(pkg)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && setSelectedPkg(pkg)}
+          >
             <div className={styles.scrollCardImg}>
               <ImageSlideshow
                 images={pkg.images?.length ? pkg.images : []}
@@ -465,6 +1011,7 @@ export default function Home() {
                 <Link
                   to={`/booking?package=${pkg._id}`}
                   className="btn btn-primary btn-sm"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {t("btn_book_now")}
                 </Link>
@@ -489,10 +1036,13 @@ export default function Home() {
           const img = dest.image || dest.img || FALLBACK_DESTS[0].image;
           const tag = dest.category || dest.tag || "";
           return (
-            <Link
+            <div
               key={dest._id}
-              to="/destinations"
-              className={`${styles.scrollCard} ${styles.destScrollCard}`}
+              className={`${styles.scrollCard} ${styles.destScrollCard} ${styles.pkgClickable}`}
+              onClick={() => setSelectedDest(dest)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && setSelectedDest(dest)}
             >
               <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
                 <ImageSlideshow
@@ -512,7 +1062,7 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            </Link>
+            </div>
           );
         })}
       </ScrollRow>
@@ -553,12 +1103,12 @@ export default function Home() {
               </p>
               <h3 className={styles.scrollCardTitle}>{fest.name}</h3>
               <div className={styles.scrollCardFooter}>
-                <Link
-                  to="/festivals"
+                <button
                   className={`btn btn-outline btn-sm ${styles.learnMoreBtn}`}
+                  onClick={() => setSelectedFest(fest)}
                 >
                   {t("btn_learn_more")}
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -572,10 +1122,13 @@ export default function Home() {
         t={t}
       >
         {abouts.map((item) => (
-          <Link
+          <div
             key={item._id}
-            to="/about-mongolia"
-            className={`${styles.scrollCard} ${styles.destScrollCard}`}
+            className={`${styles.scrollCard} ${styles.destScrollCard} ${styles.pkgClickable}`}
+            onClick={() => setSelectedAbout(item)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && setSelectedAbout(item)}
           >
             <div className={`${styles.scrollCardImg} ${styles.destImgWrap}`}>
               <ImageSlideshow
@@ -598,7 +1151,7 @@ export default function Home() {
                 )}
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </ScrollRow>
 
@@ -633,6 +1186,46 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* Package Detail Modal */}
+      {selectedPkg && (
+        <PackageModal
+          pkg={selectedPkg}
+          onClose={() => setSelectedPkg(null)}
+          t={t}
+          language={language}
+        />
+      )}
+
+      {/* Destination Detail Modal */}
+      {selectedDest && (
+        <DestModal
+          dest={selectedDest}
+          onClose={() => setSelectedDest(null)}
+          t={t}
+          language={language}
+        />
+      )}
+
+      {/* Festival Detail Modal */}
+      {selectedFest && (
+        <FestModal
+          fest={selectedFest}
+          onClose={() => setSelectedFest(null)}
+          t={t}
+          language={language}
+        />
+      )}
+
+      {/* About Mongolia Detail Modal */}
+      {selectedAbout && (
+        <AboutModal
+          item={selectedAbout}
+          onClose={() => setSelectedAbout(null)}
+          t={t}
+          language={language}
+        />
+      )}
     </main>
   );
 }

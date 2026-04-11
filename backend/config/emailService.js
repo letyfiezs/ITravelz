@@ -33,31 +33,36 @@ const sendEmail = async (to, subject, htmlContent) => {
   }
 };
 
-const baseTemplate = (content) => `
+const baseTemplate = (content) => {
+  const frontendUrl = process.env.FRONTEND_URL || "https://itravelmongolia.com";
+  const logoUrl = `${frontendUrl}/logo.png`;
+  return `
 <div style="font-family: Arial, sans-serif; background:#f4f6f9; padding:30px;">
   <div style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:12px;">
     
-    <h1 style="color:#3b82f6;text-align:center;margin-bottom:30px;">
-      ✈️ Total Grand Travel
-    </h1>
+    <div style="text-align:center;margin-bottom:30px;">
+      <img src="${logoUrl}" alt="ITravel" style="height:56px;width:auto;display:inline-block;vertical-align:middle;margin-right:10px;" />
+      <span style="font-size:1.6rem;font-weight:900;color:#e07b30;vertical-align:middle;letter-spacing:-0.5px;">ITravel</span>
+    </div>
 
     ${content}
 
     <hr style="margin:30px 0;">
     <p style="font-size:12px;color:#888;text-align:center;">
-      © 2026 Total Grand Travel. All rights reserved.
+      &copy; 2026 ITravel Mongolia. All rights reserved.
     </p>
 
   </div>
 </div>
 `;
+};
 
 /* ===========================
    VERIFICATION EMAIL
 =========================== */
 const sendVerificationEmail = async (email, name, token, link) => {
   const content = `
-    <h2>Hello ${name},</h2>
+    <h2 style="color:#e07b30;">Welcome to Mongolia! 🇲🇳</h2>
     <p>Please verify your email by clicking the button below:</p>
 
     <div style="text-align:center;margin:30px 0;">
@@ -74,7 +79,7 @@ const sendVerificationEmail = async (email, name, token, link) => {
 
   return await sendEmail(
     email,
-    "Email Verification - Total Grand Travel",
+    "Email Verification - ITravel Mongolia",
     baseTemplate(content),
   );
 };
@@ -98,7 +103,7 @@ const sendWelcomeEmail = async (email, name) => {
 
   return await sendEmail(
     email,
-    "Welcome to Total Grand Travel!",
+    "Welcome to ITravel Mongolia!",
     baseTemplate(content),
   );
 };
@@ -127,7 +132,7 @@ const sendPasswordResetEmail = async (email, name, token, link) => {
 
   return await sendEmail(
     email,
-    "Password Reset - Total Grand Travel",
+    "Password Reset - ITravel Mongolia",
     baseTemplate(content),
   );
 };

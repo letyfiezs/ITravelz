@@ -1146,3 +1146,357 @@ html[data-theme="dark"] .packSection {
     flex: 0 0 190px;
   }
 }
+
+/* ── Package Detail Modal ────────────────────────────────────── */
+.pkgClickable {
+  cursor: pointer;
+}
+
+.pkgModalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: pkgFadeIn 0.2s;
+}
+@keyframes pkgFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pkgModal {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  animation: pkgSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pkgSlideUp {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pkgModalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.pkgModalClose:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.pkgModalImg {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+}
+
+.pkgModalBadge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 2;
+}
+.pkgModalCatBadge {
+  left: auto;
+  right: 14px;
+  background: rgba(79, 117, 255, 0.8);
+  text-transform: capitalize;
+}
+
+.pkgModalBody {
+  padding: 24px 28px 32px;
+}
+
+.pkgModalMeta {
+  font-size: 0.83rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.pkgModalMeta i {
+  margin-right: 4px;
+}
+
+.pkgModalTitle {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.pkgModalPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.pkgModalPrice strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+.pkgModalPriceLabel {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.pkgModalDesc {
+  font-size: 0.93rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 20px;
+  white-space: pre-wrap;
+}
+
+.pkgModalSubtitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pkgModalSubtitle i {
+  color: var(--primary);
+}
+
+.pkgModalFeatures {
+  margin-bottom: 20px;
+}
+.pkgModalFeatureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+.pkgModalFeatureList li {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+.pkgModalFeatureList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.pkgModalItinerary {
+  margin-bottom: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.pkgModalDay {
+  display: flex;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pkgModalDay:last-child {
+  border-bottom: none;
+}
+.pkgModalDayNum {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 8px;
+  height: fit-content;
+  white-space: nowrap;
+}
+.pkgModalDay strong {
+  font-size: 0.9rem;
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
+.pkgModalDay p {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Shared section wrapper */
+.pkgModalSection {
+  margin-bottom: 20px;
+}
+
+/* Bullet list (highlights + packing) */
+.pkgModalBulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.pkgModalBulletList li {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  padding: 5px 0 5px 20px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+.pkgModalBulletList li:last-child {
+  border-bottom: none;
+}
+.pkgModalBulletList li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Trip info (distance / elevation) */
+.pkgModalTripInfo {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+.pkgModalTripItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pkgModalTripLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pkgModalTripValue {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Pricing note */
+.pkgModalPricingNote {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+}
+
+/* Group pricing table */
+.pkgModalGroupPricing {
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.pkgModalGroupRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pkgModalGroupRow:last-child {
+  border-bottom: none;
+}
+.pkgModalGroupLabel {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+.pkgModalGroupPrice {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.pkgModalFooter {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.pkgModalCloseBtn {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .pkgModal {
+    border-radius: 16px;
+    max-height: 95vh;
+  }
+  .pkgModalImg {
+    height: 220px;
+    border-radius: 16px 16px 0 0;
+  }
+  .pkgModalBody {
+    padding: 18px 18px 24px;
+  }
+  .pkgModalTitle {
+    font-size: 1.25rem;
+  }
+  .pkgModalFeatureList {
+    grid-template-columns: 1fr;
+  }
+}

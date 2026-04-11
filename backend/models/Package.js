@@ -15,8 +15,9 @@ const packageSchema = new mongoose.Schema({
     required: true,
   },
   price: {
-    type: Number,
+    type: String,
     required: true,
+    default: "",
   },
   category: {
     type: String,
@@ -45,6 +46,20 @@ const packageSchema = new mongoose.Schema({
       day: Number,
       title: String,
       description: String,
+    },
+  ],
+  // Rich detail fields — editable via admin "Add Details" panel
+  highlights: [{ type: String }], // Top experiences / bullets
+  packingList: [{ type: String }], // What to bring
+  totalDistance: { type: String, default: "" },
+  maxElevation: { type: String, default: "" },
+  pricingNote: { type: String, default: "" },
+  physicalLevel: { type: String, default: "" }, // e.g. "Easy / Moderate / Hard"
+  bestSeason: { type: String, default: "" }, // e.g. "June – September"
+  groupPricing: [
+    {
+      label: String, // e.g. "1-3 Person"
+      price: Number, // e.g. 2190
     },
   ],
   // Multilingual translations — flexible object stored as Mixed

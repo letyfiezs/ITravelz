@@ -50,9 +50,8 @@ const EMPTY_PKG = {
   images: [],
   features: "",
   status: "active",
-  availableDates: [],
-  availableTimes: [],
-  bookingLimitPerSlot: 5,
+  physicalLevel: "",
+  bestSeason: "",
   translations: {},
 };
 const EMPTY_DEST = {
@@ -262,9 +261,34 @@ const Admin = () => {
   const [pkgImgFiles, setPkgImgFiles] = useState([]);
   const [pkgCurImages, setPkgCurImages] = useState([]);
   const [pkgTranslating, setPkgTranslating] = useState(false);
-  /* date/time inputs */
+  /* date/time inputs — kept for legacy data */
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
+
+  /* package DETAILS modal (rich content) */
+  const EMPTY_DETAILS = {
+    itinerary: [],
+    highlights: [],
+    packingList: [],
+    totalDistance: "",
+    maxElevation: "",
+    pricingNote: "",
+    groupPricing: [],
+  };
+  const [pkgDetailsModal, setPkgDetailsModal] = useState(false);
+  const [pkgDetailsId, setPkgDetailsId] = useState(null);
+  const [pkgDetailsName, setPkgDetailsName] = useState("");
+  const [pkgDetailsForm, setPkgDetailsForm] = useState(EMPTY_DETAILS);
+  const [pkgDetailsSaving, setPkgDetailsSaving] = useState(false);
+  const [pkgDetailsMsg, setPkgDetailsMsg] = useState("");
+  /* details sub-inputs */
+  const [newDayNum, setNewDayNum] = useState("");
+  const [newDayTitle, setNewDayTitle] = useState("");
+  const [newDayDesc, setNewDayDesc] = useState("");
+  const [newHighlight, setNewHighlight] = useState("");
+  const [newPackingItem, setNewPackingItem] = useState("");
+  const [newGroupLabel, setNewGroupLabel] = useState("");
+  const [newGroupPrice, setNewGroupPrice] = useState("");
 
   /* home hero */
   const EMPTY_HOME_HERO = {
@@ -535,9 +559,8 @@ const Admin = () => {
       images: p.images || [],
       features: (p.features || []).join(", "),
       status: p.status || "active",
-      availableDates: p.availableDates || [],
-      availableTimes: p.availableTimes || [],
-      bookingLimitPerSlot: p.bookingLimitPerSlot || 5,
+      physicalLevel: p.physicalLevel || "",
+      bestSeason: p.bestSeason || "",
       translations: p.translations || {},
     });
     setPkgCurImages(p.images || []);
@@ -625,7 +648,7 @@ const Admin = () => {
     setPkgMsg("");
     const payload = {
       ...pkgForm,
-      price: parseFloat(pkgForm.price),
+      price: pkgForm.price,
       features: pkgForm.features
         .split(",")
         .map((s) => s.trim())
@@ -702,6 +725,132 @@ const Admin = () => {
   };
   const removePkgNewFile = (idx) =>
     setPkgImgFiles((prev) => prev.filter((_, i) => i !== idx));
+
+  /* ── Package Details helpers ── */
+  const openPkgDetails = (p) => {
+    setPkgDetailsId(p._id);
+    setPkgDetailsName(p.name || "");
+    setPkgDetailsForm({
+      itinerary: p.itinerary || [],
+      highlights: p.highlights || [],
+      packingList: p.packingList || [],
+      totalDistance: p.totalDistance || "",
+      maxElevation: p.maxElevation || "",
+      pricingNote: p.pricingNote || "",
+      groupPricing: p.groupPricing || [],
+    });
+    setNewDayNum("");
+    setNewDayTitle("");
+    setNewDayDesc("");
+    setNewHighlight("");
+    setNewPackingItem("");
+    setNewGroupLabel("");
+    setNewGroupPrice("");
+    setPkgDetailsMsg("");
+    setPkgDetailsModal(true);
+  };
+  const closePkgDetails = () => {
+    setPkgDetailsModal(false);
+    setPkgDetailsMsg("");
+  };
+  const setDet = (k) => (e) =>
+    setPkgDetailsForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  /* itinerary */
+  const addItineraryDay = () => {
+    if (!newDayTitle && !newDayDesc) return;
+    const day = {
+      day: parseInt(newDayNum) || pkgDetailsForm.itinerary.length + 1,
+      title: newDayTitle,
+      description: newDayDesc,
+    };
+    setPkgDetailsForm((p) => ({
+      ...p,
+      itinerary: [...p.itinerary, day].sort((a, b) => a.day - b.day),
+    }));
+    setNewDayNum("");
+    setNewDayTitle("");
+    setNewDayDesc("");
+  };
+  const removeItineraryDay = (idx) =>
+    setPkgDetailsForm((p) => ({
+      ...p,
+      itinerary: p.itinerary.filter((_, i) => i !== idx),
+    }));
+
+  /* highlights */
+  const addHighlight = () => {
+    if (!newHighlight.trim()) return;
+    setPkgDetailsForm((p) => ({
+      ...p,
+      highlights: [...p.highlights, newHighlight.trim()],
+    }));
+    setNewHighlight("");
+  };
+  const removeHighlight = (idx) =>
+    setPkgDetailsForm((p) => ({
+      ...p,
+      highlights: p.highlights.filter((_, i) => i !== idx),
+    }));
+
+  /* packing list */
+  const addPackingItem = () => {
+    if (!newPackingItem.trim()) return;
+    setPkgDetailsForm((p) => ({
+      ...p,
+      packingList: [...p.packingList, newPackingItem.trim()],
+    }));
+    setNewPackingItem("");
+  };
+  const removePackingItem = (idx) =>
+    setPkgDetailsForm((p) => ({
+      ...p,
+      packingList: p.packingList.filter((_, i) => i !== idx),
+    }));
+
+  /* group pricing */
+  const addGroupPrice = () => {
+    if (!newGroupLabel.trim() || !newGroupPrice) return;
+    setPkgDetailsForm((p) => ({
+      ...p,
+      groupPricing: [
+        ...p.groupPricing,
+        { label: newGroupLabel.trim(), price: parseFloat(newGroupPrice) },
+      ],
+    }));
+    setNewGroupLabel("");
+    setNewGroupPrice("");
+  };
+  const removeGroupPrice = (idx) =>
+    setPkgDetailsForm((p) => ({
+      ...p,
+      groupPricing: p.groupPricing.filter((_, i) => i !== idx),
+    }));
+
+  const savePkgDetails = async (e) => {
+    e.preventDefault();
+    if (!pkgDetailsId) return;
+    setPkgDetailsSaving(true);
+    setPkgDetailsMsg("");
+    try {
+      const res = await adminService.updatePackage(
+        pkgDetailsId,
+        pkgDetailsForm,
+      );
+      const updated = res.data.package || res.data;
+      setPackages((prev) =>
+        prev.map((x) => (x._id === pkgDetailsId ? { ...x, ...updated } : x)),
+      );
+      setPkgDetailsMsg("✅ Дэлгэрэнгүй мэдээлэл хадгалагдлаа!");
+      setTimeout(closePkgDetails, 900);
+    } catch (err) {
+      setPkgDetailsMsg(
+        "❌ " + (err.response?.data?.message || "Хадгалахад алдаа гарлаа."),
+      );
+    } finally {
+      setPkgDetailsSaving(false);
+    }
+  };
 
   /* ── Destination helpers ── */
   const openDestCreate = () => {
@@ -1756,16 +1905,16 @@ const Admin = () => {
                           : t === "packages"
                             ? "fa-box-open"
                             : t === "destinations"
-                                ? "fa-globe"
-                                : t === "festivals"
-                                  ? "fa-drum"
-                                  : t === "about"
-                                    ? "fa-mountain"
-                                    : t === "admins"
-                                      ? "fa-user-shield"
-                                      : t === "home"
-                                        ? "fa-home"
-                                        : "fa-users"
+                              ? "fa-globe"
+                              : t === "festivals"
+                                ? "fa-drum"
+                                : t === "about"
+                                  ? "fa-mountain"
+                                  : t === "admins"
+                                    ? "fa-user-shield"
+                                    : t === "home"
+                                      ? "fa-home"
+                                      : "fa-users"
                     }`}
                   />{" "}
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -1976,8 +2125,8 @@ const Admin = () => {
                         <th>Duration</th>
                         <th>Price</th>
                         <th>Category</th>
-                        <th>Dates</th>
-                        <th>Max Guests/Slot</th>
+                        <th>Physical Level</th>
+                        <th>Best Season</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -2068,9 +2217,7 @@ const Admin = () => {
                           </td>
                           <td>{p.destination}</td>
                           <td>{p.duration}</td>
-                          <td style={{ fontWeight: 600 }}>
-                            ${Number(p.price).toLocaleString()}
-                          </td>
+                          <td style={{ fontWeight: 600 }}>{p.price}</td>
                           <td>
                             <span className="badge badge-accent">
                               {p.category}
@@ -2079,29 +2226,12 @@ const Admin = () => {
                           <td
                             style={{ fontSize: 12, color: "var(--text-muted)" }}
                           >
-                            {(p.availableDates || []).length > 0
-                              ? `${(p.availableDates || []).length} date(s)`
-                              : "Any date"}
+                            {p.physicalLevel || "—"}
                           </td>
-                          <td style={{ fontSize: 12, textAlign: "center" }}>
-                            <span
-                              style={{
-                                fontWeight: 700,
-                                color: "var(--primary)",
-                                fontSize: 16,
-                              }}
-                            >
-                              {p.bookingLimitPerSlot || 5}
-                            </span>
-                            <span
-                              style={{
-                                display: "block",
-                                color: "var(--text-muted)",
-                                fontSize: 10,
-                              }}
-                            >
-                              per slot
-                            </span>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {p.bestSeason || "—"}
                           </td>
                           <td>
                             <span
@@ -2115,12 +2245,21 @@ const Admin = () => {
                               <button
                                 className={styles.btnEdit}
                                 onClick={() => openPkgEdit(p)}
+                                title="Edit"
                               >
                                 <i className="fas fa-pen" />
                               </button>
                               <button
+                                className={styles.btnDetails}
+                                onClick={() => openPkgDetails(p)}
+                                title="Add Details"
+                              >
+                                <i className="fas fa-list-alt" />
+                              </button>
+                              <button
                                 className={styles.btnDel}
                                 onClick={() => deletePkg(p._id)}
+                                title="Delete"
                               >
                                 <i className="fas fa-trash" />
                               </button>
@@ -3743,16 +3882,14 @@ const Admin = () => {
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label>Price (USD) *</label>
+                <label>Price *</label>
                 <input
                   className="form-input"
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="text"
                   value={pkgForm.price}
                   onChange={setP("price")}
                   required
-                  placeholder="1299"
+                  placeholder="e.g. 1000-2000$ or 1299$"
                 />
               </div>
               <div className={styles.formGroup}>
@@ -4019,104 +4156,27 @@ const Admin = () => {
               />
             </div>
 
-            {/* Available Dates */}
+            {/* Physical Level */}
             <div className={styles.formGroup}>
-              <label>
-                Available Dates{" "}
-                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
-                  (leave empty = any date)
-                </span>
-              </label>
-              <div className={styles.dateRow}>
-                <input
-                  className="form-input"
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={addDate}
-                >
-                  <i className="fas fa-plus" />
-                </button>
-              </div>
-              {pkgForm.availableDates.length > 0 && (
-                <div className={styles.tagList}>
-                  {pkgForm.availableDates.map((d) => (
-                    <span key={d} className={styles.tag}>
-                      {d}
-                      <button type="button" onClick={() => removeDate(d)}>
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Available Times */}
-            <div className={styles.formGroup}>
-              <label>
-                Available Times{" "}
-                <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
-                  (leave empty = any time)
-                </span>
-              </label>
-              <div className={styles.dateRow}>
-                <input
-                  className="form-input"
-                  type="time"
-                  value={newTime}
-                  onChange={(e) => setNewTime(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={addTime}
-                >
-                  <i className="fas fa-plus" />
-                </button>
-              </div>
-              {pkgForm.availableTimes.length > 0 && (
-                <div className={styles.tagList}>
-                  {pkgForm.availableTimes.map((t) => (
-                    <span key={t} className={styles.tag}>
-                      {t}
-                      <button type="button" onClick={() => removeTime(t)}>
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Booking Capacity */}
-            <div className={styles.formGroup}>
-              <label>
-                Max Guests per Slot
-                <span
-                  style={{
-                    fontWeight: 400,
-                    color: "var(--text-muted)",
-                    marginLeft: 6,
-                  }}
-                >
-                  How many total people can book the same date+time
-                </span>
-              </label>
+              <label>Physical Level</label>
               <input
                 className="form-input"
-                type="number"
-                min="1"
-                max="500"
-                value={pkgForm.bookingLimitPerSlot}
-                onChange={setP("bookingLimitPerSlot")}
-                placeholder="5"
+                type="text"
+                value={pkgForm.physicalLevel}
+                onChange={setP("physicalLevel")}
+                placeholder="e.g. Easy, Moderate, Challenging"
+              />
+            </div>
+
+            {/* Best Season */}
+            <div className={styles.formGroup}>
+              <label>Best Season</label>
+              <input
+                className="form-input"
+                type="text"
+                value={pkgForm.bestSeason}
+                onChange={setP("bestSeason")}
+                placeholder="e.g. June – September"
               />
             </div>
 
@@ -4142,6 +4202,382 @@ const Admin = () => {
                   "Save Changes"
                 ) : (
                   "Create Package"
+                )}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Package Details Modal ── */}
+      {pkgDetailsModal && (
+        <Modal title={`Details — ${pkgDetailsName}`} onClose={closePkgDetails}>
+          <form onSubmit={savePkgDetails} className={styles.itinForm}>
+            {/* ── Itinerary ── */}
+            <div className={styles.formGroup}>
+              <label style={{ fontWeight: 700, fontSize: 14 }}>
+                <i
+                  className="fas fa-route"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                Хөтөлбөр (Itinerary)
+              </label>
+              {pkgDetailsForm.itinerary.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  {pkgDetailsForm.itinerary.map((day, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 8,
+                        padding: "6px 0",
+                        borderBottom: "1px solid var(--border)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          minWidth: 28,
+                          fontWeight: 700,
+                          color: "var(--primary)",
+                          fontSize: 12,
+                        }}
+                      >
+                        D{day.day}
+                      </span>
+                      <div style={{ flex: 1, fontSize: 13 }}>
+                        <strong>{day.title}</strong>
+                        {day.description && (
+                          <p
+                            style={{
+                              margin: "2px 0 0",
+                              color: "var(--text-muted)",
+                              fontSize: 12,
+                            }}
+                          >
+                            {day.description}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeItineraryDay(i)}
+                        style={{
+                          border: "none",
+                          background: "none",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                          fontSize: 14,
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "60px 1fr",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
+              >
+                <input
+                  className="form-input"
+                  type="number"
+                  min="1"
+                  placeholder="Өдөр"
+                  value={newDayNum}
+                  onChange={(e) => setNewDayNum(e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  placeholder="Гарчиг (title)"
+                  value={newDayTitle}
+                  onChange={(e) => setNewDayTitle(e.target.value)}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <textarea
+                  className="form-input"
+                  rows={2}
+                  placeholder="Тайлбар (description)"
+                  value={newDayDesc}
+                  onChange={(e) => setNewDayDesc(e.target.value)}
+                  style={{ flex: 1, resize: "vertical" }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addItineraryDay}
+                  style={{ alignSelf: "flex-end" }}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Highlights ── */}
+            <div className={styles.formGroup}>
+              <label style={{ fontWeight: 700, fontSize: 14 }}>
+                <i
+                  className="fas fa-star"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                Онцлох туршлагууд (Top Experiences)
+              </label>
+              {pkgDetailsForm.highlights.length > 0 && (
+                <div className={styles.tagList} style={{ marginBottom: 8 }}>
+                  {pkgDetailsForm.highlights.map((h, i) => (
+                    <span key={i} className={styles.tag}>
+                      {h}
+                      <button type="button" onClick={() => removeHighlight(i)}>
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  className="form-input"
+                  placeholder="Жишээ: Bayanzag Flaming Cliffs — ..."
+                  value={newHighlight}
+                  onChange={(e) => setNewHighlight(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addHighlight();
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addHighlight}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Packing List ── */}
+            <div className={styles.formGroup}>
+              <label style={{ fontWeight: 700, fontSize: 14 }}>
+                <i
+                  className="fas fa-backpack"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                Авч явах зүйлс (Packing List)
+              </label>
+              {pkgDetailsForm.packingList.length > 0 && (
+                <div className={styles.tagList} style={{ marginBottom: 8 }}>
+                  {pkgDetailsForm.packingList.map((item, i) => (
+                    <span key={i} className={styles.tag}>
+                      {item.length > 40 ? item.slice(0, 40) + "…" : item}
+                      <button
+                        type="button"
+                        onClick={() => removePackingItem(i)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  className="form-input"
+                  placeholder="Жишээ: Layers: warm fleece or down jacket"
+                  value={newPackingItem}
+                  onChange={(e) => setNewPackingItem(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addPackingItem();
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addPackingItem}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Trip Info ── */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Нийт зай (Total Distance)</label>
+                <input
+                  className="form-input"
+                  placeholder="~1,120 km"
+                  value={pkgDetailsForm.totalDistance}
+                  onChange={setDet("totalDistance")}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Дээд өндөр (Max Elevation)</label>
+                <input
+                  className="form-input"
+                  placeholder="~1,800m (Gobi plateau)"
+                  value={pkgDetailsForm.maxElevation}
+                  onChange={setDet("maxElevation")}
+                />
+              </div>
+            </div>
+
+            {/* ── Group Pricing ── */}
+            <div className={styles.formGroup}>
+              <label style={{ fontWeight: 700, fontSize: 14 }}>
+                <i
+                  className="fas fa-users"
+                  style={{ marginRight: 6, color: "var(--primary)" }}
+                />
+                Бүлгийн үнэ (Group Pricing)
+              </label>
+              {pkgDetailsForm.groupPricing.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      fontSize: 13,
+                      borderCollapse: "collapse",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th
+                          style={{
+                            textAlign: "left",
+                            padding: "4px 8px",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          Бүлэг
+                        </th>
+                        <th
+                          style={{
+                            textAlign: "right",
+                            padding: "4px 8px",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          Үнэ ($)
+                        </th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pkgDetailsForm.groupPricing.map((gp, i) => (
+                        <tr
+                          key={i}
+                          style={{ borderTop: "1px solid var(--border)" }}
+                        >
+                          <td style={{ padding: "4px 8px" }}>{gp.label}</td>
+                          <td
+                            style={{
+                              padding: "4px 8px",
+                              textAlign: "right",
+                              fontWeight: 700,
+                              color: "var(--primary)",
+                            }}
+                          >
+                            {gp.price}$
+                          </td>
+                          <td
+                            style={{ padding: "4px 8px", textAlign: "center" }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => removeGroupPrice(i)}
+                              style={{
+                                border: "none",
+                                background: "none",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                              }}
+                            >
+                              ×
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 120px auto",
+                  gap: 8,
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  className="form-input"
+                  placeholder="Жишээ: 1-3 Person"
+                  value={newGroupLabel}
+                  onChange={(e) => setNewGroupLabel(e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  type="number"
+                  placeholder="Үнэ"
+                  value={newGroupPrice}
+                  onChange={(e) => setNewGroupPrice(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={addGroupPrice}
+                >
+                  <i className="fas fa-plus" />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Pricing Note ── */}
+            <div className={styles.formGroup}>
+              <label>Үнийн тайлбар (Pricing Note)</label>
+              <textarea
+                className="form-input"
+                rows={2}
+                placeholder="Жишээ: All prices in USD per person, based on twin sharing..."
+                value={pkgDetailsForm.pricingNote}
+                onChange={setDet("pricingNote")}
+                style={{ resize: "vertical" }}
+              />
+            </div>
+
+            {pkgDetailsMsg && <p className={styles.formMsg}>{pkgDetailsMsg}</p>}
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={closePkgDetails}
+              >
+                Болих
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={pkgDetailsSaving}
+              >
+                {pkgDetailsSaving ? (
+                  <>
+                    <span className="spinner" /> Хадгалж байна…
+                  </>
+                ) : (
+                  "Хадгалах"
                 )}
               </button>
             </div>

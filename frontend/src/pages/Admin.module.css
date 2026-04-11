@@ -264,6 +264,7 @@
 }
 .btnView,
 .btnEdit,
+.btnDetails,
 .btnDel {
   width: 32px;
   height: 32px;
@@ -290,6 +291,14 @@
 }
 .btnEdit:hover {
   background: #f59e0b;
+  color: #fff;
+}
+.btnDetails {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+}
+.btnDetails:hover {
+  background: #6366f1;
   color: #fff;
 }
 .btnDel {

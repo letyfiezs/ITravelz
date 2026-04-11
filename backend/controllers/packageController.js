@@ -4,10 +4,14 @@ const Booking = require("../models/Booking");
 // Get all active packages (public)
 exports.getAllPackages = async (req, res) => {
   try {
-    const packages = await Package.find({ status: "active" }).sort({ createdAt: -1 });
+    const packages = await Package.find({ status: "active" }).sort({
+      createdAt: -1,
+    });
     res.json(packages);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching packages", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching packages", error: error.message });
   }
 };
 
@@ -20,19 +24,35 @@ exports.getPackageById = async (req, res) => {
     }
     res.json(pkg);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching package", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching package", error: error.message });
   }
 };
 
 // Create new package (admin)
 exports.createPackage = async (req, res) => {
   try {
-    const { name, description, price, category, duration, destination, image, features, status, availableDates, availableTimes, bookingLimitPerSlot, translations } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      duration,
+      destination,
+      image,
+      features,
+      status,
+      availableDates,
+      availableTimes,
+      bookingLimitPerSlot,
+      translations,
+    } = req.body;
 
     // Validate required fields
     if (!name || !description || !price || !category) {
-      return res.status(400).json({ 
-        message: "Missing required fields: name, description, price, category" 
+      return res.status(400).json({
+        message: "Missing required fields: name, description, price, category",
       });
     }
 
@@ -50,26 +70,82 @@ exports.createPackage = async (req, res) => {
       availableTimes: availableTimes || [],
       bookingLimitPerSlot: bookingLimitPerSlot || 5,
       translations: translations || {
-        en: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        es: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        fr: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        ja: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        zh: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        ar: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        nl: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] },
-        mn: { name, description, duration: duration || "Varies", destination: destination || "Multiple", category, features: features || [] }
-      }
+        en: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        es: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        fr: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        ja: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        zh: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        ar: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        nl: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+        mn: {
+          name,
+          description,
+          duration: duration || "Varies",
+          destination: destination || "Multiple",
+          category,
+          features: features || [],
+        },
+      },
     });
 
     await newPackage.save();
-    res.status(201).json({ 
-      message: "Package created successfully!", 
-      package: newPackage 
+    res.status(201).json({
+      message: "Package created successfully!",
+      package: newPackage,
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error creating package", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error creating package",
+      error: error.message,
     });
   }
 };
@@ -77,7 +153,28 @@ exports.createPackage = async (req, res) => {
 // Update package (admin)
 exports.updatePackage = async (req, res) => {
   try {
-    const { name, description, price, category, duration, destination, image, features, status, availableDates, availableTimes, bookingLimitPerSlot, translations } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      duration,
+      destination,
+      image,
+      features,
+      status,
+      availableDates,
+      availableTimes,
+      bookingLimitPerSlot,
+      translations,
+      itinerary,
+      highlights,
+      packingList,
+      totalDistance,
+      maxElevation,
+      pricingNote,
+      groupPricing,
+    } = req.body;
 
     const updateData = {
       name,
@@ -92,31 +189,42 @@ exports.updatePackage = async (req, res) => {
       availableDates: availableDates || [],
       availableTimes: availableTimes || [],
       bookingLimitPerSlot: bookingLimitPerSlot || 5,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
+
+    // Detail fields — only overwrite when explicitly sent
+    if (itinerary !== undefined) updateData.itinerary = itinerary || [];
+    if (highlights !== undefined) updateData.highlights = highlights || [];
+    if (packingList !== undefined) updateData.packingList = packingList || [];
+    if (totalDistance !== undefined)
+      updateData.totalDistance = totalDistance || "";
+    if (maxElevation !== undefined)
+      updateData.maxElevation = maxElevation || "";
+    if (pricingNote !== undefined) updateData.pricingNote = pricingNote || "";
+    if (groupPricing !== undefined)
+      updateData.groupPricing = groupPricing || [];
 
     if (translations) {
       updateData.translations = translations;
     }
 
-    const pkg = await Package.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const pkg = await Package.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!pkg) {
       return res.status(404).json({ message: "Package not found" });
     }
 
-    res.json({ 
-      message: "Package updated successfully!", 
-      package: pkg 
+    res.json({
+      message: "Package updated successfully!",
+      package: pkg,
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error updating package", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error updating package",
+      error: error.message,
     });
   }
 };
@@ -130,13 +238,13 @@ exports.deletePackage = async (req, res) => {
       return res.status(404).json({ message: "Package not found" });
     }
 
-    res.json({ 
-      message: "Package deleted successfully!" 
+    res.json({
+      message: "Package deleted successfully!",
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error deleting package", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error deleting package",
+      error: error.message,
     });
   }
 };
@@ -148,19 +256,21 @@ const getFileUrl = (f) => f.path || f.secure_url || `/uploads/${f.filename}`;
 exports.uploadPackageImages = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: 'No images uploaded' });
+      return res.status(400).json({ message: "No images uploaded" });
     }
     const pkg = await Package.findById(req.params.id);
-    if (!pkg) return res.status(404).json({ message: 'Package not found' });
+    if (!pkg) return res.status(404).json({ message: "Package not found" });
 
     const newPaths = req.files.map(getFileUrl);
     const combined = [...(pkg.images || []), ...newPaths].slice(0, 10);
     pkg.images = combined;
     await pkg.save();
 
-    res.json({ message: 'Images uploaded', images: pkg.images });
+    res.json({ message: "Images uploaded", images: pkg.images });
   } catch (error) {
-    res.status(500).json({ message: 'Error uploading images', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error uploading images", error: error.message });
   }
 };
 
@@ -169,12 +279,14 @@ exports.deletePackageImage = async (req, res) => {
   try {
     const { imageUrl } = req.body;
     const pkg = await Package.findById(req.params.id);
-    if (!pkg) return res.status(404).json({ message: 'Package not found' });
+    if (!pkg) return res.status(404).json({ message: "Package not found" });
     pkg.images = (pkg.images || []).filter((img) => img !== imageUrl);
     await pkg.save();
-    res.json({ message: 'Image removed', images: pkg.images });
+    res.json({ message: "Image removed", images: pkg.images });
   } catch (error) {
-    res.status(500).json({ message: 'Error removing image', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error removing image", error: error.message });
   }
 };
 
@@ -184,7 +296,9 @@ exports.getAllPackagesAdmin = async (req, res) => {
     const packages = await Package.find().sort({ createdAt: -1 });
     res.json(packages);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching packages", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching packages", error: error.message });
   }
 };
 // Get available dates and times for a package (public)
@@ -201,25 +315,26 @@ exports.getPackageAvailability = async (req, res) => {
       // Get capacity for specific time slot
       const bookingLimit = pkg.bookingLimitPerSlot || 5;
       const dateObj = new Date(date);
-      
+
       const totalBookedPeople = await Booking.aggregate([
         {
           $match: {
             serviceName: pkg.name,
             bookingDate: dateObj,
             bookingTime: time,
-            status: "approved"
-          }
+            status: "approved",
+          },
         },
         {
           $group: {
             _id: null,
-            totalPeople: { $sum: "$numberOfPeople" }
-          }
-        }
+            totalPeople: { $sum: "$numberOfPeople" },
+          },
+        },
       ]);
 
-      const bookedPeople = totalBookedPeople.length > 0 ? totalBookedPeople[0].totalPeople : 0;
+      const bookedPeople =
+        totalBookedPeople.length > 0 ? totalBookedPeople[0].totalPeople : 0;
       const remainingCapacity = Math.max(0, bookingLimit - bookedPeople);
 
       return res.json({
@@ -233,35 +348,36 @@ exports.getPackageAvailability = async (req, res) => {
         isFullyBooked: remainingCapacity === 0,
         availableDates: pkg.availableDates || [],
         availableTimes: pkg.availableTimes || [],
-        bookingLimitPerSlot: pkg.bookingLimitPerSlot || 5
+        bookingLimitPerSlot: pkg.bookingLimitPerSlot || 5,
       });
     }
 
     // Return all available dates and times with capacity info
     const availabilityWithCapacity = [];
-    for (const date of (pkg.availableDates || [])) {
-      for (const time of (pkg.availableTimes || [])) {
+    for (const date of pkg.availableDates || []) {
+      for (const time of pkg.availableTimes || []) {
         const bookingLimit = pkg.bookingLimitPerSlot || 5;
         const dateObj = new Date(date);
-        
+
         const totalBookedPeople = await Booking.aggregate([
           {
             $match: {
               serviceName: pkg.name,
               bookingDate: dateObj,
               bookingTime: time,
-              status: "approved"
-            }
+              status: "approved",
+            },
           },
           {
             $group: {
               _id: null,
-              totalPeople: { $sum: "$numberOfPeople" }
-            }
-          }
+              totalPeople: { $sum: "$numberOfPeople" },
+            },
+          },
         ]);
 
-        const bookedPeople = totalBookedPeople.length > 0 ? totalBookedPeople[0].totalPeople : 0;
+        const bookedPeople =
+          totalBookedPeople.length > 0 ? totalBookedPeople[0].totalPeople : 0;
         const remainingCapacity = Math.max(0, bookingLimit - bookedPeople);
 
         availabilityWithCapacity.push({
@@ -270,7 +386,7 @@ exports.getPackageAvailability = async (req, res) => {
           totalCapacity: bookingLimit,
           bookedPeople,
           remainingCapacity,
-          isFullyBooked: remainingCapacity === 0
+          isFullyBooked: remainingCapacity === 0,
         });
       }
     }
@@ -281,12 +397,12 @@ exports.getPackageAvailability = async (req, res) => {
       bookingLimitPerSlot: pkg.bookingLimitPerSlot || 5,
       availability: availabilityWithCapacity,
       availableDates: pkg.availableDates || [],
-      availableTimes: pkg.availableTimes || []
+      availableTimes: pkg.availableTimes || [],
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error fetching availability", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error fetching availability",
+      error: error.message,
     });
   }
 };
