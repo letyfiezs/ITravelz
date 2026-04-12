@@ -387,7 +387,7 @@ function PackageModal({ pkg, onClose, t, language }) {
               className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
               onClick={onClose}
             >
-              {t("btn_close") || "Хаах"}
+              {t("close") || "Хаах"}
             </button>
           </div>
         </div>
@@ -513,7 +513,7 @@ function AboutModal({ item, onClose, t, language }) {
               className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
               onClick={onClose}
             >
-              {t("btn_close") || "Close"}
+              {t("close") || "Close"}
             </button>
           </div>
         </div>
@@ -647,7 +647,7 @@ function DestModal({ dest, onClose, t, language }) {
               className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
               onClick={onClose}
             >
-              {t("btn_close") || "Close"}
+              {t("close") || "Close"}
             </button>
           </div>
         </div>
@@ -741,7 +741,7 @@ function FestModal({ fest, onClose, t, language }) {
               className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
               onClick={onClose}
             >
-              {t("btn_close") || "Close"}
+              {t("close") || "Close"}
             </button>
           </div>
         </div>
