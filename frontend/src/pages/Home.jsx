@@ -251,7 +251,7 @@ function PackageModal({ pkg, onClose, t, language }) {
             <div className={styles.pkgModalFeatures}>
               <h4 className={styles.pkgModalSubtitle}>
                 <i className="fas fa-check-circle" />{" "}
-                {t("pkg_features") || "Онцлог"}
+                {t("package features") || "Онцлог"}
               </h4>
               <ul className={styles.pkgModalFeatureList}>
                 {features.map((f, i) => (
