@@ -210,6 +210,9 @@ function PackageModal({ pkg, onClose, t, language }) {
             fallback={pkg.image || FALLBACK_PKGS[0].image}
             alt={pkg.name}
             interval={5000}
+            enableZoom
+            contentType="Package"
+            contentId={pkg._id}
           />
           {(pkg.duration || pkg.dur) && (
             <span className={styles.pkgModalBadge}>
@@ -485,6 +488,9 @@ function AboutModal({ item, onClose, t, language }) {
               fallback={item.image}
               alt={tr("title")}
               interval={5000}
+              enableZoom
+              contentType="AboutMongolia"
+              contentId={item._id}
             />
             {item.category && (
               <span
@@ -566,6 +572,9 @@ function DestModal({ dest, onClose, t, language }) {
               fallback={dest.image}
               alt={tr("name")}
               interval={5000}
+              enableZoom
+              contentType="Destination"
+              contentId={dest._id}
             />
             {dest.category && (
               <span
@@ -699,6 +708,9 @@ function FestModal({ fest, onClose, t, language }) {
               fallback={fest.image}
               alt={tr("name")}
               interval={5000}
+              enableZoom
+              contentType="Festival"
+              contentId={fest._id}
             />
             {fest.category && (
               <span

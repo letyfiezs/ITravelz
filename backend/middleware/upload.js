@@ -14,7 +14,7 @@ cloudinary.config({
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder:         'itravelz',
+    folder:         'itravelmongolia',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }],
   },
@@ -23,7 +23,7 @@ const cloudinaryStorage = new CloudinaryStorage({
 const cloudinaryAvatarStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder:          'itravelz/avatars',
+    folder:          'itravelmongolia/avatars',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation:  [{ width: 300, height: 300, crop: 'fill', gravity: 'face', quality: 'auto' }],
   },
@@ -75,7 +75,7 @@ const cloudinaryVideoStorage = useCloudinary
   ? new CloudinaryStorage({
       cloudinary,
       params: {
-        folder:          'itravelz/videos',
+        folder:          'itravelmongolia/videos',
         resource_type:   'video',
         allowed_formats: ['mp4', 'webm', 'mov', 'avi'],
       },

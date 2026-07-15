@@ -27,7 +27,7 @@ const ForgotPassword = () => {
         <div className={styles.authLeftContent}>
           <Link to="/" className={styles.authBrand}>
             <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
-            <span className={styles.brandText}>I<span>Travelz</span></span>
+            <span className={styles.brandText}>I<span>travel</span>mongolia</span>
           </Link>
           <h2>Reset your password</h2>
           <p>Enter your email address and we will send you a link to reset your password securely.</p>

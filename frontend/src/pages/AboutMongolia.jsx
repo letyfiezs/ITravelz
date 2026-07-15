@@ -128,6 +128,9 @@ function ReadMoreModal({ item, onClose, language }) {
             alt={item.title}
             interval={5000}
             className={styles.rmSlideshow}
+            enableZoom
+            contentType="AboutMongolia"
+            contentId={item._id}
           />
           {item.category && (
             <span

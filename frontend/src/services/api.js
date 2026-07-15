@@ -115,6 +115,14 @@ export const aboutService = {
   getById: (id) => api.get(`/about/${id}`),
 };
 
+export const commentService = {
+  getForImage: (contentType, contentId, imageUrl) =>
+    api.get(`/comments/${contentType}/${contentId}`, { params: { imageUrl } }),
+  add: (contentType, contentId, data) =>
+    api.post(`/comments/${contentType}/${contentId}`, data),
+  delete: (id) => api.delete(`/comments/${id}`),
+};
+
 export const chatService = {
   send: (message, history, language = "en") =>
     api.post("/chat", { message, history, language }),
@@ -198,6 +206,8 @@ export const adminService = {
   // Auto-translate texts to all supported languages
   translate: (texts, sourceLang = "en") =>
     api.post("/admin/translate", { texts, sourceLang }),
+  getComments: () => api.get("/admin/comments"),
+  deleteComment: (id) => api.delete(`/admin/comments/${id}`),
 };
 
 export default api;

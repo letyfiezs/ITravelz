@@ -31,8 +31,9 @@ exports.protect = async (req, res, next) => {
     if (user) {
       req.userEmail = user.email;
       req.userName = user.name;
+      req.userRole = user.role;
     }
-    
+
     next();
   } catch (error) {
     return res

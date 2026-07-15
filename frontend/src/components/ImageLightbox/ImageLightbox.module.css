@@ -1,0 +1,236 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 2010;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.body {
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+  display: flex;
+  gap: 20px;
+  background: var(--bg-card, #1a1d30);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+}
+
+.imgWrap {
+  position: relative;
+  flex: 1 1 62%;
+  min-width: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img {
+  max-width: 100%;
+  max-height: 90vh;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.arrow:hover { background: rgba(0, 0, 0, 0.7); }
+.arrowLeft   { left: 14px; }
+.arrowRight  { right: 14px; }
+
+.counter {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.comments {
+  flex: 1 1 38%;
+  min-width: 280px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  color: var(--text, #14183e);
+}
+
+.commentsTitle {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.commentList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-right: 4px;
+}
+
+.empty {
+  color: var(--text-muted, #999);
+  font-size: 0.9rem;
+}
+
+.comment {
+  background: var(--surface, #eef0fa);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+}
+
+.commentHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.commentAuthor {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.commentDate {
+  font-size: 0.75rem;
+  color: var(--text-muted, #999);
+  margin-left: auto;
+}
+
+.commentDelete {
+  border: none;
+  background: none;
+  color: var(--text-muted, #999);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+}
+
+.commentDelete:hover { color: var(--accent, #df6951); }
+
+.commentText {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentInput {
+  resize: vertical;
+  min-height: 44px;
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: var(--radius-sm, 8px);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--bg, #fff);
+  color: var(--text, #14183e);
+}
+
+.commentSubmit {
+  align-self: flex-end;
+  border: none;
+  background: var(--primary, #003580);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 7px 18px;
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.commentSubmit:hover:not(:disabled) { background: var(--primary-light, #0d58c4); }
+.commentSubmit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.postError {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #e0453b;
+}
+
+.loginPrompt {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #5e6282);
+}
+
+.loginPrompt a {
+  color: var(--primary, #003580);
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .body {
+    flex-direction: column;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .imgWrap { min-height: 260px; }
+  .comments { max-width: none; }
+}

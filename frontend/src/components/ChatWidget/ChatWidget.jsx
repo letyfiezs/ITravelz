@@ -15,7 +15,7 @@ const CONTACT = {
 // ── Flow translations (6 languages) ──────────────────────────
 const L = {
   en: {
-    welcome:       'Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?',
+    welcome:       'Hello 👋 Welcome to Itravelmongolia! Are you planning a trip to Mongolia?',
     opt_yes:       'Yes, planning a trip ✈️',
     opt_info:      'Just looking for information',
     opt_contact:   'Contact travel expert',
@@ -41,7 +41,7 @@ const L = {
     lang_reset:    'Language changed. Starting fresh!',
   },
   mn: {
-    welcome:       'Сайн уу 👋 iTravel Mongolia-д тавтай морил! Та Монгол руу аялахаар төлөвлөж байна уу?',
+    welcome:       'Сайн уу 👋 Itravelmongolia-д тавтай морил! Та Монгол руу аялахаар төлөвлөж байна уу?',
     opt_yes:       'Тийм, аялал төлөвлөж байна ✈️',
     opt_info:      'Зөвхөн мэдээлэл авмаар байна',
     opt_contact:   'Аяллын мэргэжилтэнтэй холбогдох',
@@ -67,7 +67,7 @@ const L = {
     lang_reset:    'Хэл солигдлоо. Шинэчлэн эхэллээ!',
   },
   de: {
-    welcome:       'Hallo 👋 Willkommen bei iTravel Mongolia! Planen Sie eine Reise in die Mongolei?',
+    welcome:       'Hallo 👋 Willkommen bei Itravelmongolia! Planen Sie eine Reise in die Mongolei?',
     opt_yes:       'Ja, ich plane eine Reise ✈️',
     opt_info:      'Nur Informationen suchen',
     opt_contact:   'Reiseexperten kontaktieren',
@@ -93,7 +93,7 @@ const L = {
     lang_reset:    'Sprache geändert. Neustart!',
   },
   ko: {
-    welcome:       '안녕하세요 👋 iTravel Mongolia에 오신 것을 환영합니다! 몽골 여행을 계획 중이신가요?',
+    welcome:       '안녕하세요 👋 Itravelmongolia에 오신 것을 환영합니다! 몽골 여행을 계획 중이신가요?',
     opt_yes:       '네, 여행을 계획 중입니다 ✈️',
     opt_info:      '정보만 찾고 있습니다',
     opt_contact:   '여행 전문가에게 연락',
@@ -119,7 +119,7 @@ const L = {
     lang_reset:    '언어가 변경되었습니다. 처음부터 시작합니다!',
   },
   ja: {
-    welcome:       'こんにちは 👋 iTravel Mongoliaへようこそ！モンゴル旅行をご計画中ですか？',
+    welcome:       'こんにちは 👋 Itravelmongoliaへようこそ！モンゴル旅行をご計画中ですか？',
     opt_yes:       'はい、旅行を計画しています ✈️',
     opt_info:      '情報を探しています',
     opt_contact:   '旅行専門家に連絡',
@@ -145,7 +145,7 @@ const L = {
     lang_reset:    '言語が変更されました。最初からやり直します！',
   },
   zh: {
-    welcome:       '您好 👋 欢迎来到iTravel Mongolia！您在计划去蒙古的旅行吗？',
+    welcome:       '您好 👋 欢迎来到Itravelmongolia！您在计划去蒙古的旅行吗？',
     opt_yes:       '是的，我在计划旅行 ✈️',
     opt_info:      '只是寻找信息',
     opt_contact:   '联系旅行专家',
@@ -504,7 +504,7 @@ const ChatWidget = () => {
             <div className={styles.headerLeft}>
               <div className={styles.headerAvatar}><i className="fas fa-robot" /></div>
               <div>
-                <div className={styles.headerName}>iTravel Mongolia</div>
+                <div className={styles.headerName}>Itravelmongolia</div>
                 <div className={styles.headerStatus}><span className={styles.onlineDot} /> Travel Assistant</div>
               </div>
             </div>

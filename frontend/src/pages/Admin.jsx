@@ -14,6 +14,7 @@ const TABS = [
   "admins",
   "home",
   "pages",
+  "comments",
 ];
 const BOOKING_STATUSES = ["pending", "approved", "completed", "cancelled"];
 const CATEGORIES = [
@@ -26,6 +27,7 @@ const CATEGORIES = [
   "Family",
   "Cruise",
 ];
+const SUB_CATEGORIES = ["Classic", "Extreme", "Special", "Luxury"];
 const DEST_CATEGORIES = [
   "Beach",
   "Cultural",
@@ -44,6 +46,7 @@ const EMPTY_PKG = {
   description: "",
   price: "",
   category: "Beach",
+  subCategory: "",
   duration: "",
   destination: "",
   image: "",
@@ -174,6 +177,10 @@ const Admin = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  /* comment moderation */
+  const [comments, setComments] = useState([]);
+  const [commentActionMsg, setCommentActionMsg] = useState("");
 
   /* booking filter */
   const [bFilter, setBFilter] = useState("all");
@@ -320,8 +327,9 @@ const Admin = () => {
       adminService.getContent(),
       adminService.getFestivals(),
       adminService.getAbout(),
+      adminService.getComments(),
     ])
-      .then(([s, b, u, pk, dest, cont, fest, abt]) => {
+      .then(([s, b, u, pk, dest, cont, fest, abt, cmts]) => {
         setStats(s.data);
         setBookings(b.data.bookings || b.data || []);
         setUsers(u.data.users || u.data || []);
@@ -360,6 +368,7 @@ const Admin = () => {
         });
         setFestivals(fest.data.festivals || fest.data || []);
         setAboutItems(abt.data.items || abt.data || []);
+        setComments(cmts.data.data || cmts.data || []);
       })
       .catch(() =>
         setError(
@@ -535,6 +544,18 @@ const Admin = () => {
     }
   };
 
+  /* ── Comment moderation helpers ── */
+  const deleteCommentAdmin = async (comment) => {
+    if (!window.confirm("Delete this comment?")) return;
+    setCommentActionMsg("");
+    try {
+      await adminService.deleteComment(comment._id);
+      setComments((prev) => prev.filter((c) => c._id !== comment._id));
+    } catch (err) {
+      setCommentActionMsg(err.response?.data?.message || "Failed to delete comment.");
+    }
+  };
+
   /* ── Package helpers ── */
   const openPkgCreate = () => {
     setPkgEdit(null);
@@ -553,6 +574,7 @@ const Admin = () => {
       description: p.description,
       price: p.price,
       category: p.category,
+      subCategory: p.subCategory || "",
       duration: p.duration,
       destination: p.destination,
       image: p.image || "",
@@ -1871,7 +1893,7 @@ const Admin = () => {
         <div className={styles.pageHeader}>
           <div>
             <h1 className={styles.title}>Admin Panel</h1>
-            <p className={styles.subtitle}>Manage the ITravelz platform</p>
+            <p className={styles.subtitle}>Manage the Itravelmongolia platform</p>
           </div>
         </div>
 
@@ -1912,7 +1934,9 @@ const Admin = () => {
                                   ? "fa-mountain"
                                   : t === "admins"
                                     ? "fa-user-shield"
-                                    : t === "home"
+                                    : t === "comments"
+                                      ? "fa-comments"
+                                      : t === "home"
                                       ? "fa-home"
                                       : "fa-users"
                     }`}
@@ -2125,6 +2149,7 @@ const Admin = () => {
                         <th>Duration</th>
                         <th>Price</th>
                         <th>Category</th>
+                        <th>Subcategory</th>
                         <th>Physical Level</th>
                         <th>Best Season</th>
                         <th>Status</th>
@@ -2135,7 +2160,7 @@ const Admin = () => {
                       {packages.length === 0 && (
                         <tr>
                           <td
-                            colSpan={10}
+                            colSpan={11}
                             style={{
                               textAlign: "center",
                               color: "var(--text-muted)",
@@ -2222,6 +2247,15 @@ const Admin = () => {
                             <span className="badge badge-accent">
                               {p.category}
                             </span>
+                          </td>
+                          <td>
+                            {p.subCategory ? (
+                              <span className="badge badge-accent">
+                                {p.subCategory}
+                              </span>
+                            ) : (
+                              <span style={{ color: "var(--text-muted)" }}>—</span>
+                            )}
                           </td>
                           <td
                             style={{ fontSize: 12, color: "var(--text-muted)" }}
@@ -3732,6 +3766,97 @@ const Admin = () => {
                 {renderPageHeroBlock("contact_hero", "Contact Page Header")}
               </div>
             )}
+
+            {/* ── Comment Moderation ── */}
+            {tab === "comments" && (
+              <div>
+                <div className={styles.tabToolbar}>
+                  <span>
+                    {comments.length} comment{comments.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {commentActionMsg && (
+                  <div className="alert alert-error" style={{ marginBottom: 12 }}>
+                    <i className="fas fa-exclamation-circle" /> {commentActionMsg}
+                  </div>
+                )}
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Content</th>
+                        <th>Comment</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comments.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            style={{
+                              textAlign: "center",
+                              color: "var(--text-muted)",
+                              padding: 32,
+                            }}
+                          >
+                            No comments yet
+                          </td>
+                        </tr>
+                      )}
+                      {comments.map((c) => (
+                        <tr key={c._id}>
+                          <td>
+                            <img
+                              src={c.imageUrl}
+                              alt=""
+                              style={{
+                                width: 56,
+                                height: 40,
+                                objectFit: "cover",
+                                borderRadius: 6,
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          </td>
+                          <td>
+                            <span className="badge badge-accent">
+                              {c.contentType}
+                            </span>
+                            <div style={{ fontSize: 12, marginTop: 4 }}>
+                              {c.contentName || c.contentId}
+                            </div>
+                          </td>
+                          <td style={{ maxWidth: 320 }}>{c.text}</td>
+                          <td>{c.userName}</td>
+                          <td
+                            style={{ fontSize: 12, color: "var(--text-muted)" }}
+                          >
+                            {c.createdAt
+                              ? new Date(c.createdAt).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td>
+                            <button
+                              className={`${styles.userActionBtn} ${styles.userActionDelete}`}
+                              title="Delete comment"
+                              onClick={() => deleteCommentAdmin(c)}
+                            >
+                              <i className="fas fa-trash" /> Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -3851,6 +3976,23 @@ const Admin = () => {
                   onChange={setP("category")}
                 >
                   {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Tour Subcategory</label>
+                <select
+                  className="form-input"
+                  value={pkgForm.subCategory}
+                  onChange={setP("subCategory")}
+                >
+                  <option value="">— None —</option>
+                  {SUB_CATEGORIES.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>

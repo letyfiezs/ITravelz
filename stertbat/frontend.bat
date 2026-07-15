@@ -1,5 +1,5 @@
 @echo off
-title ITravelz Frontend
+title Itravelmongolia Frontend
 echo Starting frontend dev server...
 
 cd /d C:\Users\letyfiez\Documents\GitHub\ITravelz\frontend

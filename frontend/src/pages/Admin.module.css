@@ -97,11 +97,13 @@
   background: var(--card, #fff);
   border-radius: var(--radius-lg, 12px);
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: var(--shadow);
 }
 .table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
 }
 .table th {

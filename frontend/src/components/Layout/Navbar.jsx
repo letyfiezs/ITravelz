@@ -74,9 +74,9 @@ export default function Navbar() {
       <div className={`${styles.inner} container`}>
         {/* Logo */}
         <Link to="/" className={styles.logo}>
-          <img src="/logo.png" alt="ITravel" className={styles.logoImg} />
+          <img src="/logo.png" alt="Itravelmongolia" className={styles.logoImg} />
           <span className={styles.logoText}>
-            I<em>Travel</em>
+            I<em>travel</em>mongolia
           </span>
         </Link>
 

@@ -54,12 +54,12 @@ const Login = () => {
               <i className="fas fa-paper-plane" />
             </span>
             <span className={styles.brandText}>
-              I<span>Travelz</span>
+              I<span>travel</span>mongolia
             </span>
           </Link>
           <h2>Your next adventure awaits</h2>
           <p>
-            Join thousands of travelers discovering the world with ITravelz.
+            Join thousands of travelers discovering the world with Itravelmongolia.
             Personalized itineraries, expert guides, and unforgettable
             experiences.
           </p>
@@ -216,7 +216,7 @@ const Login = () => {
             Continue with Google
           </a>
           <p className={styles.switchText}>
-            New to ITravelz? <Link to="/signup">Create a free account</Link>
+            New to Itravelmongolia? <Link to="/signup">Create a free account</Link>
           </p>
         </div>
       </div>

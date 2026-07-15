@@ -1,7 +1,7 @@
 services:
   # ── Single Web Service: backend serves the built React frontend ────────
   - type: web
-    name: itravelz
+    name: itravelmongolia
     env: node
     # Build React app, then install backend deps
     buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
@@ -20,7 +20,7 @@ services:
       - key: SESSION_SECRET
         sync: false # Long random secret for express-session
 
-      # Set to your Render service URL once deployed (e.g. https://itravelz.onrender.com)
+      # Set to your Render service URL once deployed (e.g. https://itravelmongolia.onrender.com)
       # ⚠ If frontend is on Vercel instead, change this to your Vercel URL
       - key: CLIENT_URL
         value: https://itravelz-2.onrender.com
@@ -60,9 +60,9 @@ services:
       - key: BREVO_API_KEY
         sync: false # Brevo дансны API key
       - key: FROM_EMAIL
-        sync: false # Имэйл илгээгч хаяг (e.g. info@itravelz.mn)
+        sync: false # Имэйл илгээгч хаяг (e.g. info@itravelmongolia.mn)
       - key: FROM_NAME
-        sync: false # Илгээгч нэр (e.g. ITravelz)
+        sync: false # Илгээгч нэр (e.g. Itravelmongolia)
       - key: ADMIN_EMAIL
         sync: false # Admin email for notifications
 

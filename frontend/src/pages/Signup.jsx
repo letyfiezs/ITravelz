@@ -53,7 +53,7 @@ const Signup = () => {
                 <i className="fas fa-paper-plane" />
               </span>
               <span className={styles.brandText}>
-                I<span>Travelz</span>
+                I<span>travel</span>mongolia
               </span>
             </Link>
             <h2>Start your adventure today</h2>
@@ -129,7 +129,7 @@ const Signup = () => {
               <i className="fas fa-paper-plane" />
             </span>
             <span className={styles.brandText}>
-              I<span>Travelz</span>
+              I<span>travel</span>mongolia
             </span>
           </Link>
           <h2>Start your adventure today</h2>
@@ -157,7 +157,7 @@ const Signup = () => {
         <div className={styles.authCard}>
           <div className={styles.authHeader}>
             <h1>Create account</h1>
-            <p>Join ITravelz and explore the world your way</p>
+            <p>Join Itravelmongolia and explore the world your way</p>
           </div>
           {error && (
             <div className="alert alert-error">

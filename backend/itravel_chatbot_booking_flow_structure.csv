@@ -1,7 +1,7 @@
 step_id,message,button_label,next_step
-welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,"Yes, planning a trip",tour_interest
-welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,Just looking for information,faq
-welcome,Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?,Contact travel expert,contact
+welcome,Hello 👋 Welcome to Itravelmongolia! Are you planning a trip to Mongolia?,"Yes, planning a trip",tour_interest
+welcome,Hello 👋 Welcome to Itravelmongolia! Are you planning a trip to Mongolia?,Just looking for information,faq
+welcome,Hello 👋 Welcome to Itravelmongolia! Are you planning a trip to Mongolia?,Contact travel expert,contact
 tour_interest,Great! What type of tour are you interested in?,Gobi Desert Tour,travel_date
 tour_interest,Great! What type of tour are you interested in?,Central Mongolia Tour,travel_date
 tour_interest,Great! What type of tour are you interested in?,Lake Khuvsgul Tour,travel_date

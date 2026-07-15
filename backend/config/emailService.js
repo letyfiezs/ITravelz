@@ -41,15 +41,15 @@ const baseTemplate = (content) => {
   <div style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:12px;">
     
     <div style="text-align:center;margin-bottom:30px;">
-      <img src="${logoUrl}" alt="ITravel" style="height:56px;width:auto;display:inline-block;vertical-align:middle;margin-right:10px;" />
-      <span style="font-size:1.6rem;font-weight:900;color:#e07b30;vertical-align:middle;letter-spacing:-0.5px;">ITravel</span>
+      <img src="${logoUrl}" alt="Itravelmongolia" style="height:56px;width:auto;display:inline-block;vertical-align:middle;margin-right:10px;" />
+      <span style="font-size:1.6rem;font-weight:900;color:#e07b30;vertical-align:middle;letter-spacing:-0.5px;">Itravelmongolia</span>
     </div>
 
     ${content}
 
     <hr style="margin:30px 0;">
     <p style="font-size:12px;color:#888;text-align:center;">
-      &copy; 2026 ITravel Mongolia. All rights reserved.
+      &copy; 2026 Itravelmongolia. All rights reserved.
     </p>
 
   </div>
@@ -79,7 +79,7 @@ const sendVerificationEmail = async (email, name, token, link) => {
 
   return await sendEmail(
     email,
-    "Email Verification - ITravel Mongolia",
+    "Email Verification - Itravelmongolia",
     baseTemplate(content),
   );
 };
@@ -103,7 +103,7 @@ const sendWelcomeEmail = async (email, name) => {
 
   return await sendEmail(
     email,
-    "Welcome to ITravel Mongolia!",
+    "Welcome to Itravelmongolia!",
     baseTemplate(content),
   );
 };
@@ -132,7 +132,7 @@ const sendPasswordResetEmail = async (email, name, token, link) => {
 
   return await sendEmail(
     email,
-    "Password Reset - ITravel Mongolia",
+    "Password Reset - Itravelmongolia",
     baseTemplate(content),
   );
 };
@@ -317,12 +317,12 @@ const sendContactConfirmation = async (contact) => {
     </div>
 
     <p>Хэрэв та нэн яаралтай бол дараах холбогдолтой байна уу:</p>
-    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || "info@itravelz.com"}">${process.env.FROM_EMAIL || "info@itravelz.com"}</a></p>
+    <p>📧 <a href="mailto:${process.env.FROM_EMAIL || "info@itravelmongolia.com"}">${process.env.FROM_EMAIL || "info@itravelmongolia.com"}</a></p>
   `;
 
   return await sendEmail(
     contact.email,
-    `Таны мессежийг хүлээн авлаа — ITravelz`,
+    `Таны мессежийг хүлээн авлаа — Itravelmongolia`,
     baseTemplate(content),
   );
 };

@@ -44,6 +44,9 @@ function PackageModal({ pkg, onClose, t, language }) {
             fallback={pkg.image}
             alt={pkg.name}
             interval={5000}
+            enableZoom
+            contentType="Package"
+            contentId={pkg._id}
           />
           {(pkg.duration || pkg.dur) && (
             <span className={styles.pkgModalBadge}>
@@ -55,6 +58,13 @@ function PackageModal({ pkg, onClose, t, language }) {
               className={`${styles.pkgModalBadge} ${styles.pkgModalCatBadge}`}
             >
               {pkg.category}
+            </span>
+          )}
+          {pkg.subCategory && (
+            <span
+              className={`${styles.pkgModalBadge} ${styles.pkgModalSubBadge}`}
+            >
+              <i className="fas fa-gem" /> {pkg.subCategory}
             </span>
           )}
         </div>
@@ -199,7 +209,7 @@ function PackageModal({ pkg, onClose, t, language }) {
               className={`btn btn-outline ${styles.pkgModalCloseBtn}`}
               onClick={onClose}
             >
-              {t("btn_close") || "Хаах"}
+              {t("close") || "Хаах"}
             </button>
           </div>
         </div>
@@ -207,6 +217,8 @@ function PackageModal({ pkg, onClose, t, language }) {
     </div>
   );
 }
+
+const SUB_CATEGORIES = ["Classic", "Extreme", "Special", "Luxury"];
 
 const Packages = () => {
   const { t, language } = useLanguage();
@@ -221,6 +233,9 @@ const Packages = () => {
   const [search, setSearch] = useState(searchParams.get("dest") || "");
   const [sort, setSort] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [subCategory, setSubCategory] = useState(
+    searchParams.get("type") || "",
+  );
   const [heroContent, setHeroContent] = useState(null);
 
   const load = useCallback(() => {
@@ -238,6 +253,8 @@ const Packages = () => {
           );
         if (maxPrice)
           data = data.filter((p) => Number(p.price) <= Number(maxPrice));
+        if (subCategory)
+          data = data.filter((p) => p.subCategory === subCategory);
         if (sort === "price_asc")
           data = [...data].sort((a, b) => a.price - b.price);
         if (sort === "price_desc")
@@ -248,7 +265,7 @@ const Packages = () => {
       })
       .catch(() => setError("Failed to load packages. Please try again."))
       .finally(() => setLoading(false));
-  }, [search, sort, maxPrice]);
+  }, [search, sort, maxPrice, subCategory]);
 
   useEffect(() => {
     load();
@@ -335,6 +352,18 @@ const Packages = () => {
             </select>
             <select
               className={styles.filterSelect}
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+            >
+              <option value="">{t("filter_all_types")}</option>
+              {SUB_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              className={styles.filterSelect}
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
@@ -394,6 +423,7 @@ const Packages = () => {
                   setSearch("");
                   setMaxPrice("");
                   setSort("");
+                  setSubCategory("");
                 }}
               >
                 {t("clear_filters")}
@@ -431,6 +461,11 @@ const Packages = () => {
                     {pkg.featured && (
                       <span className={styles.featBadge}>
                         {t("filter_featured")}
+                      </span>
+                    )}
+                    {pkg.subCategory && (
+                      <span className={styles.subCatBadge}>
+                        {pkg.subCategory}
                       </span>
                     )}
                   </div>

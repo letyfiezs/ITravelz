@@ -15,10 +15,10 @@ const CONTACT_INFO = {
 
 const SOCIAL_LINKS = [
   { icon: 'fab fa-facebook-f',  label: 'Facebook',  color: '#1877f2', href: 'https://www.facebook.com/profile.php?id=100068557103724 ' },
-  //{ icon: 'fab fa-instagram',   label: 'Instagram', color: '#e1306c', href: 'https://instagram.com/itravelz' },
-  // { icon: 'fab fa-twitter',     label: 'Twitter',   color: '#1da1f2', href: 'https://twitter.com/itravelz' },
-  // { icon: 'fab fa-youtube',     label: 'YouTube',   color: '#ff0000', href: 'https://youtube.com/@itravelz' },
-  // { icon: 'fab fa-tiktok',      label: 'TikTok',    color: '#010101', href: 'https://tiktok.com/@itravelz' },
+  //{ icon: 'fab fa-instagram',   label: 'Instagram', color: '#e1306c', href: 'https://instagram.com/itravelmongolia' },
+  // { icon: 'fab fa-twitter',     label: 'Twitter',   color: '#1da1f2', href: 'https://twitter.com/itravelmongolia' },
+  // { icon: 'fab fa-youtube',     label: 'YouTube',   color: '#ff0000', href: 'https://youtube.com/@itravelmongolia' },
+  // { icon: 'fab fa-tiktok',      label: 'TikTok',    color: '#010101', href: 'https://tiktok.com/@itravelmongolia' },
 ];
 // ============================================================
 

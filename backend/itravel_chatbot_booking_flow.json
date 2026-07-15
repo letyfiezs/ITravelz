@@ -1,9 +1,9 @@
 {
-  "chatbot_name": "iTravel Mongolia Booking Flow",
+  "chatbot_name": "Itravelmongolia Booking Flow",
   "steps": [
     {
       "id": "welcome",
-      "message": "Hello 👋 Welcome to iTravel Mongolia! Are you planning a trip to Mongolia?",
+      "message": "Hello 👋 Welcome to Itravelmongolia! Are you planning a trip to Mongolia?",
       "options": [
         {
           "label": "Yes, planning a trip",

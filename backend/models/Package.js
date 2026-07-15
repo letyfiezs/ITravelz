@@ -23,6 +23,12 @@ const packageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Tour subcategory — classifies the tour within the TOUR group
+  subCategory: {
+    type: String,
+    enum: ["Classic", "Extreme", "Special", "Luxury", ""],
+    default: "",
+  },
   destination: {
     type: String,
     required: true,

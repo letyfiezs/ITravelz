@@ -47,11 +47,11 @@ export default function Footer() {
           <Link to="/" className={styles.logo}>
             <img
               src="/logo.png"
-              alt="iTravel Mongolia"
+              alt="Itravelmongolia"
               className={styles.logoImg}
             />
             <span className={styles.logoText}>
-              I<em>Travel</em>
+              I<em>travel</em>mongolia
             </span>
           </Link>
           <p className={styles.tagline}>{t("footer_tagline")}</p>
@@ -146,7 +146,7 @@ export default function Footer() {
       <div className={styles.bottom}>
         <div className="container">
           <p>
-            &copy; {new Date().getFullYear()} ITravelz. {t("footer_rights")}
+            &copy; {new Date().getFullYear()} Itravelmongolia. {t("footer_rights")}
           </p>
           <div className={styles.legal}>
             <Link to="/contact">{t("footer_privacy")}</Link>

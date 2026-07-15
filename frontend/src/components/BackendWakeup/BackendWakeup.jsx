@@ -82,7 +82,7 @@ export default function BackendWakeup({ children }) {
                   fill="currentColor"
                 />
               </svg>
-              <span className={styles.brand}>ITravelz</span>
+              <span className={styles.brand}>Itravelmongolia</span>
             </div>
 
             {/* Spinner ring */}

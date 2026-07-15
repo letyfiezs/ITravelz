@@ -38,6 +38,7 @@ exports.createPackage = async (req, res) => {
       description,
       price,
       category,
+      subCategory,
       duration,
       destination,
       image,
@@ -61,6 +62,7 @@ exports.createPackage = async (req, res) => {
       description,
       price: parseFloat(price),
       category,
+      subCategory: subCategory || "",
       duration: duration || "Varies",
       destination: destination || "Multiple",
       image: image || null,
@@ -158,6 +160,7 @@ exports.updatePackage = async (req, res) => {
       description,
       price,
       category,
+      subCategory,
       duration,
       destination,
       image,
@@ -191,6 +194,8 @@ exports.updatePackage = async (req, res) => {
       bookingLimitPerSlot: bookingLimitPerSlot || 5,
       updatedAt: new Date(),
     };
+
+    if (subCategory !== undefined) updateData.subCategory = subCategory || "";
 
     // Detail fields — only overwrite when explicitly sent
     if (itinerary !== undefined) updateData.itinerary = itinerary || [];

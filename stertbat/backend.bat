@@ -1,5 +1,5 @@
 @echo off
-title ITravelz Backend
+title Itravelmongolia Backend
 echo Killing old Node processes...
 taskkill /F /IM node.exe >nul 2>&1
 timeout /t 1 /nobreak >nul

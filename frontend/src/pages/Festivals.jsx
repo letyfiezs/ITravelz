@@ -111,6 +111,9 @@ function FestivalModal({ fest, onClose, t, language }) {
             alt={fest.name}
             interval={5000}
             className={styles.rmSlideshow}
+            enableZoom
+            contentType="Festival"
+            contentId={fest._id}
           />
           {fest.category && (
             <span

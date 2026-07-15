@@ -37,7 +37,7 @@ const ReadMoreModal = ({ dest, onClose }) => {
         {/* Image gallery */}
         {images.length > 0 && (
           <div className={styles.rmImgWrap}>
-            <ImageSlideshow images={images} fallback={dest.image} alt={dest.name} interval={5000} className={styles.rmSlideshow} />
+            <ImageSlideshow images={images} fallback={dest.image} alt={dest.name} interval={5000} className={styles.rmSlideshow} enableZoom contentType="Destination" contentId={dest._id} />
           </div>
         )}
 

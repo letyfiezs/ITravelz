@@ -3,7 +3,20 @@ const User = require("../models/User");
 const Package = require("../models/Package");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+// Lazily construct the Stripe client so a missing STRIPE_SECRET_KEY (e.g. in
+// a local dev .env) only breaks payment routes when actually hit, instead of
+// crashing the whole server at require-time.
+let _stripe = null;
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
+  }
+  if (!_stripe) {
+    _stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+  }
+  return _stripe;
+};
 const {
   sendBookingConfirmationEmail,
   sendBookingApprovedEmail,
@@ -37,7 +50,7 @@ exports.createCheckoutSession = async (req, res) => {
       year: "numeric", month: "long", day: "numeric",
     });
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       customer_email: booking.email,
       line_items: [{
@@ -73,7 +86,7 @@ exports.verifyCheckout = async (req, res) => {
     }
 
     // Verify with Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
       return res.status(400).json({ success: false, message: "Stripe төлбөр амжилтгүй байна" });
     }
@@ -751,7 +764,7 @@ exports.payBooking = async (req, res) => {
     }
 
     // Verify with Stripe that the payment actually succeeded
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId);
     if (paymentIntent.status !== "succeeded") {
       return res.status(400).json({ success: false, message: "Stripe payment not completed" });
     }

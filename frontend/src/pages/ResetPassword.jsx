@@ -33,10 +33,10 @@ const ResetPassword = () => {
         <div className={styles.authLeftContent}>
           <Link to="/" className={styles.authBrand}>
             <span className={styles.brandIcon}><i className="fas fa-paper-plane" /></span>
-            <span className={styles.brandText}>I<span>Travelz</span></span>
+            <span className={styles.brandText}>I<span>travel</span>mongolia</span>
           </Link>
           <h2>Create a new password</h2>
-          <p>Choose a strong password to keep your ITravelz account secure.</p>
+          <p>Choose a strong password to keep your Itravelmongolia account secure.</p>
         </div>
         <div className={styles.authLeftOverlay} />
       </div>

@@ -47,7 +47,7 @@ export default function Shop() {
             {heroContent?.eyebrow || t('nav_shop') || 'Shop'}
           </span>
           <h1 className={styles.heroTitle}>
-            {heroContent?.title || t('page_shop') || 'ITravelz Shop'}
+            {heroContent?.title || t('page_shop') || 'Itravelmongolia Shop'}
           </h1>
           <p className={styles.heroSub}>
             {heroContent?.subtitle || heroContent?.text || 'Authentic Mongolian goods, travel accessories &amp; more'}

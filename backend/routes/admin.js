@@ -74,6 +74,10 @@ const {
   uploadAboutImages,
   deleteAboutImage,
 } = require("../controllers/aboutController");
+const {
+  getAllCommentsAdmin,
+  adminDeleteComment,
+} = require("../controllers/commentController");
 const { protectAdmin } = require("../middleware/auth");
 const upload = require("../middleware/upload");
 const videoUpload = upload.videoUpload;
@@ -92,6 +96,10 @@ router.delete("/users/:id", protectAdmin, deleteUserById);
 
 // Auto-translate
 router.post("/translate", protectAdmin, translateText);
+
+// Comment Moderation Routes
+router.get("/comments", protectAdmin, getAllCommentsAdmin);
+router.delete("/comments/:id", protectAdmin, adminDeleteComment);
 
 // Booking Management Routes
 router.get("/bookings", protectAdmin, getAllBookings);

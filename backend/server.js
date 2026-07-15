@@ -22,6 +22,7 @@ const contactRoutes = require("./routes/contact");
 const chatRoutes = require("./routes/chat");
 const festivalsRoutes = require("./routes/festivals");
 const aboutRoutes = require("./routes/about");
+const commentsRoutes = require("./routes/comments");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -99,6 +100,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/festivals", festivalsRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/comments", commentsRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, status: "Server is running" });

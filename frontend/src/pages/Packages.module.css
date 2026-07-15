@@ -173,6 +173,21 @@
   letter-spacing: 0.06em;
 }
 
+.subCatBadge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(79, 117, 255, 0.85);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .cardBody {
   padding: 18px 20px 20px;
 }
@@ -450,9 +465,18 @@
   z-index: 2;
 }
 .pkgModalCatBadge {
+  top: auto;
+  bottom: 14px;
   left: auto;
   right: 14px;
   background: rgba(79, 117, 255, 0.8);
+  text-transform: capitalize;
+}
+.pkgModalSubBadge {
+  top: auto;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(223, 105, 81, 0.85);
   text-transform: capitalize;
 }
 

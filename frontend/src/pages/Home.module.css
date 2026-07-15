@@ -1,5 +1,5 @@
 ﻿/* ========================================
-   Home Page  ITravelz
+   Home Page  Itravelmongolia
    ======================================== */
 
 .main {
@@ -1242,6 +1242,8 @@ html[data-theme="dark"] .packSection {
   z-index: 2;
 }
 .pkgModalCatBadge {
+  top: auto;
+  bottom: 14px;
   left: auto;
   right: 14px;
   background: rgba(79, 117, 255, 0.8);
