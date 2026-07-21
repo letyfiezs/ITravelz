@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
-const axios = require("axios");
 
 exports.login = async (req, res, next) => {
   try {
@@ -233,29 +232,7 @@ exports.deleteUserById = async (req, res, next) => {
 };
 
 // ── Auto-translate texts using MyMemory (free, no API key needed) ──
-const SUPPORTED_LANGS = ["mn", "en", "de", "ko", "ja", "zh"];
-
-const translateOne = async (text, from, to) => {
-  if (!text || !text.trim() || from === to) return text;
-  // MyMemory free API: 500 chars/segment, 5000 words/day
-  const chunk = text.slice(0, 490);
-  try {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${from}|${to}`;
-    const { data } = await axios.get(url, { timeout: 8000 });
-    const translated = data.responseData?.translatedText;
-    // Reject MyMemory quota warnings and known error strings
-    if (!translated) return text;
-    if (
-      translated.includes("MYMEMORY WARNING") ||
-      translated.includes("PLEASE REVIEW")
-    )
-      return text;
-    if (data.responseStatus && data.responseStatus !== 200) return text;
-    return translated;
-  } catch {
-    return text; // fallback to original
-  }
-};
+const { SUPPORTED_LANGS, translateOne } = require("../utils/autoTranslate");
 
 exports.translateText = async (req, res) => {
   try {

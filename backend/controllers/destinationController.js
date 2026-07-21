@@ -1,5 +1,6 @@
 const Destination = require('../models/Destination');
 const path = require('path');
+const { ensureFullTranslations } = require('../utils/autoTranslate');
 
 // Helper: get public URL for an uploaded file
 const getFileUrl = (file) => {
@@ -55,6 +56,21 @@ exports.createDestination = async (req, res) => {
       translations,
     } = req.body;
 
+    const resolvedHighlights = Array.isArray(highlights)
+      ? highlights
+      : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []);
+
+    const fullTranslations = await ensureFullTranslations(
+      {
+        name,
+        tagline: tagline || '',
+        description: description || '',
+        readMore: readMore || '',
+        culturalInfo: culturalInfo || '',
+      },
+      translations,
+    );
+
     const dest = await Destination.create({
       name, city, country, category, image: image || '',
       images: Array.isArray(images) ? images.slice(0, 10) : [],
@@ -62,10 +78,10 @@ exports.createDestination = async (req, res) => {
       tagline: tagline || '', description: description || '',
       readMore: readMore || '',
       culturalInfo: culturalInfo || '',
-      highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
+      highlights: resolvedHighlights,
       bestTime: bestTime || '', avgCost: avgCost || '',
       isActive: isActive !== undefined ? isActive : true,
-      translations: translations || {},
+      translations: fullTranslations,
     });
 
     res.status(201).json({ success: true, message: 'Destination created', destination: dest });
@@ -91,8 +107,32 @@ exports.updateDestination = async (req, res) => {
       highlights: Array.isArray(highlights) ? highlights : (highlights ? highlights.split('\n').map(s => s.trim()).filter(Boolean) : []),
       bestTime, avgCost, isActive,
       updatedAt: Date.now(),
-      ...(translations ? { translations } : {}),
     };
+
+    if (translations) {
+      // Admin used the manual "Auto Translate" button — trust it as-is.
+      update.translations = translations;
+    } else if (
+      name !== undefined || tagline !== undefined || description !== undefined ||
+      readMore !== undefined || culturalInfo !== undefined
+    ) {
+      // Translatable content changed but no translations were supplied —
+      // regenerate all 6 languages from the merged (new + existing) fields.
+      const existingDest = await Destination.findById(req.params.id).select(
+        'name tagline description readMore culturalInfo',
+      );
+      if (existingDest) {
+        const mergedFields = {
+          name: name !== undefined ? name : existingDest.name,
+          tagline: tagline !== undefined ? tagline : existingDest.tagline,
+          description: description !== undefined ? description : existingDest.description,
+          readMore: readMore !== undefined ? readMore : existingDest.readMore,
+          culturalInfo: culturalInfo !== undefined ? culturalInfo : existingDest.culturalInfo,
+        };
+        update.translations = await ensureFullTranslations(mergedFields, {});
+      }
+    }
+
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
 
     const dest = await Destination.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true, strict: false });

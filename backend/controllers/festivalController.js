@@ -1,4 +1,5 @@
 const Festival = require('../models/Festival');
+const { ensureFullTranslations } = require('../utils/autoTranslate');
 
 // Helper: get public URL for an uploaded file
 const getFileUrl = (file) => {
@@ -44,6 +45,12 @@ exports.getAllFestivalsAdmin = async (req, res) => {
 exports.createFestival = async (req, res) => {
   try {
     const { name, description, date, location, image, images, category, link, isActive, translations } = req.body;
+
+    const fullTranslations = await ensureFullTranslations(
+      { name, description: description || '' },
+      translations,
+    );
+
     const festivalDoc = new Festival({
       name, description, date, location,
       image: image || '',
@@ -51,7 +58,7 @@ exports.createFestival = async (req, res) => {
       category,
       link: link || '',
       isActive,
-      translations: translations || {},
+      translations: fullTranslations,
     }, { strict: false });
     const festival = await festivalDoc.save();
     res.status(201).json({ success: true, message: 'Festival created', festival });
@@ -69,7 +76,21 @@ exports.updateFestival = async (req, res) => {
       isActive,
       updatedAt: Date.now(),
     };
-    if (translations !== undefined) update.translations = translations;
+    if (translations !== undefined) {
+      // Admin used the manual "Auto Translate" button — trust it as-is.
+      update.translations = translations;
+    } else if (name !== undefined || description !== undefined) {
+      // Translatable content changed but no translations were supplied —
+      // regenerate all 6 languages from the merged (new + existing) fields.
+      const existingFest = await Festival.findById(req.params.id).select('name description');
+      if (existingFest) {
+        const mergedFields = {
+          name: name !== undefined ? name : existingFest.name,
+          description: description !== undefined ? description : existingFest.description,
+        };
+        update.translations = await ensureFullTranslations(mergedFields, {});
+      }
+    }
     if (Array.isArray(images)) update.images = images.slice(0, 10);
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
     const festival = await Festival.findByIdAndUpdate(

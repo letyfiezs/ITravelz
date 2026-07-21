@@ -6,7 +6,7 @@ import styles from './ChatWidget.module.css';
 
 // ── Company contact info (mirrors Contact.jsx) ────────────────
 const CONTACT = {
-  email:    'grandtravelmongolia@gmail.com',
+  email:    'sales@itravelmongolia.com',
   phone:    '+976 77088055',
   facebook: 'https://www.facebook.com/profile.php?id=100068557103724',
   hours:    'Everyday 24/7',

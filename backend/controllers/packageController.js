@@ -1,5 +1,6 @@
 const Package = require("../models/Package");
 const Booking = require("../models/Booking");
+const { ensureFullTranslations } = require("../utils/autoTranslate");
 
 // Get all active packages (public)
 exports.getAllPackages = async (req, res) => {
@@ -57,86 +58,38 @@ exports.createPackage = async (req, res) => {
       });
     }
 
+    const resolvedDuration = duration || "Varies";
+    const resolvedDestination = destination || "Multiple";
+
+    // Guarantee every supported language has a complete translation —
+    // reuses whatever the admin's manual "Auto Translate" click already
+    // produced, and machine-translates anything still missing.
+    const fullTranslations = await ensureFullTranslations(
+      {
+        name,
+        description,
+        duration: resolvedDuration,
+        destination: resolvedDestination,
+        features: features || [],
+      },
+      translations,
+    );
+
     const newPackage = new Package({
       name,
       description,
       price: parseFloat(price),
       category,
       subCategory: subCategory || "",
-      duration: duration || "Varies",
-      destination: destination || "Multiple",
+      duration: resolvedDuration,
+      destination: resolvedDestination,
       image: image || null,
       features: features || [],
       status: status || "active",
       availableDates: availableDates || [],
       availableTimes: availableTimes || [],
       bookingLimitPerSlot: bookingLimitPerSlot || 5,
-      translations: translations || {
-        en: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        es: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        fr: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        ja: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        zh: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        ar: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        nl: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-        mn: {
-          name,
-          description,
-          duration: duration || "Varies",
-          destination: destination || "Multiple",
-          category,
-          features: features || [],
-        },
-      },
+      translations: fullTranslations,
     });
 
     await newPackage.save();
@@ -210,7 +163,31 @@ exports.updatePackage = async (req, res) => {
       updateData.groupPricing = groupPricing || [];
 
     if (translations) {
+      // Admin used the manual "Auto Translate" button — trust it as-is.
       updateData.translations = translations;
+    } else if (
+      name !== undefined ||
+      description !== undefined ||
+      duration !== undefined ||
+      destination !== undefined ||
+      features !== undefined
+    ) {
+      // Translatable content changed but no translations were supplied —
+      // regenerate all 6 languages from the merged (new + existing) fields
+      // so no stale/mismatched translation is ever left behind.
+      const existingPkg = await Package.findById(req.params.id).select(
+        "name description duration destination features",
+      );
+      if (existingPkg) {
+        const mergedFields = {
+          name: name !== undefined ? name : existingPkg.name,
+          description: description !== undefined ? description : existingPkg.description,
+          duration: duration !== undefined ? duration : existingPkg.duration,
+          destination: destination !== undefined ? destination : existingPkg.destination,
+          features: features !== undefined ? features : existingPkg.features || [],
+        };
+        updateData.translations = await ensureFullTranslations(mergedFields, {});
+      }
     }
 
     const pkg = await Package.findByIdAndUpdate(req.params.id, updateData, {

@@ -1,5 +1,6 @@
 const Itinerary = require('../models/Itinerary');
 const mongoose = require('mongoose');
+const { ensureFullTranslations } = require('../utils/autoTranslate');
 
 // Get all itineraries (admin - includes inactive)
 exports.getAllItinerariesAdmin = async (req, res, next) => {
@@ -53,6 +54,11 @@ exports.createItinerary = async (req, res, next) => {
       });
     }
 
+    const fullTranslations = await ensureFullTranslations(
+      { title, description, duration, locations },
+      translations,
+    );
+
     const itinerary = await Itinerary.create({
       title,
       description,
@@ -61,16 +67,7 @@ exports.createItinerary = async (req, res, next) => {
       difficulty: difficulty || 'moderate',
       days: days || [],
       order: order || 0,
-      translations: translations || {
-        en: { title, description, duration, locations, days: days || [] },
-        es: { title, description, duration, locations, days: days || [] },
-        fr: { title, description, duration, locations, days: days || [] },
-        ja: { title, description, duration, locations, days: days || [] },
-        zh: { title, description, duration, locations, days: days || [] },
-        ar: { title, description, duration, locations, days: days || [] },
-        nl: { title, description, duration, locations, days: days || [] },
-        mn: { title, description, duration, locations, days: days || [] }
-      }
+      translations: fullTranslations,
     });
 
     res.status(201).json({
@@ -101,7 +98,28 @@ exports.updateItinerary = async (req, res, next) => {
     if (days !== undefined) updates.days = days;
     if (order !== undefined) updates.order = order;
     if (isActive !== undefined) updates.isActive = isActive;
-    if (translations) updates.translations = translations;
+    if (translations) {
+      // Admin used the manual "Auto Translate" button — trust it as-is.
+      updates.translations = translations;
+    } else if (
+      title !== undefined || description !== undefined ||
+      duration !== undefined || locations !== undefined
+    ) {
+      // Translatable content changed but no translations were supplied —
+      // regenerate all 6 languages from the merged (new + existing) fields.
+      const existingItin = await Itinerary.findById(req.params.id).select(
+        'title description duration locations',
+      );
+      if (existingItin) {
+        const mergedFields = {
+          title: title !== undefined ? title : existingItin.title,
+          description: description !== undefined ? description : existingItin.description,
+          duration: duration !== undefined ? duration : existingItin.duration,
+          locations: locations !== undefined ? locations : existingItin.locations,
+        };
+        updates.translations = await ensureFullTranslations(mergedFields, {});
+      }
+    }
     updates.updatedAt = new Date();
 
     const itinerary = await Itinerary.findByIdAndUpdate(

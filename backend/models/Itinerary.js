@@ -41,104 +41,12 @@ const itinerarySchema = new mongoose.Schema(
         }
       }
     ],
-    // Multilingual translations
+    // Multilingual translations — { mn: { title, description, duration, locations }, en: {...}, ... }
+    // Flexible (Mixed) so it can hold exactly the site's supported languages
+    // (mn/en/de/ko/ja/zh) without a rigid per-language sub-schema.
     translations: {
-      en: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      es: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      fr: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      ja: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      zh: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      ar: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      nl: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      },
-      mn: {
-        title: String,
-        description: String,
-        duration: String,
-        locations: String,
-        days: [
-          {
-            dayNumber: String,
-            title: String
-          }
-        ]
-      }
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     image: {
       type: String,

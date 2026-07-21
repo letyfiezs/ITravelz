@@ -1,5 +1,6 @@
 const AboutMongolia = require('../models/AboutMongolia');
 const cloudinary = require('cloudinary').v2;
+const { ensureFullTranslations } = require('../utils/autoTranslate');
 
 /* helper: prefer Cloudinary URL from multer-storage-cloudinary, else file path */
 const getFileUrl = (file) => {
@@ -46,7 +47,13 @@ exports.getAllAboutAdmin = async (req, res) => {
 exports.createAbout = async (req, res) => {
   try {
     const { title, description, readMore, image, category, order, isActive, translations } = req.body;
-    const aboutDoc = new AboutMongolia({ title, description, readMore: readMore || '', image, category, order, isActive, translations: translations || {} }, { strict: false });
+
+    const fullTranslations = await ensureFullTranslations(
+      { title, description, readMore: readMore || '' },
+      translations,
+    );
+
+    const aboutDoc = new AboutMongolia({ title, description, readMore: readMore || '', image, category, order, isActive, translations: fullTranslations }, { strict: false });
     const item = await aboutDoc.save();
     res.status(201).json({ success: true, message: 'Item created', item });
   } catch (err) {
@@ -58,7 +65,24 @@ exports.updateAbout = async (req, res) => {
   try {
     const { title, description, readMore, image, category, order, isActive, translations } = req.body;
     const update = { title, description, readMore: readMore || '', image, category, order, isActive, updatedAt: Date.now() };
-    if (translations !== undefined) update.translations = translations;
+    if (translations !== undefined) {
+      // Admin used the manual "Auto Translate" button — trust it as-is.
+      update.translations = translations;
+    } else if (title !== undefined || description !== undefined || readMore !== undefined) {
+      // Translatable content changed but no translations were supplied —
+      // regenerate all 6 languages from the merged (new + existing) fields.
+      const existingItem = await AboutMongolia.findById(req.params.id).select(
+        'title description readMore',
+      );
+      if (existingItem) {
+        const mergedFields = {
+          title: title !== undefined ? title : existingItem.title,
+          description: description !== undefined ? description : existingItem.description,
+          readMore: readMore !== undefined ? readMore : existingItem.readMore,
+        };
+        update.translations = await ensureFullTranslations(mergedFields, {});
+      }
+    }
     const item = await AboutMongolia.findByIdAndUpdate(
       req.params.id,
       update,

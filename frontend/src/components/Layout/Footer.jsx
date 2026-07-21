@@ -131,8 +131,8 @@ export default function Footer() {
             </li>
             <li>
               <i className="fas fa-envelope" />
-              <a href="mailto:itravel2mongolia@gmail.com">
-                itravel2mongolia@gmail.com
+              <a href="mailto:info@itravelmongolia.com">
+                info@itravelmongolia.com
               </a>
             </li>
             <li>
